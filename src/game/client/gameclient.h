@@ -201,6 +201,10 @@ public:
 	class CMotd *m_pMotd;
 	class CMapImages *m_pMapimages;
 	class CVoting *m_pVoting;
+	class CColorboard *m_pColorboard;
+
+	bool m_IsCatch;
+	bool m_CatchMsgSent;
 };
 
 extern const char *Localize(const char *Str);

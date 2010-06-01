@@ -43,8 +43,10 @@ public:
 	void OnDirectInput(CNetObj_PlayerInput *pNewInput);
 	void FireWeapon();
 
-	void Die(int Killer, int Weapon);
-	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon);	
+	void Die(int Killer, int Weapon, bool PowerupDamage = false);
+	void CreateDieExplosion(bool refill);
+	void ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam);
+	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool PowerupDamage = false);	
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
 	bool Remove();
@@ -128,6 +130,8 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
+	int m_ShieldID;
+	bool m_Visible;
 };
 
 #endif

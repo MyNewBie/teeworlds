@@ -55,7 +55,7 @@ MACRO_CONFIG_INT(SvTeamdamage, sv_teamdamage, 0, 0, 1, CFGFLAG_SERVER, "Team dam
 MACRO_CONFIG_STR(SvMaprotation, sv_maprotation, 768, "", CFGFLAG_SERVER, "Maps to rotate between")
 MACRO_CONFIG_INT(SvRoundsPerMap, sv_rounds_per_map, 1, 1, 100, CFGFLAG_SERVER, "Number of rounds on each map before rotating")
 MACRO_CONFIG_INT(SvPowerups, sv_powerups, 1, 0, 1, CFGFLAG_SERVER, "Allow powerups like ninja")
-MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 20, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
+MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 100, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
 MACRO_CONFIG_INT(SvTimelimit, sv_timelimit, 0, 0, 1000, CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
 MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dm", CFGFLAG_SERVER, "Game type (dm, tdm, ctf)")
 MACRO_CONFIG_INT(SvTournamentMode, sv_tournament_mode, 0, 0, 1, CFGFLAG_SERVER, "Tournament mode. When enabled, players joins the server as spectator")
@@ -68,6 +68,32 @@ MACRO_CONFIG_INT(SvVoteKick, sv_vote_kick, 1, 0, 1, CFGFLAG_SERVER, "Allow votin
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
 MACRO_CONFIG_INT(SvVoteScorelimit, sv_vote_scorelimit, 0, 0, 1, CFGFLAG_SERVER, "Allow voting to change score limit")
 MACRO_CONFIG_INT(SvVoteTimelimit, sv_vote_timelimit, 0, 0, 1, CFGFLAG_SERVER, "Allow voting to change time limit")
+
+// Catching
+//  -Gametype/Gameplay
+MACRO_CONFIG_INT(SvInstagib, sv_instagib, 0, 0, 1, CFGFLAG_SERVER, "Allow to play instagib")
+MACRO_CONFIG_INT(SvHammerParty, sv_hammerparty, 0, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvGiveWeapons, sv_give_weapons, 0, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvPickups, sv_pickups, 1, 0, 1, CFGFLAG_SERVER, "")
+
+//  -Server Settings
+MACRO_CONFIG_INT(SvLaserjumps, sv_laserjumps, 0, 0, 1, CFGFLAG_SERVER, "Enable laser jumps")
+MACRO_CONFIG_INT(SvCheatProtection, sv_cheat_protection, 3, 2, 16, CFGFLAG_SERVER, "Cheat protection")
+MACRO_CONFIG_INT(SvGameOverTime, sv_game_over_time, 2, 0, 10, CFGFLAG_SERVER, "Time to wait until the next round")
+MACRO_CONFIG_INT(SvScoreIncrease, sv_score_increase, 5, 0, 20, CFGFLAG_SERVER, "Increase about this the winner after a round")
+MACRO_CONFIG_INT(SvDamagePoint, sv_damage_point, 20, 0, 80, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvHideOuts, sv_hide_outs, 1, 0, 1, CFGFLAG_SERVER, "")
+
+//  -Powerup
+MACRO_CONFIG_INT(SvShowWay, sv_show_way, 0, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvMaxWayCalc, sv_max_way_calc, 7000, 1, 50000, CFGFLAG_SERVER, "")
+
+MACRO_CONFIG_INT(SvPowerupSpeed, sv_powerup_speed, 10, 1, 20, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvPowerupEffect, sv_powerup_effect, 1, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvPowerupSound, sv_powerup_sound, 0, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvPowerupTime, sv_powerup_time, 2, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvMaxHits, sv_max_hits, 32, 0, 128, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvHitDelay, sv_hit_delay, 2, 0, 20, CFGFLAG_SERVER, "")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

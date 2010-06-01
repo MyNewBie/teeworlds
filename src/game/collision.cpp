@@ -44,6 +44,9 @@ void CCollision::Init(class CLayers *pLayers)
 		case TILE_NOHOOK:
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
+		case TILE_HIDE:
+			m_pTiles[i].m_Index = Index;
+			break;
 		default:
 			m_pTiles[i].m_Index = 0;
 		}
@@ -58,6 +61,15 @@ int CCollision::GetTile(int x, int y)
 	return m_pTiles[ny*m_Width+nx].m_Index > 128 ? 0 : m_pTiles[ny*m_Width+nx].m_Index;
 }
 
+// Check if this Tile are a HideTile
+bool CCollision::IsHideTile(vec2 Pos)
+{
+	int nx = clamp((int)Pos.x/32, 0, m_Width-1);
+	int ny = clamp((int)Pos.y/32, 0, m_Height-1);
+
+	return m_pTiles[ny*m_Width+nx].m_Index == TILE_HIDE;
+}
+
 bool CCollision::IsTileSolid(int x, int y)
 {
 	return GetTile(x,y)&COLFLAG_SOLID;
@@ -70,6 +82,32 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 	vec2 Last = Pos0;
 	
 	for(float f = 0; f < d; f++)
+	{
+		float a = f/d;
+		vec2 Pos = mix(Pos0, Pos1, a);
+		if(CheckPoint(Pos.x, Pos.y))
+		{
+			if(pOutCollision)
+				*pOutCollision = Pos;
+			if(pOutBeforeCollision)
+				*pOutBeforeCollision = Last;
+			return GetCollisionAt(Pos.x, Pos.y);
+		}
+		Last = Pos;
+	}
+	if(pOutCollision)
+		*pOutCollision = Pos1;
+	if(pOutBeforeCollision)
+		*pOutBeforeCollision = Pos1;
+	return 0;
+}
+
+int CCollision::IntersectLine2(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision)
+{
+	float d = distance(Pos0, Pos1);
+	vec2 Last = Pos0;
+	
+	for(float f = 0; f < d; f+=32)
 	{
 		float a = f/d;
 		vec2 Pos = mix(Pos0, Pos1, a);

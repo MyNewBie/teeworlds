@@ -2,6 +2,7 @@
 #define GAME_SERVER_GAMECONTROLLER_H
 
 #include <base/vmath.h>
+#include "pathfind.h"
 
 /*
 	Class: Game Controller
@@ -16,6 +17,11 @@ class IGameController
 	class CGameContext *m_pGameServer;
 	class IServer *m_pServer;
 	
+private:
+	int m_IsInstagib;
+	int m_IsHammerParty;
+	int m_GiveWeapons;
+	int m_Pickups;
 protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const { return m_pServer; }
@@ -57,6 +63,7 @@ protected:
 	int m_GameFlags;
 	int m_UnbalancedTick;
 	bool m_ForceBalanced;
+	bool m_RoundRestart;
 	
 public:
 	const char *m_pGameType;
@@ -68,6 +75,7 @@ public:
 
 	void DoTeamScoreWincheck();
 	void DoPlayerScoreWincheck();
+	void DoPlayerNumWincheck();
 	
 	void DoWarmup(int Seconds);
 	
@@ -140,6 +148,8 @@ public:
 	int ClampTeam(int Team);
 
 	virtual void PostReset();
+	class CPathfind m_Path;
+	int GetGameOverTick() { return m_GameOverTick; };
 };
 
 #endif

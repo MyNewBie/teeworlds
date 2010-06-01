@@ -62,6 +62,15 @@ public:
 	int m_Score;
 	int m_ScoreStartTick;
 	bool m_ForceBalanced;
+	int m_CatchingTeam;
+	int m_PrevCatchingTeam;
+	int m_BaseCatchingTeam;
+	int m_DoesDamage;
+	bool m_IsUsingCatchClient;
+	bool m_WillJoin;
+	int m_NoBroadcast;
+	bool m_TickBroadcast;
+	int m_Colorassign;
 	
 private:
 	CCharacter *Character;
@@ -74,6 +83,9 @@ private:
 	bool m_Spawning;
 	int m_ClientID;
 	int m_Team;
+
+	bool m_HasTeam;
+	bool m_AssignColor;
 
 	// network latency calculations	
 	struct

@@ -1,6 +1,7 @@
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
 #include "projectile.h"
+#include <game/server/entities/pickup.h>
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon)
@@ -76,6 +77,8 @@ void CProjectile::Tick()
 		else if(TargetChr)
 			TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
 
+		//CPickup *pPickup = new CPickup(&GameServer()->m_World, POWERUP_HEALTH, 0);
+		//pPickup->m_Pos = PrevPos;
 		GameServer()->m_World.DestroyEntity(this);
 	}
 }

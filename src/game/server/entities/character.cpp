@@ -6,6 +6,7 @@
 #include "character.h"
 #include "laser.h"
 #include "projectile.h"
+#include "moving.h"
 
 //input count
 struct CInputCount
@@ -55,12 +56,36 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_PlayerState = PLAYERSTATE_UNKNOWN;
 	m_EmoteStop = -1;
 	m_LastAction = -1;
-	m_ActiveWeapon = WEAPON_GUN;
-	m_LastWeapon = WEAPON_HAMMER;
-	m_QueuedWeapon = -1;
+
+	if(g_Config.m_SvHammerParty)
+	{
+		m_ActiveWeapon = WEAPON_HAMMER;
+		m_LastWeapon = WEAPON_HAMMER;
+		m_QueuedWeapon = -1;
+	}
+	else if(g_Config.m_SvInstagib)
+	{
+		m_ActiveWeapon = WEAPON_RIFLE;
+		m_LastWeapon = WEAPON_RIFLE;
+		m_QueuedWeapon = -1;
+	}
+	else
+	{
+		m_ActiveWeapon = WEAPON_GUN;
+		m_LastWeapon = WEAPON_HAMMER;
+		m_QueuedWeapon = -1;
+	}
 	
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
+	m_ShieldID = Server()->SnapNewID();
+	m_Visible = true;
+
+	if(m_pPlayer->m_CatchingTeam == -1)
+	{
+		m_pPlayer->m_CatchingTeam = m_pPlayer->m_BaseCatchingTeam;
+		GameServer()->m_pController->OnPlayerInfoChange(m_pPlayer);
+	}
 	
 	m_Core.Reset();
 	m_Core.Init(&GameServer()->m_World.m_Core, GameServer()->Collision());
@@ -484,13 +509,8 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 
 void CCharacter::GiveNinja()
 {
-	m_Ninja.m_ActivationTick = Server()->Tick();
-	m_aWeapons[WEAPON_NINJA].m_Got = true;
-	m_aWeapons[WEAPON_NINJA].m_Ammo = -1;
-	m_LastWeapon = m_ActiveWeapon;
-	m_ActiveWeapon = WEAPON_NINJA;
-	
 	GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
+	CMoving *pMoving = new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
 }
 
 void CCharacter::SetEmote(int Emote, int Tick)
@@ -543,7 +563,15 @@ void CCharacter::Tick()
 	m_Core.Tick(true);
 	
 	// handle death-tiles
-	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+g_CharPhysSize/3.f, m_Pos.y-g_CharPhysSize/3.f)&CCollision::COLFLAG_DEATH ||
+	if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
+	{
+		m_Visible = true;
+	}
+	if(GameServer()->Collision()->IsHideTile(m_Pos))
+	{
+		m_Visible = false;
+	}
+	else if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+g_CharPhysSize/3.f, m_Pos.y-g_CharPhysSize/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x+g_CharPhysSize/3.f, m_Pos.y+g_CharPhysSize/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x-g_CharPhysSize/3.f, m_Pos.y-g_CharPhysSize/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x-g_CharPhysSize/3.f, m_Pos.y+g_CharPhysSize/3.f)&CCollision::COLFLAG_DEATH)
@@ -646,7 +674,7 @@ bool CCharacter::IncreaseArmor(int Amount)
 	return true;
 }
 
-void CCharacter::Die(int Killer, int Weapon)
+void CCharacter::Die(int Killer, int Weapon, bool PowerupDamage)
 {
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
@@ -665,24 +693,122 @@ void CCharacter::Die(int Killer, int Weapon)
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 	
-	// this is for auto respawn after 3 secs
-	m_pPlayer->m_DieTick = Server()->Tick();
+	if((Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD) && !PowerupDamage)
+	{
+		// this is for auto respawn after 3 secs
+		m_pPlayer->m_DieTick = Server()->Tick();
+		
+		m_Alive = false;
+		GameServer()->m_World.RemoveEntity(this);
+		GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 	
-	m_Alive = false;
-	GameServer()->m_World.RemoveEntity(this);
-	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+		// we got to wait 0.5 secs before respawning
+		m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+		CreateDieExplosion(true);
+		return;
+	}
+	CreateDieExplosion(true);
+
+	int TeamOwner = -1;
+	char KillerMsg[128];
+	char VictimMsg[128];
+	char OwnerMsg[128];
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 &&
+			GameServer()->m_apPlayers[i]->m_BaseCatchingTeam == GameServer()->m_apPlayers[Killer]->m_CatchingTeam &&
+			GameServer()->m_apPlayers[Killer]->m_BaseCatchingTeam != GameServer()->m_apPlayers[Killer]->m_CatchingTeam)
+			TeamOwner = i;
+	}
+	if(GameServer()->m_apPlayers[Killer]->m_CatchingTeam == GameServer()->m_apPlayers[Killer]->m_BaseCatchingTeam)
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(m_pPlayer->GetCID()));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(Killer));
+	}
+	else if(TeamOwner != -1)
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in %s's team", Server()->ClientName(m_pPlayer->GetCID()), Server()->ClientName(TeamOwner));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(TeamOwner));
+		str_format(OwnerMsg, sizeof(OwnerMsg),  "%s is now in your team", Server()->ClientName(m_pPlayer->GetCID()));
+	}
+	else
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in the same team as you", Server()->ClientName(m_pPlayer->GetCID()));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in the same team as %s", Server()->ClientName(Killer));
+	}
+	GameServer()->m_apPlayers[Killer]->m_NoBroadcast = Server()->TickSpeed() * 5;
+	GameServer()->m_apPlayers[Killer]->m_TickBroadcast = true;
+	GameServer()->SendBroadcast(KillerMsg, Killer);
+
+	m_pPlayer->m_NoBroadcast = Server()->TickSpeed() * 5;
+	m_pPlayer->m_TickBroadcast = true;
+	GameServer()->SendBroadcast(VictimMsg, m_pPlayer->GetCID());
+
+	if(TeamOwner != -1)
+	{
+		GameServer()->m_apPlayers[TeamOwner]->m_NoBroadcast = Server()->TickSpeed() * 3;
+		GameServer()->m_apPlayers[TeamOwner]->m_TickBroadcast = true;
+		GameServer()->SendBroadcast(OwnerMsg, TeamOwner);
+	}
 	
-	// we got to wait 0.5 secs before respawning
-	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+	ChangeTeam(m_pPlayer->GetCID(), Killer, m_pPlayer->m_CatchingTeam, GameServer()->m_apPlayers[Killer]->m_CatchingTeam);
 }
 
-bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
+void CCharacter::CreateDieExplosion(bool refill)
+{
+	int o = 50;
+	int d = 35;
+	GameServer()->CreateExplosion(m_Pos, m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(o, 0), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(-o, 0), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(0, o), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(0, -o), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(d, d), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(-d, d), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(d, -d), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateExplosion(m_Pos + vec2(-d, -d), m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+	GameServer()->CreateDeath(m_Pos, -1);
+	GameServer()->CreateDeath(m_Pos + vec2(d, 0), -1);
+	GameServer()->CreateDeath(m_Pos + vec2(-d, 0), -1);
+	GameServer()->CreateDeath(m_Pos + vec2(0, d), -1);
+	GameServer()->CreateDeath(m_Pos + vec2(0, -d), -1);
+	GameServer()->CreatePlayerSpawn(m_Pos);
+
+	if(refill)
+	{
+		IncreaseHealth(10);
+		//IncreaseArmor(10);
+	}
+}
+void CCharacter::ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam)
+{
+	dbg_msg("Teamchange", "Player %d: Old Team: %d  ->  New Team: %d: Killer %d", ClientId, OldTeam, NewTeam, Killer);
+	GameServer()->m_apPlayers[ClientId]->m_PrevCatchingTeam = GameServer()->m_apPlayers[ClientId]->m_CatchingTeam;
+	GameServer()->m_apPlayers[ClientId]->m_CatchingTeam = NewTeam;
+	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[ClientId]);
+	
+}
+
+bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool PowerupDamage)
 {
 	m_Core.m_Vel += Force;
 	
 	if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
+	if(m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam)
+		return false;
+	if(Weapon == WEAPON_GAME && !PowerupDamage)
+		return false;
+	if(g_Config.m_SvInstagib)
+	{
+		Die(From, Weapon, PowerupDamage);
+		return true;
+	}
+
+	// Add Damage
+	if(g_Config.m_SvDamagePoint)
+		GameServer()->m_apPlayers[From]->m_DoesDamage += Dmg;
 
 	// m_pPlayer only inflicts half damage on self
 	if(From == m_pPlayer->GetCID())
@@ -736,7 +862,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	// check for death
 	if(m_Health <= 0)
 	{
-		Die(From, Weapon);
+		Die(From, Weapon, PowerupDamage);
 		
 		// set attacker's face to happy (taunt!)
 		if (From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From])
@@ -765,8 +891,24 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
 void CCharacter::Snap(int SnappingClient)
 {
-	if(NetworkClipped(SnappingClient))
+	if(NetworkClipped(SnappingClient) ||
+		!GameServer()->m_World.m_Paused &&
+		g_Config.m_SvHideOuts &&
+		(GameServer()->m_apPlayers[SnappingClient]->GetTeam() == 0 &&
+		GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible))
 		return;
+	if(g_Config.m_SvHideOuts &&
+		(SnappingClient == m_pPlayer->GetCID() &&
+		!m_Visible ||
+		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
+		!m_Visible)))
+	{
+		CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
+		shield->m_X = (int)m_Core.m_Pos.x;
+		shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * g_CharPhysSize;
+		shield->m_Type = 1;
+		shield->m_Subtype = 0;
+	}
 	
 	CNetObj_Character *Character = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, m_pPlayer->GetCID(), sizeof(CNetObj_Character)));
 	

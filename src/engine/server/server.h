@@ -162,6 +162,7 @@ public:
 	void SendServerInfo(NETADDR *pAddr, int Token);
 	void UpdateServerInfo();
 
+	bool IsAuthed(int ClientID);
 	int BanAdd(NETADDR Addr, int Seconds);
 	int BanRemove(NETADDR Addr);
 		

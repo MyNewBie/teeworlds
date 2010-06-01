@@ -42,6 +42,7 @@
 #include "components/skins.h"
 #include "components/sounds.h"
 #include "components/voting.h"
+#include "components/colorboard.h"
 
 CGameClient g_GameClient;
 
@@ -66,6 +67,7 @@ static CSounds gs_Sounds;
 static CEmoticon gs_Emoticon;
 static CDamageInd gsDamageInd;
 static CVoting gs_Voting;
+static CColorboard gs_Colorboard;
 
 static CPlayers gs_Players;
 static CNamePlates gs_NamePlates;
@@ -138,6 +140,7 @@ void CGameClient::OnConsoleInit()
 	m_pDamageind = &::gsDamageInd;
 	m_pMapimages = &::gs_MapImages;
 	m_pVoting = &::gs_Voting;
+	m_pColorboard = &::gs_Colorboard;
 	
 	// make a list of all the systems, make sure to add them in the corrent render order
 	m_All.Add(m_pSkins);
@@ -170,6 +173,7 @@ void CGameClient::OnConsoleInit()
 	m_All.Add(m_pMotd);
 	m_All.Add(m_pMenus);
 	m_All.Add(m_pGameConsole);
+	m_All.Add(m_pColorboard);
 	
 	// build the input stack
 	m_Input.Add(&m_pMenus->m_Binder); // this will take over all input when we want to bind a key
@@ -778,6 +782,25 @@ void CGameClient::OnNewSnapshot()
 		else
 			m_ServerMode = SERVERMODE_PUREMOD;
 	}
+	
+	// send Catch msg
+	if(m_Snap.m_pGameobj)
+	{
+		CServerInfo CurrentServerInfo;
+		Client()->GetServerInfo(&CurrentServerInfo);
+		if(str_find_nocase(CurrentServerInfo.m_aGameType, "Catch"))
+		{
+			m_IsCatch = true;
+			if(!m_CatchMsgSent)
+			{
+				CNetMsg_Cl_IsCatch Msg;
+				Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+				m_CatchMsgSent = true;
+				dbg_msg("ClientInfo", "Catching Server");
+			}
+		}
+	}
+	//dbg_msg("Point", "+A");
 	
 
 	// update render info

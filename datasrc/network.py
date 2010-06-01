@@ -293,4 +293,10 @@ Messages = [
 		NetString("m_Type"),
 		NetString("m_Value"),
 	]),
+	
+	NetMessage("Cl_CatchColor", [
+		NetIntAny("m_BaseCatchingTeam"),
+	]),
+	
+	NetMessage("Cl_IsCatch", []),
 ]

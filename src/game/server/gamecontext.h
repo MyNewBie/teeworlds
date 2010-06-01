@@ -63,6 +63,7 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
+	CLayers *Layers() { return &m_Layers; }
 
 	CGameContext();
 	~CGameContext();
@@ -72,7 +73,7 @@ public:
 	CEventHandler m_Events;
 	CPlayer *m_apPlayers[MAX_CLIENTS];
 
-	IGameController *m_pController;
+	class IGameController *m_pController;
 	CGameWorld m_World;
 	
 	// helper functions
@@ -110,7 +111,7 @@ public:
 
 	// helper functions
 	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, bool PowerupDamage = false);
 	void CreateSmoke(vec2 Pos);
 	void CreateHammerHit(vec2 Pos);
 	void CreatePlayerSpawn(vec2 Pos);
@@ -128,7 +129,7 @@ public:
 	};
 
 	// network
-	void SendChatTarget(int To, const char *pText);
+	void SendChatTarget(int To, const char *pText, int From = -1, int Team = 0);
 	void SendChat(int ClientId, int Team, const char *pText);
 	void SendEmoticon(int ClientId, int Emoticon);
 	void SendWeaponPickup(int ClientId, int Weapon);

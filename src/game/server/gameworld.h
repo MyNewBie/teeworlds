@@ -90,6 +90,7 @@ public:
 			Returns a pointer to the closest CCharacter or NULL if no CCharacter is close enough.
 	*/
 	class CCharacter *ClosestCharacter(vec2 Pos, float Radius, CEntity *ppNotThis);
+	class CCharacter *ClosestTeamCharacter(vec2 Pos, float Radius, CEntity *ppNotThis, int CurrentTeam, int BaseTeam);
 
 	/*
 		Function: insert_entity
