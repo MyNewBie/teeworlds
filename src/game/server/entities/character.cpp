@@ -905,7 +905,7 @@ void CCharacter::Snap(int SnappingClient)
 	{
 		CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
 		shield->m_X = (int)m_Core.m_Pos.x;
-		shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * g_CharPhysSize;
+		shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
 		shield->m_Type = 1;
 		shield->m_Subtype = 0;
 	}
