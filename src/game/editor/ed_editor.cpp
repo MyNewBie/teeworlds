@@ -1,7 +1,5 @@
 // copyright (c) 2007 magnus auvinen, see licence.txt for more info
 
-#include <stdlib.h>
-
 #include <base/system.h>
 #include <base/tl/sorted_array.h>
 #include <base/tl/string.h>
@@ -1031,6 +1029,14 @@ void CEditor::DoQuadPoint(CQuad *q, int QuadIndex, int v)
 			s_Operation = OP_CONTEXT_MENU;
 			m_SelectedQuad = QuadIndex;
 			UI()->SetActiveItem(pId);
+			if(!(m_SelectedPoints&(1<<v)))
+			{
+				if(Input()->KeyPressed(KEY_LSHIFT) || Input()->KeyPressed(KEY_RSHIFT))
+					m_SelectedPoints |= 1<<v;
+				else
+					m_SelectedPoints = 1<<v;
+				s_Moved = true;
+			}
 		}
 	}
 	else
@@ -1811,17 +1817,9 @@ int CEditor::PopupImage(CEditor *pEditor, CUIRect View)
 	return 0;
 }
 
-static int CompareImageName(const void *Object1, const void *Object2)
-{
-	CEditorImage *Image1 = *(CEditorImage**)Object1;
-	CEditorImage *Image2 = *(CEditorImage**)Object2;
-	return str_comp(Image1->m_aName, Image2->m_aName);
-}
 
 void CEditor::RenderImages(CUIRect ToolBox, CUIRect ToolBar, CUIRect View)
 {
-	qsort(m_Map.m_lImages.base_ptr(), m_Map.m_lImages.size(), sizeof(CEditorImage*), CompareImageName);
-
 	for(int e = 0; e < 2; e++) // two passes, first embedded, then external
 	{
 		CUIRect Slot;

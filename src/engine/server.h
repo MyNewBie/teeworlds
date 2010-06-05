@@ -49,7 +49,7 @@ public:
 	virtual void *SnapNewItem(int Type, int Id, int Size) = 0;
 
 	virtual void SnapSetStaticsize(int ItemType, int Size) = 0;
-
+	
 	virtual bool IsAuthed(int ClientID) = 0;
 };
 
