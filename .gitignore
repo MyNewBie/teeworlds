@@ -1,0 +1,9 @@
+
+/client_release.bat
+/config_directory.bat
+/server_debug.bat
+/server_release.bat
+/server_release-debug.bat
+/updates.txt
+/autoexec.cfg
+/-c all.bat

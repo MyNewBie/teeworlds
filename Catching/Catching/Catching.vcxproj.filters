@@ -1,0 +1,704 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Quelldateien\engiene">
+      <UniqueIdentifier>{0dc01578-5e70-4a6a-abd0-4b700a15c71b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game">
+      <UniqueIdentifier>{5a54fa37-0592-478f-8b2a-f24bc8e8cd21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\server">
+      <UniqueIdentifier>{8a4b820a-c59a-4ec7-b82e-fd7aedf3b9ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\server\gamemodes">
+      <UniqueIdentifier>{64a26939-c07a-4ba3-842f-6cd12c26554e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\server\entities">
+      <UniqueIdentifier>{56535b8a-6912-4ac2-b3da-8ae289610134}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\client">
+      <UniqueIdentifier>{328134c2-fb5b-47f7-8f48-ff36577ad213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\client\components">
+      <UniqueIdentifier>{909537dc-1b1c-439c-845b-3cd0d1715e43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\game\editor">
+      <UniqueIdentifier>{2f667412-32db-4dd6-8b0e-ef91d60a21c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\engiene\client">
+      <UniqueIdentifier>{1b7c22f4-e3fe-4115-9633-96ef8c68d176}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\engiene\server">
+      <UniqueIdentifier>{0fe608f4-c638-40f3-b88a-f6fcb1ff265f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\engiene\shared">
+      <UniqueIdentifier>{8bbc3635-9fd4-4cf4-970a-5f03adae1734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\base">
+      <UniqueIdentifier>{158ec7e5-1ae3-491f-937f-72a8139a7cda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\base\tl">
+      <UniqueIdentifier>{3d8f1c4a-a51b-47e1-8cd9-ad648bb7d825}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\mastersrv">
+      <UniqueIdentifier>{3918ce81-c43b-41c8-ae1d-7761e19ac573}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\tools">
+      <UniqueIdentifier>{4e0bc079-9511-4c43-aa51-39540024bdca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\versionsrv">
+      <UniqueIdentifier>{10cb9c7a-6969-4dfc-add3-7f12ba59d8e0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\game\collision.cpp">
+      <Filter>Quelldateien\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\gamecore.cpp">
+      <Filter>Quelldateien\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\layers.cpp">
+      <Filter>Quelldateien\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\localization.cpp">
+      <Filter>Quelldateien\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entity.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\eventhandler.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamecontext.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamecontroller.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gameworld.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\pathfind.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\player.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\ctf.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\dm.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\mod.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\tdm.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entities\character.cpp">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entities\laser.cpp">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entities\moving.cpp">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entities\pickup.cpp">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\entities\projectile.cpp">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\animstate.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\gameclient.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\lineinput.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\render.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\render_map.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\ui.cpp">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\controls.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\damageind.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\debughud.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\effects.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\emoticon.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\flow.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\hud.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\items.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\killmessages.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\mapimages.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\maplayers.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\menus.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\menus_browser.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\menus_demo.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\menus_ingame.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\menus_settings.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\motd.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\nameplates.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\particles.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\players.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\scoreboard.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\skins.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\sounds.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\voting.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\binds.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\broadcast.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\camera.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\chat.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\colorboard.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\client\components\console.cpp">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_editor.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_io.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_layer_game.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_layer_quads.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_layer_tiles.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\editor\ed_popups.cpp">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\client.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\graphics.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\input.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\sound.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\srvbrowse.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\client\text.cpp">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\server\register.cpp">
+      <Filter>Quelldateien\engiene\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\server\server.cpp">
+      <Filter>Quelldateien\engiene\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\compression.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\config.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\console.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\datafile.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\demorec.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\engine.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\huffman.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\jobs.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\kernel.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\linereader.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\map.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\masterserver.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\memheap.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\network.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\network_client.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\network_conn.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\network_server.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\packer.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\ringbuffer.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\snapshot.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shared\storage.cpp">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\base\system.c">
+      <Filter>Quelldateien\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\mastersrv\mastersrv.cpp">
+      <Filter>Quelldateien\mastersrv</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\crapnet.cpp">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\dilate.c">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\fake_server.cpp">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\map_resave.cpp">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\packetgen.c">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tools\tileset_borderfix.c">
+      <Filter>Quelldateien\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\versionsrv\versionsrv.cpp">
+      <Filter>Quelldateien\versionsrv</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\game\collision.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\gamecore.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\layers.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\localization.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\mapitems.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\tuning.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\variables.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\version.h">
+      <Filter>Quelldateien\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\binaryheap.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entity.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\eventhandler.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamecontext.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamecontroller.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gameworld.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\pathfind.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\player.h">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\ctf.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\dm.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\mod.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\tdm.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entities\character.h">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entities\laser.h">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entities\moving.h">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entities\pickup.h">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\entities\projectile.h">
+      <Filter>Quelldateien\game\server\entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\animstate.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\component.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\gameclient.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\lineinput.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\render.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\ui.h">
+      <Filter>Quelldateien\game\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\controls.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\damageind.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\debughud.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\effects.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\emoticon.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\flow.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\hud.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\items.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\killmessages.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\mapimages.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\maplayers.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\menus.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\motd.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\nameplates.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\particles.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\players.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\scoreboard.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\skins.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\sounds.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\voting.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\binds.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\broadcast.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\camera.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\chat.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\colorboard.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\client\components\console.h">
+      <Filter>Quelldateien\game\client\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\editor\ed_editor.h">
+      <Filter>Quelldateien\game\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\config.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\console.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\demo.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\editor.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\graphics.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\input.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\kernel.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\keys.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\map.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\masterserver.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\message.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\server.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\serverbrowser.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\sound.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\storage.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\textrender.h">
+      <Filter>Quelldateien\engiene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\client.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\graphics.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\input.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\keynames.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\sound.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\client\srvbrowse.h">
+      <Filter>Quelldateien\engiene\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\server\register.h">
+      <Filter>Quelldateien\engiene\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\server\server.h">
+      <Filter>Quelldateien\engiene\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\compression.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\config.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\config_variables.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\console.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\datafile.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\demorec.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\engine.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\huffman.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\jobs.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\linereader.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\memheap.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\message.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\network.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\packer.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\protocol.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\ringbuffer.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\shared\snapshot.h">
+      <Filter>Quelldateien\engiene\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\detect.h">
+      <Filter>Quelldateien\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\math.h">
+      <Filter>Quelldateien\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\system.h">
+      <Filter>Quelldateien\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\vmath.h">
+      <Filter>Quelldateien\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\algorithm.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\allocator.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\array.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\base.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\range.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\sorted_array.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\base\tl\string.h">
+      <Filter>Quelldateien\base\tl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\mastersrv\mastersrv.h">
+      <Filter>Quelldateien\mastersrv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\versionsrv\versionsrv.h">
+      <Filter>Quelldateien\versionsrv</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

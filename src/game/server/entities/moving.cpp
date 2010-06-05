@@ -64,7 +64,7 @@ void CMoving::Tick()
 
 	if(m_HitTick)
 		m_HitTick--;
-	CCharacter *pChar = GameServer()->m_World.ClosestTeamCharacter(m_Pos, 3000, (CEntity*) pOwner->GetCharacter(), pOwner->m_CatchingTeam, pOwner->m_BaseCatchingTeam);
+	CCharacter *pChar = GameServer()->m_World.ClosestTeamCharacter(m_Pos, 4000, (CEntity*) pOwner->GetCharacter(), pOwner->m_CatchingTeam, pOwner->m_BaseCatchingTeam);
 	if(!pChar || distance(pChar->m_Pos, m_Pos) < 32) // If Player Hit
 	{
 		if(!pChar)
