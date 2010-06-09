@@ -552,8 +552,16 @@ int CServer::DelClientCallback(int ClientId, void *pUser)
 
 void CServer::SendMap(int ClientId)
 {
+	//get the name of the map without his path
+	char * pMapShortName = &g_Config.m_SvMap[0];
+	for(int i = 0; i < 127; i++)
+	{
+		if(g_Config.m_SvMap[i] == '/' || g_Config.m_SvMap[i] == '\\')
+			pMapShortName = &g_Config.m_SvMap[i+1];
+	}
+	
 	CMsgPacker Msg(NETMSG_MAP_CHANGE);
-	Msg.AddString(g_Config.m_SvMap, 0);
+	Msg.AddString(pMapShortName, 0);
 	Msg.AddInt(m_CurrentMapCrc);
 	SendMsgEx(&Msg, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientId, true);
 }
@@ -1070,6 +1078,7 @@ int CServer::Run()
 					m_CurrentGameTick = 0;
 					Kernel()->ReregisterInterface(GameServer());
 					GameServer()->OnInit();
+					UpdateServerInfo();
 				}
 				else
 				{
@@ -1201,10 +1210,20 @@ void CServer::ConBan(IConsole::IResult *pResult, void *pUser)
 void CServer::ConUnban(IConsole::IResult *pResult, void *pUser)
 {
 	NETADDR Addr;
+	CServer *pServer = (CServer *)pUser;
 	const char *pStr = pResult->GetString(0);
 	
 	if(net_addr_from_str(&Addr, pStr) == 0)
-		((CServer *)pUser)->BanRemove(Addr);
+		pServer->BanRemove(Addr);
+	else if(StrAllnum(pStr))
+	{
+		int BanIndex = str_toint(pStr);
+		CNetServer::CBanInfo Info;
+		if(BanIndex < 0 || !pServer->m_NetServer.BanGet(BanIndex, &Info))
+			dbg_msg("server", "invalid ban index");
+		else
+			pServer->BanRemove(Info.m_Addr);
+	}
 	else
 		dbg_msg("server", "invalid network address");
 }
