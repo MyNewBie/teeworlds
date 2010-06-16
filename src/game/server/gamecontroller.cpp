@@ -414,7 +414,7 @@ void IGameController::Tick()
 		g_Config.m_SvHammerParty != m_IsHammerParty ||
 		g_Config.m_SvGiveWeapons != m_GiveWeapons ||
 		g_Config.m_SvPickups != m_Pickups)
-		GameServer()->Console()->ExecuteLine("sv_map_reload 1");
+		GameServer()->Console()->ExecuteLine("reload");
 
 	// do warmup
 	if(m_Warmup)

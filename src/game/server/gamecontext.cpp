@@ -111,7 +111,7 @@ void CGameContext::CreateHammerHit(vec2 p)
 }
 
 
-void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage, bool PowerupDamage)
+void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage)
 {
 	// create the event
 	NETEVENT_EXPLOSION *ev = (NETEVENT_EXPLOSION *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(NETEVENT_EXPLOSION));
@@ -138,7 +138,7 @@ void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage,
 			l = 1-clamp((l-InnerRadius)/(Radius-InnerRadius), 0.0f, 1.0f);
 			float Dmg = 6 * l;
 			if((int)Dmg)
-				apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon, PowerupDamage);
+				apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
 		}
 	}
 }

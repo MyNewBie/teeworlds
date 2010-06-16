@@ -212,7 +212,7 @@ Messages = [
 	NetMessage("Sv_KillMsg", [
 		NetIntRange("m_Killer", 0, 'MAX_CLIENTS-1'),
 		NetIntRange("m_Victim", 0, 'MAX_CLIENTS-1'),
-		NetIntRange("m_Weapon", -3, 'NUM_WEAPONS-1'),
+		NetIntRange("m_Weapon", -5, 'NUM_WEAPONS-1'),
 		NetIntAny("m_ModeSpecial"),
 	]),
 

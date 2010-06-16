@@ -39,14 +39,14 @@ void CMoving::Tick()
 		pOwner->m_NoBroadcast = m_PowerupTime;
 	if(!pOwner || m_PowerupTime <= 0)
 	{
-		GameServer()->CreateExplosion(m_Pos, -1, WEAPON_GRENADE, true);
+		GameServer()->CreateExplosion(m_Pos, -1, WEAPON_POWERUP, true);
 		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
 		if(pOwner)
 			pOwner->m_NoBroadcast = 0;
 		GameWorld()->DestroyEntity(this);
 		return;
 	}
-	if(m_PowerupTime)
+	if(m_PowerupTime/* && !pOwner->m_NoBroadcast*/) // Broadcast overlap with catching messages
 	{
 		int ClientID = m_Owner;
 		int left = m_PowerupTime/Server()->TickSpeed();
@@ -72,7 +72,7 @@ void CMoving::Tick()
 		if(!m_HitTick)
 		{
 			m_Hits++;
-			GameServer()->CreateExplosion(m_Pos, pOwner->GetCID(), WEAPON_GAME, false, true);
+			GameServer()->CreateExplosion(m_Pos, pOwner->GetCID(), WEAPON_POWERUP, false);
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
 			m_HitTick = Server()->TickSpeed()/2*g_Config.m_SvHitDelay;
 			if(m_Hits >= g_Config.m_SvMaxHits)

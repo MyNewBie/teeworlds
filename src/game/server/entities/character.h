@@ -9,6 +9,8 @@
 
 enum
 {
+	WEAPON_HOOK = -5,
+	WEAPON_POWERUP = -4,
 	WEAPON_GAME = -3, // team switching etc
 	WEAPON_SELF = -2, // console kill command
 	WEAPON_WORLD = -1, // death tiles etc
@@ -43,10 +45,10 @@ public:
 	void OnDirectInput(CNetObj_PlayerInput *pNewInput);
 	void FireWeapon();
 
-	void Die(int Killer, int Weapon, bool PowerupDamage = false);
+	void Die(int Killer, int Weapon);
 	void CreateDieExplosion(bool refill);
 	void ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam);
-	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool PowerupDamage = false);	
+	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon);	
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
 	bool Remove();

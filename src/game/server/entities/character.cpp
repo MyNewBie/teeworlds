@@ -640,7 +640,12 @@ void CCharacter::TickDefered()
 	
 	if(Events&COREEVENT_GROUND_JUMP) GameServer()->CreateSound(m_Pos, SOUND_PLAYER_JUMP, Mask);
 	
-	if(Events&COREEVENT_HOOK_ATTACH_PLAYER) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_PLAYER, CmaskAll());
+	if(Events&COREEVENT_HOOK_ATTACH_PLAYER)
+	{
+		if(g_Config.m_SvHookDamage)
+			GameServer()->CreateExplosion(m_Core.m_HookPos, m_pPlayer->GetCID(), WEAPON_HOOK, false);
+		GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_PLAYER, CmaskAll());
+	}
 	if(Events&COREEVENT_HOOK_ATTACH_GROUND) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_GROUND, Mask);
 	if(Events&COREEVENT_HOOK_HIT_NOHOOK) GameServer()->CreateSound(m_Pos, SOUND_HOOK_NOATTACH, Mask);
 
@@ -686,7 +691,7 @@ bool CCharacter::IncreaseArmor(int Amount)
 	return true;
 }
 
-void CCharacter::Die(int Killer, int Weapon, bool PowerupDamage)
+void CCharacter::Die(int Killer, int Weapon)
 {
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
@@ -700,12 +705,20 @@ void CCharacter::Die(int Killer, int Weapon, bool PowerupDamage)
 	Msg.m_Victim = m_pPlayer->GetCID();
 	Msg.m_Weapon = Weapon;
 	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(GameServer()->m_apPlayers[i])
+		{
+			if(!GameServer()->m_apPlayers[i]->m_IsUsingCatchClient && (Weapon == WEAPON_POWERUP || Weapon == WEAPON_HOOK))
+				Msg.m_Weapon = WEAPON_GAME;
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
+		}
+	}
 
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 	
-	if((Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD) && !PowerupDamage)
+	if((Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
 	{
 		// this is for auto respawn after 3 secs
 		m_pPlayer->m_DieTick = Server()->Tick();
@@ -802,7 +815,7 @@ void CCharacter::ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam)
 	
 }
 
-bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool PowerupDamage)
+bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
 	m_Core.m_Vel += Force;
 	
@@ -810,11 +823,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool Powe
 		return false;
 	if(m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam)
 		return false;
-	if(Weapon == WEAPON_GAME && !PowerupDamage)
+	if(Weapon == WEAPON_GAME)
 		return false;
 	if(g_Config.m_SvInstagib)
 	{
-		Die(From, Weapon, PowerupDamage);
+		Die(From, Weapon);
 		return true;
 	}
 
@@ -874,7 +887,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, bool Powe
 	// check for death
 	if(m_Health <= 0)
 	{
-		Die(From, Weapon, PowerupDamage);
+		Die(From, Weapon);
 		
 		// set attacker's face to happy (taunt!)
 		if (From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From])

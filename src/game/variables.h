@@ -83,6 +83,7 @@ MACRO_CONFIG_INT(SvGameOverTime, sv_game_over_time, 2, 0, 10, CFGFLAG_SERVER, "T
 MACRO_CONFIG_INT(SvScoreIncrease, sv_score_increase, 5, 0, 20, CFGFLAG_SERVER, "Increase about this the winner after a round")
 MACRO_CONFIG_INT(SvDamagePoint, sv_damage_point, 20, 0, 80, CFGFLAG_SERVER, "")
 MACRO_CONFIG_INT(SvHideOuts, sv_hide_outs, 1, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvHookDamage, sv_hook_damage, 0, 0, 1, CFGFLAG_SERVER, "")
 
 //  -Powerup
 MACRO_CONFIG_INT(SvShowWay, sv_show_way, 0, 0, 1, CFGFLAG_SERVER, "")
