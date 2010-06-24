@@ -74,14 +74,19 @@ void CMoving::Tick()
 	{
 		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
 		{
-			if(distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos, m_Pos) < 48)
+			if(distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos, m_Pos) < 48 &&
+				distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos) > 52) 
 			{
+				// NEED FIXES (!)
 				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos = m_Pos;
 				if(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState != HOOK_GRABBED)
 				{
 					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState = HOOK_GRABBED;
+					//GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = false;
+					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
 				}
-				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
+				//else
+				//	GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
 
 				float d = distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos);
 				vec2 Dir = normalize(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos - m_Pos);
@@ -89,8 +94,8 @@ void CMoving::Tick()
 				float DragSpeed = CWorldCore().m_Tuning.m_HookDragSpeed;
 					
 				// add force to the hooked player
-				AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*2.5f);
-				AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*2.5f);
+				AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*0.5f);
+				AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*0.5f);
 
 				/*// add a little bit force to the guy who has the grip
 				m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
