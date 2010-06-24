@@ -63,6 +63,9 @@ public:
 	
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
+
+	// the player core for the physics	
+	CCharacterCore m_Core;
 	
 private:
 	// player controlling this character
@@ -123,9 +126,6 @@ private:
 	} m_Ninja;
 
 	int m_PlayerState;// if the client is chatting, accessing a menu or so
-
-	// the player core for the physics	
-	CCharacterCore m_Core;
 	
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

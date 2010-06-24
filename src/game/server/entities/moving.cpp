@@ -29,6 +29,28 @@ void CMoving::Reset()
 		GameServer()->m_apPlayers[m_Owner]->m_NoBroadcast = 0;
 }
 
+float CMoving::SaturatedAdd(float Min, float Max, float Current, float Modifier)
+{
+	if(Modifier < 0)
+	{
+		if(Current < Min)
+			return Current;
+		Current += Modifier;
+		if(Current < Min)
+			Current = Min;
+		return Current;
+	}
+	else
+	{
+		if(Current > Max)
+			return Current;
+		Current += Modifier;
+		if(Current > Max)
+			Current = Max;
+		return Current;
+	}
+}
+
 void CMoving::Tick()
 {
 	m_PowerupTime--;
@@ -46,6 +68,37 @@ void CMoving::Tick()
 		GameWorld()->DestroyEntity(this);
 		return;
 	}
+
+	vec2 AddVel = vec2(0, 0);
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
+		{
+			if(distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos, m_Pos) < 48)
+			{
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos = m_Pos;
+				if(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState != HOOK_GRABBED)
+				{
+					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState = HOOK_GRABBED;
+				}
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
+
+				float d = distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos);
+				vec2 Dir = normalize(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos - m_Pos);
+				float Accel = CWorldCore().m_Tuning.m_HookDragAccel * (d/CWorldCore().m_Tuning.m_HookLength);
+				float DragSpeed = CWorldCore().m_Tuning.m_HookDragSpeed;
+					
+				// add force to the hooked player
+				AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*2.5f);
+				AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*2.5f);
+
+				/*// add a little bit force to the guy who has the grip
+				m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
+				m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, -Accel*Dir.y*0.25f);*/
+			}
+		}
+	}
+
 	if(m_PowerupTime/* && !pOwner->m_NoBroadcast*/) // Broadcast overlap with catching messages
 	{
 		int ClientID = m_Owner;
@@ -68,7 +121,11 @@ void CMoving::Tick()
 	if(!pChar || distance(pChar->m_Pos, m_Pos) < 32) // If Player Hit
 	{
 		if(!pChar)
+		{
+			//if(pOwner->GetCharacter()->m_Core.m_HookState == HOOK_GRABBED)
+				GameServer()->Collision()->MoveBox(&m_Pos, &AddVel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
 			return;
+		}
 		if(!m_HitTick)
 		{
 			m_Hits++;
@@ -98,7 +155,7 @@ void CMoving::Tick()
 		const int Speed = g_Config.m_SvPowerupSpeed;
 		m_LastPos = m_Pos;
 		
-		vec2 Vel = Direction * Speed;
+		vec2 Vel = Direction * Speed + AddVel;
 
 		GameServer()->Collision()->MoveBox(&m_Pos, &Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
 
@@ -128,7 +185,7 @@ void CMoving::Tick()
 		return;
 	// get the direction along the way
 	vec2 Direction;
-	for(int  i = 0; i < m_PathSize &&  i < 10; i++)
+	for(int i = 0; i < m_PathSize &&  i < 10; i++)
 	{
 		if(GameServer()->Collision()->IntersectLine2(m_lPath[i], m_Pos, 0x0, 0x0)) // check for wall
 		{
@@ -152,7 +209,7 @@ void CMoving::Tick()
 	const int Speed = g_Config.m_SvPowerupSpeed;
 	m_LastPos = m_Pos;
 	
-	vec2 Vel = Direction * Speed;
+	vec2 Vel = Direction * Speed + AddVel;
 
 	GameServer()->Collision()->MoveBox(&m_Pos, &Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
 }

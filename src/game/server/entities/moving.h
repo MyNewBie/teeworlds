@@ -24,8 +24,8 @@ private:
 	int m_PowerupTime;
 	int m_Hits;
 	int m_HitTick;
+	float SaturatedAdd(float Min, float Max, float Current, float Modifier);
 	vec2 m_LastPos;
 	array<vec2> m_lPath;
 };
-
 #endif
