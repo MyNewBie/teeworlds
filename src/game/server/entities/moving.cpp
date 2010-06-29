@@ -178,13 +178,10 @@ void CMoving::Tick()
 					// add force to the heart
 					m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, Accel*Dir.x*1.5f);
 					m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, Accel*Dir.y*1.5f);
-					
-					//AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*0.5f);
-					//AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*0.5f);
 	
-					/*// add a little bit force to the guy who has the grip
-					m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
-					m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, -Accel*Dir.y*0.25f);*/
+					// add a little bit force to the guy who has the grip
+					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x -= SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*1.25f);
+					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y -= SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, -Accel*Dir.y*1.25f);
 				}
 			}
 			else
