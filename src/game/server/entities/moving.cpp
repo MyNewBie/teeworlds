@@ -18,6 +18,7 @@ CMoving::CMoving(CGameWorld *pGameWorld, int ClientID, vec2 Pos, int Type, int S
 	m_Owner = ClientID;
 	m_Hits = 0;
 	m_HitTick = 0;
+	m_Vel = vec2(0, 0);
 	
 	GameWorld()->InsertEntity(this);
 }
@@ -55,8 +56,8 @@ void CMoving::Tick()
 {
 	m_PowerupTime--;
 
+	// effekte und wann es zerstört wird, zuordnung und so
 	CPlayer *pOwner = GameServer()->m_apPlayers[m_Owner];
-
 	if(pOwner)
 		pOwner->m_NoBroadcast = m_PowerupTime;
 	if(!pOwner || m_PowerupTime <= 0)
@@ -69,42 +70,15 @@ void CMoving::Tick()
 		return;
 	}
 
-	vec2 AddVel = vec2(0, 0);
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	// Effects
+	if(Server()->Tick()%(Server()->TickSpeed()/10) == 0 && g_Config.m_SvPowerupEffect)
 	{
-		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
-		{
-			if(distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos, m_Pos) < 48 &&
-				distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos) > 52) 
-			{
-				// NEED FIXES (!)
-				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos = m_Pos;
-				if(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState != HOOK_GRABBED)
-				{
-					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState = HOOK_GRABBED;
-					//GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = false;
-					GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
-				}
-				//else
-				//	GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
-
-				float d = distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos);
-				vec2 Dir = normalize(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos - m_Pos);
-				float Accel = CWorldCore().m_Tuning.m_HookDragAccel * (d/CWorldCore().m_Tuning.m_HookLength);
-				float DragSpeed = CWorldCore().m_Tuning.m_HookDragSpeed;
-					
-				// add force to the hooked player
-				AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*0.5f);
-				AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*0.5f);
-
-				/*// add a little bit force to the guy who has the grip
-				m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
-				m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, -Accel*Dir.y*0.25f);*/
-			}
-		}
+		GameServer()->CreateDeath(m_Pos, -1);
+		if(g_Config.m_SvPowerupSound)
+			GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
 	}
 
-	if(m_PowerupTime/* && !pOwner->m_NoBroadcast*/) // Broadcast overlap with catching messages
+	if(m_PowerupTime) // Broadcast overlap with catching messages // Need fixes
 	{
 		int ClientID = m_Owner;
 		int left = m_PowerupTime/Server()->TickSpeed();
@@ -122,51 +96,28 @@ void CMoving::Tick()
 
 	if(m_HitTick)
 		m_HitTick--;
-	CCharacter *pChar = GameServer()->m_World.ClosestTeamCharacter(m_Pos, 4000, (CEntity*) pOwner->GetCharacter(), pOwner->m_CatchingTeam, pOwner->m_BaseCatchingTeam);
-	if(!pChar || distance(pChar->m_Pos, m_Pos) < 32) // If Player Hit
-	{
-		if(!pChar)
-		{
-			//if(pOwner->GetCharacter()->m_Core.m_HookState == HOOK_GRABBED)
-				GameServer()->Collision()->MoveBox(&m_Pos, &AddVel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
-			return;
-		}
-		if(!m_HitTick)
-		{
-			m_Hits++;
-			GameServer()->CreateExplosion(m_Pos, pOwner->GetCID(), WEAPON_POWERUP, false);
-			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
-			m_HitTick = Server()->TickSpeed()/2*g_Config.m_SvHitDelay;
-			if(m_Hits >= g_Config.m_SvMaxHits)
-				GameWorld()->DestroyEntity(this);
-		}
-		return;
-	}
 
-	if(!GameServer()->Collision()->IntersectLine2(pChar->m_Pos, m_Pos, 0x0, 0x0))
+	// wegfinden bzw setzen des ziels
+	CCharacter *pChar = GameServer()->m_World.ClosestTeamCharacter(m_Pos, 4000, (CEntity*) pOwner->GetCharacter(), pOwner->m_CatchingTeam, pOwner->m_BaseCatchingTeam);
+
+	vec2 Direction;
+	const int Speed = g_Config.m_SvPowerupSpeed;
+	if(pChar && !GameServer()->Collision()->IntersectLine2(pChar->m_Pos, m_Pos, 0x0, 0x0))
 	{
 		// Direction
-		vec2 Direction = normalize(pChar->m_Pos-m_Pos);
-
-		// Effects
-		if(Server()->Tick()%(Server()->TickSpeed()/10) == 0 && g_Config.m_SvPowerupEffect)
-		{
-			GameServer()->CreateDeath(m_Pos, -1);
-			if(g_Config.m_SvPowerupSound)
-				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
-		}
+		Direction = normalize(pChar->m_Pos-m_Pos);
 	
 		// move the heart
 		const int Speed = g_Config.m_SvPowerupSpeed;
 		m_LastPos = m_Pos;
 		
-		vec2 Vel = Direction * Speed + AddVel;
+		vec2 m_Vel = Direction * Speed;
 
-		GameServer()->Collision()->MoveBox(&m_Pos, &Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
+		GameServer()->Collision()->MoveBox(&m_Pos, &m_Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
 
 		return;
 	}
-	else if(Server()->Tick()-m_WayTick >= (Server()->TickSpeed()/2) || m_LastPos == m_Pos)
+	else if(pChar && (Server()->Tick()-m_WayTick >= (Server()->TickSpeed()/2) || m_LastPos == m_Pos))
 	{
 		m_WayTick = Server()->Tick();
 
@@ -186,10 +137,8 @@ void CMoving::Tick()
 				new CLaser(&GameServer()->m_World, m_lPath[i], vec2(0,0), 10, -1);
 		}
 	}
-	if(m_PathSize < 1)
-		return;
+
 	// get the direction along the way
-	vec2 Direction;
 	for(int i = 0; i < m_PathSize &&  i < 10; i++)
 	{
 		if(GameServer()->Collision()->IntersectLine2(m_lPath[i], m_Pos, 0x0, 0x0)) // check for wall
@@ -202,21 +151,74 @@ void CMoving::Tick()
 			Direction = normalize(m_lPath[i]-m_Pos);
 		}
 	}
-	// Effects
-	if(Server()->Tick()%(Server()->TickSpeed()/10) == 0 && g_Config.m_SvPowerupEffect)
+
+
+	// äußere einflüsse
+	m_Vel = Direction * Speed;
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		GameServer()->CreateDeath(m_Pos, -1);
-		if(g_Config.m_SvPowerupSound)
-			GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetCharacter())
+		{
+			if(distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos, m_Pos) < 48 &&
+				distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos) > 52) 
+			{
+				// NEED FIXES (!)
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookPos = m_Pos;
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookState = HOOK_GRABBED;
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = true;
+
+				float d = distance(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos, m_Pos);
+					
+				if(d > CCharacter::ms_PhysSize*1.50f)
+				{
+					vec2 Dir = normalize(GameServer()->m_apPlayers[i]->GetCharacter()->m_Pos - m_Pos);
+					float Accel = CWorldCore().m_Tuning.m_HookDragAccel * (d/CWorldCore().m_Tuning.m_HookLength);
+					float DragSpeed = CWorldCore().m_Tuning.m_HookDragSpeed;
+				
+					// add force to the heart
+					m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, Accel*Dir.x*1.5f);
+					m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, Accel*Dir.y*1.5f);
+					
+					//AddVel.x += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.x, Accel*Dir.x*0.5f);
+					//AddVel.y += SaturatedAdd(-DragSpeed, DragSpeed, GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_Vel.y, Accel*Dir.y*0.5f);
+	
+					/*// add a little bit force to the guy who has the grip
+					m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
+					m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.y, -Accel*Dir.y*0.25f);*/
+				}
+			}
+			else
+				GameServer()->m_apPlayers[i]->GetCharacter()->m_Core.m_HookedPowerup = false;
+		}
 	}
+
+	/*if(!pChar || distance(pChar->m_Pos, m_Pos) < 32) // If Player Hit
+	{
+		if(!pChar)
+		{
+			//if(pOwner->GetCharacter()->m_Core.m_HookState == HOOK_GRABBED)
+				GameServer()->Collision()->MoveBox(&m_Pos, &AddVel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
+			return;
+		}
+		if(!m_HitTick)
+		{
+			m_Hits++;
+			GameServer()->CreateExplosion(m_Pos, pOwner->GetCID(), WEAPON_POWERUP, false);
+			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+			m_HitTick = Server()->TickSpeed()/2*g_Config.m_SvHitDelay;
+			if(m_Hits >= g_Config.m_SvMaxHits)
+				GameWorld()->DestroyEntity(this);
+		}
+		return;
+	}*/
+
+	//if(m_PathSize < 1)
+		//return;
 	
 	// move the heart
-	const int Speed = g_Config.m_SvPowerupSpeed;
 	m_LastPos = m_Pos;
-	
-	vec2 Vel = Direction * Speed + AddVel;
 
-	GameServer()->Collision()->MoveBox(&m_Pos, &Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
+	GameServer()->Collision()->MoveBox(&m_Pos, &m_Vel, vec2(PickupPhysSize, PickupPhysSize), 0.05f);
 }
 
 void CMoving::Snap(int SnappingClient)
