@@ -303,6 +303,7 @@ void IGameController::PostReset()
 				WasRoundRestart = true;
 			}
 			GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();
+			GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 		}
 	}
 	if(WasRoundRestart)
@@ -581,7 +582,7 @@ int IGameController::GetAutoTeam(int Notthisid)
 
 bool IGameController::CanJoinTeam(int Team, int Notthisid)
 {
-	if(Team == -1)
+	if(Team == -1 || (GameServer()->m_apPlayers[Notthisid] && GameServer()->m_apPlayers[Notthisid]->GetTeam() != -1))
 		return true;
 
 	int aNumplayers[2] = {0,0};
