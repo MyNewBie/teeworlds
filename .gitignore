@@ -1,5 +1,4 @@
-
-/client_release.bat
+.bamsrc/game/generatedobjsdatasrc/*.pycconfig.luateeworlds_dteeworlds_srv_d/client_release.bat
 /config_directory.bat
 /server_debug.bat
 /server_release.bat
