@@ -1,4 +1,12 @@
-.bamsrc/game/generatedobjsdatasrc/*.pycconfig.luateeworlds_dteeworlds_srv_d/client_release.bat
+.bam
+/src/game/generated
+/objs
+/datasrc/*
+.pycconfig
+.lua
+/teeworlds_catching_d
+/teeworlds_catching_srv_d
+/client_release.bat
 /config_directory.bat
 /server_debug.bat
 /server_release.bat
