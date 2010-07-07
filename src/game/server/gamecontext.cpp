@@ -640,6 +640,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 					{
 						p->m_IsJoined = false;
 						p->m_BaseCatchingTeam = -1;
+						p->m_CatchingTeam = -1;
 					}
 					else
 					{
@@ -899,6 +900,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				if(p->GetTeam() == -1 || pMsg->m_Team == -1)
 					m_VoteUpdate = true;
 				p->SetTeam(pMsg->m_Team);
+				if(pMsg->m_Team == -1)
+					p->m_IsJoined = false;
 				(void)m_pController->CheckTeamBalance();
 			}
 			else
