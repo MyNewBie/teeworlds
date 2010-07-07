@@ -97,6 +97,7 @@
     <ClCompile Include="..\..\src\game\server\gamecontext.cpp" />
     <ClCompile Include="..\..\src\game\server\gamecontroller.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\ctf.cpp" />
+    <ClCompile Include="..\..\src\game\server\gamemodes\catching.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\dm.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\mod.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\tdm.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="..\..\src\game\server\gamecontext.h" />
     <ClInclude Include="..\..\src\game\server\gamecontroller.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\ctf.h" />
+    <ClInclude Include="..\..\src\game\server\gamemodes\catching.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\dm.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\mod.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\tdm.h" />

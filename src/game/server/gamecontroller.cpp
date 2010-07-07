@@ -127,21 +127,21 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		m_aaSpawnPoints[1][m_aNumSpawnPoints[1]++] = Pos;
 	else if(Index == ENTITY_SPAWN_BLUE)
 		m_aaSpawnPoints[2][m_aNumSpawnPoints[2]++] = Pos;
-	else if(Index == ENTITY_ARMOR_1 && g_Config.m_SvPickups)
+	else if(Index == ENTITY_ARMOR_1 && ((IsCatching() && g_Config.m_SvPickups) || !IsCatching()))
 		Type = POWERUP_ARMOR;
 	else if(Index == ENTITY_HEALTH_1 && g_Config.m_SvPickups)
 		Type = POWERUP_HEALTH;
-	else if(Index == ENTITY_WEAPON_SHOTGUN && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons)
+	else if(Index == ENTITY_WEAPON_SHOTGUN && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_SHOTGUN;
 	}
-	else if(Index == ENTITY_WEAPON_GRENADE && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons)
+	else if(Index == ENTITY_WEAPON_GRENADE && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_GRENADE;
 	}
-	else if(Index == ENTITY_WEAPON_RIFLE && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons)
+	else if(Index == ENTITY_WEAPON_RIFLE && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_RIFLE;
@@ -152,7 +152,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		SubType = WEAPON_NINJA;
 	}
 	
-	if(Type != -1 && !g_Config.m_SvInstagib || Type == POWERUP_NINJA)
+	if(Type != -1 && ((IsCatching() && !g_Config.m_SvInstagib || Type == POWERUP_NINJA) || !IsCatching()))
 	{
 		CPickup *pPickup = new CPickup(&GameServer()->m_World, Type, SubType);
 		pPickup->m_Pos = Pos;
@@ -287,26 +287,31 @@ void IGameController::CycleMap()
 
 void IGameController::PostReset()
 {
-	bool WasRoundRestart = false;
+	bool IsRoundRestart = false;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
 			GameServer()->m_apPlayers[i]->Respawn();
-			if(GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1 && GameServer()->m_apPlayers[i]->m_WillJoin && GameServer()->m_apPlayers[i]->GetTeam() == -1)
-				GameServer()->m_apPlayers[i]->SetTeam(0);
-			GameServer()->m_apPlayers[i]->m_CatchingTeam = GameServer()->m_apPlayers[i]->m_BaseCatchingTeam;
-			OnPlayerInfoChange(GameServer()->m_apPlayers[i]);
-			if(m_RoundRestart)
+			if(IsCatching())
 			{
-				GameServer()->m_apPlayers[i]->m_Score = 0;
-				WasRoundRestart = true;
+				if(GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1 && GameServer()->m_apPlayers[i]->m_WillJoin && GameServer()->m_apPlayers[i]->GetTeam() == -1)
+					GameServer()->m_apPlayers[i]->SetTeam(0);
+				GameServer()->m_apPlayers[i]->m_CatchingTeam = GameServer()->m_apPlayers[i]->m_BaseCatchingTeam;
+				OnPlayerInfoChange(GameServer()->m_apPlayers[i]);
+				if(m_RoundRestart)
+				{
+					GameServer()->m_apPlayers[i]->m_Score = 0;
+					IsRoundRestart = true;
+				}
+				GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();
+				GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 			}
-			GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();
-			GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+			else
+				GameServer()->m_apPlayers[i]->m_Score = 0;
 		}
 	}
-	if(WasRoundRestart)
+	if(IsRoundRestart)
 		m_RoundRestart = false;
 }
 	
@@ -348,9 +353,9 @@ void IGameController::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 	
 	// give default weapons
-	if(g_Config.m_SvHammerParty)
+	if(IsCatching() && g_Config.m_SvHammerParty)
 		pChr->GiveWeapon(WEAPON_HAMMER, -1);
-	else if(g_Config.m_SvGiveWeapons)
+	else if(IsCatching() && g_Config.m_SvGiveWeapons)
 	{
 		pChr->GiveWeapon(WEAPON_HAMMER, -1);
 		pChr->GiveWeapon(WEAPON_RIFLE, -1);
@@ -358,7 +363,7 @@ void IGameController::OnCharacterSpawn(class CCharacter *pChr)
 		pChr->GiveWeapon(WEAPON_SHOTGUN, -1);
 		pChr->GiveWeapon(WEAPON_GUN, 10);
 	}
-	else if(g_Config.m_SvInstagib)
+	else if(IsCatching() && g_Config.m_SvInstagib)
 		pChr->GiveWeapon(WEAPON_RIFLE, -1);
 	else
 	{
@@ -411,10 +416,11 @@ bool IGameController::CanBeMovedOnBalance(int Cid)
 void IGameController::Tick()
 {
 	// Reload Map
-	if(g_Config.m_SvInstagib != m_IsInstagib ||
+	if(IsCatching() &&
+		(g_Config.m_SvInstagib != m_IsInstagib ||
 		g_Config.m_SvHammerParty != m_IsHammerParty ||
 		g_Config.m_SvGiveWeapons != m_GiveWeapons ||
-		g_Config.m_SvPickups != m_Pickups)
+		g_Config.m_SvPickups != m_Pickups))
 		GameServer()->Console()->ExecuteLine("reload");
 
 	// do warmup
@@ -428,7 +434,7 @@ void IGameController::Tick()
 	if(m_GameOverTick != -1)
 	{
 		// game over.. wait for restart
-		if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvGameOverTime)
+		if(IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvGameOverTime || !IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10)
 		{
 			CycleMap();
 			StartRound();
@@ -799,4 +805,9 @@ int IGameController::ClampTeam(int Team)
 	if(IsTeamplay())
 		return Team&1;
 	return  0;
+}
+
+bool IGameController::IsCatching() const
+{
+	return false;
 }

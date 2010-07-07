@@ -7,6 +7,5 @@ class CGameControllerDM : public IGameController
 public:
 	CGameControllerDM(class CGameContext *pGameServer);
 	virtual void Tick();
-	virtual void OnPlayerInfoChange(class CPlayer *pPlayer);
 };
 #endif

@@ -95,9 +95,6 @@
     <ClCompile Include="..\..\src\game\server\gamemodes\ctf.cpp">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\server\gamemodes\dm.cpp">
-      <Filter>Quelldateien\game\server\gamemodes</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\server\gamemodes\mod.cpp">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClCompile>
@@ -359,6 +356,12 @@
     <ClCompile Include="..\..\src\versionsrv\versionsrv.cpp">
       <Filter>Quelldateien\versionsrv</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\catching.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\dm.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\collision.h">
@@ -410,9 +413,6 @@
       <Filter>Quelldateien\game\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\server\gamemodes\ctf.h">
-      <Filter>Quelldateien\game\server\gamemodes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\server\gamemodes\dm.h">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\server\gamemodes\mod.h">
@@ -699,6 +699,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\versionsrv\versionsrv.h">
       <Filter>Quelldateien\versionsrv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\catching.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\dm.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

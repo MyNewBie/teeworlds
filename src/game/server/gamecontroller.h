@@ -146,6 +146,7 @@ public:
 	bool CheckTeamBalance();
 	bool CanChangeTeam(CPlayer *pPplayer, int JoinTeam);
 	int ClampTeam(int Team);
+	virtual bool IsCatching() const;
 
 	virtual void PostReset();
 	class CPathfind m_Path;

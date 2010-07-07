@@ -57,17 +57,26 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_EmoteStop = -1;
 	m_LastAction = -1;
 
-	if(g_Config.m_SvHammerParty)
+	if(GameServer()->m_pController->IsCatching())
 	{
-		m_ActiveWeapon = WEAPON_HAMMER;
-		m_LastWeapon = WEAPON_HAMMER;
-		m_QueuedWeapon = -1;
-	}
-	else if(g_Config.m_SvInstagib)
-	{
-		m_ActiveWeapon = WEAPON_RIFLE;
-		m_LastWeapon = WEAPON_RIFLE;
-		m_QueuedWeapon = -1;
+		if(g_Config.m_SvHammerParty)
+		{
+			m_ActiveWeapon = WEAPON_HAMMER;
+			m_LastWeapon = WEAPON_HAMMER;
+			m_QueuedWeapon = -1;
+		}
+		else if(g_Config.m_SvInstagib)
+		{
+			m_ActiveWeapon = WEAPON_RIFLE;
+			m_LastWeapon = WEAPON_RIFLE;
+			m_QueuedWeapon = -1;
+		}
+		else
+		{
+			m_ActiveWeapon = WEAPON_GUN;
+			m_LastWeapon = WEAPON_HAMMER;
+			m_QueuedWeapon = -1;
+		}
 	}
 	else
 	{
@@ -81,7 +90,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ShieldID = Server()->SnapNewID();
 	m_Visible = true;
 
-	if(m_pPlayer->m_CatchingTeam == -1)
+	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == -1)
 	{
 		m_pPlayer->m_CatchingTeam = m_pPlayer->m_BaseCatchingTeam;
 		GameServer()->m_pController->OnPlayerInfoChange(m_pPlayer);
@@ -509,8 +518,17 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 
 void CCharacter::GiveNinja()
 {
+	if(GameServer()->m_pController->IsCatching())
+		CMoving *pMoving = new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
+	else
+	{
+		m_Ninja.m_ActivationTick = Server()->Tick();
+		m_aWeapons[WEAPON_NINJA].m_Got = true;
+		m_aWeapons[WEAPON_NINJA].m_Ammo = -1;
+		m_LastWeapon = m_ActiveWeapon;
+		m_ActiveWeapon = WEAPON_NINJA;
+	}
 	GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
-	CMoving *pMoving = new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
 }
 
 void CCharacter::SetEmote(int Emote, int Tick)
@@ -562,12 +580,12 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 	
-	// handle death-tiles
-	if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
+	// handle tiles
+	if(GameServer()->m_pController->IsCatching() && !m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
 	{
 		m_Visible = true;
 	}
-	if(GameServer()->Collision()->IsHideTile(m_Pos))
+	if(GameServer()->m_pController->IsCatching() && GameServer()->Collision()->IsHideTile(m_Pos))
 	{
 		m_Visible = false;
 	}
@@ -718,7 +736,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 	
-	if((Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
+	if(!GameServer()->m_pController->IsCatching() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
 	{
 		// this is for auto respawn after 3 secs
 		m_pPlayer->m_DieTick = Server()->Tick();
@@ -819,20 +837,20 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
 	m_Core.m_Vel += Force;
 	
-	if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
+	if(!GameServer()->m_pController->IsCatching() && GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
-	if(m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam)
+	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam)
 		return false;
-	if(Weapon == WEAPON_GAME)
+	if(GameServer()->m_pController->IsCatching() && Weapon == WEAPON_GAME)
 		return false;
-	if(g_Config.m_SvInstagib)
+	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvInstagib)
 	{
 		Die(From, Weapon);
 		return true;
 	}
 
 	// Add Damage
-	if(g_Config.m_SvDamagePoint)
+	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvDamagePoint)
 		GameServer()->m_apPlayers[From]->m_DoesDamage += Dmg;
 
 	// m_pPlayer only inflicts half damage on self
@@ -917,12 +935,13 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 void CCharacter::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient) ||
+		GameServer()->m_pController->IsCatching() &&
 		!GameServer()->m_World.m_Paused &&
 		g_Config.m_SvHideOuts &&
 		(GameServer()->m_apPlayers[SnappingClient]->GetTeam() == 0 &&
 		GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible))
 		return;
-	if(g_Config.m_SvHideOuts &&
+	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts &&
 		(SnappingClient == m_pPlayer->GetCID() &&
 		!m_Visible ||
 		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
