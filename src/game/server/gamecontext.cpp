@@ -517,7 +517,7 @@ void CGameContext::OnClientConnected(int ClientId)
 	// Check which team the player should be on
 	int StartTeam = g_Config.m_SvTournamentMode ? -1 : m_pController->GetAutoTeam(ClientId); // const int
 	if(m_pController->IsCatching())
-		StartTeam = -1; // Should be change with the new join system
+		StartTeam = 0;
 
 	m_apPlayers[ClientId] = new(ClientId) CPlayer(this, ClientId, StartTeam);
 	//players[client_id].init(client_id);
@@ -638,11 +638,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				{
 					if(Color == -1)
 					{
-						p->SetTeam(-1);
+						p->m_IsJoined = false;
 						p->m_BaseCatchingTeam = -1;
-						SendChatTarget(ClientId, "----------------------------------------");
-						SendChatTarget(ClientId, "Autojoin: OFF");
-						SendChatTarget(ClientId, "----------------------------------------");
 					}
 					else
 					{
@@ -661,7 +658,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_BaseCatchingTeam != -1)
 							UsedColor[m_apPlayers[i]->m_BaseCatchingTeam] = 1;
 
-						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1)
+						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_IsJoined)
 							NumPlayers++;
 					}
 
@@ -672,11 +669,12 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 							p->m_BaseCatchingTeam = Color;
 
 							if(NumPlayers < g_Config.m_SvCheatProtection)
-								p->SetTeam(0);
+							{
+								p->m_IsJoined = true;
+								p->GetCharacter()->CreateDieExplosion(false);
+							}
 							else
-							{			
-								SendChatTarget(ClientId, "----------------------------------------");
-								SendChatTarget(ClientId, "Autojoin: ON");
+							{
 								SendChatTarget(ClientId, "----------------------------------------");
 								SendChatTarget(ClientId, "Please wait for the end of this Round");
 								SendChatTarget(ClientId, "----------------------------------------");
@@ -697,11 +695,12 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 							p->m_BaseCatchingTeam = Color;
 
 							if(NumPlayers < g_Config.m_SvCheatProtection)
-								p->SetTeam(0);
+							{
+								p->m_IsJoined = true;
+								p->GetCharacter()->CreateDieExplosion(false);
+							}
 							else
-							{			
-								SendChatTarget(ClientId, "----------------------------------------");
-								SendChatTarget(ClientId, "Autojoin: ON");
+							{
 								SendChatTarget(ClientId, "----------------------------------------");
 								SendChatTarget(ClientId, "Please wait for the end of this Round");
 								SendChatTarget(ClientId, "----------------------------------------");
@@ -891,45 +890,6 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 		if(p->GetTeam() == pMsg->m_Team || (g_Config.m_SvSpamprotection && p->m_Last_SetTeam && p->m_Last_SetTeam+Server()->TickSpeed()*3 > Server()->Tick()))
 			return;
 
-		if(p->m_BaseCatchingTeam == -1)
-		{
-			SendChatTarget(ClientId, "Please select a color");
-			SendChatTarget(ClientId, "Use \"/color <ID>\" to select a color");
-			return;
-		}
-
-		int NumPlayers = 0;
-		for(int i = 0; i < MAX_CLIENTS; i++)
-		{
-			if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1)
-				NumPlayers++;
-		}
-		if(NumPlayers >= g_Config.m_SvCheatProtection && m_apPlayers[ClientId]->GetTeam() == -1)
-		{
-			SendChatTarget(ClientId, "Please wait, until this round ends.");
-			if(m_apPlayers[ClientId]->m_WillJoin)
-			{
-				SendChatTarget(ClientId, "You dont join the game at the end of this round.");
-				SendChatTarget(ClientId, "----------------------------------------");
-				SendChatTarget(ClientId, "Autojoin: OFF");
-			}
-			else
-			{
-				SendChatTarget(ClientId, "You join the game at the end of this round.");
-				SendChatTarget(ClientId, "----------------------------------------");
-				SendChatTarget(ClientId, "Autojoin: ON");
-			}
-			m_apPlayers[ClientId]->m_WillJoin ^= 1;
-			return;
-		}
-		if(pMsg->m_Team == -1)
-		{
-			SendChatTarget(ClientId, "----------------------------------------");
-			SendChatTarget(ClientId, "Autojoin: OFF");
-			SendChatTarget(ClientId, "----------------------------------------");
-			m_apPlayers[ClientId]->m_WillJoin = false;
-		}
-
 		// Switch team on given client and kill/respawn him
 		if(m_pController->CanJoinTeam(pMsg->m_Team, ClientId))
 		{
@@ -939,8 +899,6 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				if(p->GetTeam() == -1 || pMsg->m_Team == -1)
 					m_VoteUpdate = true;
 				p->SetTeam(pMsg->m_Team);
-				if(pMsg->m_Team != -1)
-					m_apPlayers[ClientId]->m_WillJoin = true;
 				(void)m_pController->CheckTeamBalance();
 			}
 			else

@@ -20,7 +20,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int CID, int Team)
 	m_PrevCatchingTeam = -1;
 	m_BaseCatchingTeam = -1;
 	m_IsUsingCatchClient = false;
-	m_WillJoin = true;
+	m_IsJoined = false;
 	m_DoesDamage = 0;
 	m_HasTeam = true;
 	m_NoBroadcast = 0;
@@ -68,7 +68,7 @@ void CPlayer::Tick()
 			m_DoesDamage -= g_Config.m_SvDamagePoint;
 		}
 
-		if(m_Colorassign && m_Team == -1)
+		if(m_Colorassign && !m_IsJoined)
 		{
 			m_Colorassign--;
 			int left = m_Colorassign/Server()->TickSpeed();
@@ -77,18 +77,19 @@ void CPlayer::Tick()
 			GameServer()->SendBroadcast(Buf, m_ClientID);
 			m_AssignColor = true;
 		}
-		else if(m_AssignColor && m_Team == -1)
+		else if(m_AssignColor && !m_IsJoined)
 		{
 			int UsedColor[MAX_CLIENTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 			int NumPlayers = 0;
 			int Color = -1;
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1)
+				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1)
 					UsedColor[GameServer()->m_apPlayers[i]->m_BaseCatchingTeam] = 1;
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
+				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
 					NumPlayers++;
 			}
+
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
 				if(!UsedColor[i])
@@ -100,11 +101,12 @@ void CPlayer::Tick()
 			m_BaseCatchingTeam = Color;
 
 			if(NumPlayers < g_Config.m_SvCheatProtection)
-				SetTeam(0);
+			{
+				m_IsJoined = true;
+				GetCharacter()->CreateDieExplosion(false);
+			}
 			else
-			{			
-				GameServer()->SendChatTarget(m_ClientID, "----------------------------------------");
-				GameServer()->SendChatTarget(m_ClientID, "Autojoin: ON");
+			{
 				GameServer()->SendChatTarget(m_ClientID, "----------------------------------------");
 				GameServer()->SendChatTarget(m_ClientID, "Please wait for the end of this Round");
 				GameServer()->SendChatTarget(m_ClientID, "----------------------------------------");
@@ -130,7 +132,7 @@ void CPlayer::Tick()
 			int OtherOwner = -1;
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
+				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
 				{
 					NumPlayers++;
 					if(GameServer()->m_apPlayers[i]->m_CatchingTeam == m_BaseCatchingTeam)
@@ -141,7 +143,7 @@ void CPlayer::Tick()
 						OtherOwner = i;
 				}
 			}
-			if((TeamPlayers > 0 || m_HasTeam) && !m_NoBroadcast && m_Team != -1 && NumPlayers > 2)
+			if((TeamPlayers > 0 || m_HasTeam) && !m_NoBroadcast && m_Team != -1 && m_IsJoined && NumPlayers > 2)
 			{
 				if(TeamPlayers == 0)
 				{
@@ -158,7 +160,7 @@ void CPlayer::Tick()
 					GameServer()->SendBroadcast(Buf, m_ClientID);
 				}
 			}
-			else if(!m_HasTeam && OtherTeam > 0 && TeamPlayers == 0 && !m_NoBroadcast && m_Team != -1 && NumPlayers > 2)
+			else if(!m_HasTeam && OtherTeam > 0 && TeamPlayers == 0 && !m_NoBroadcast && m_Team != -1 && m_IsJoined && NumPlayers > 2)
 			{
 				char Buf[128];
 				if(OtherOwner > -1)

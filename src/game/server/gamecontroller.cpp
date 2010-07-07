@@ -295,9 +295,10 @@ void IGameController::PostReset()
 			GameServer()->m_apPlayers[i]->Respawn();
 			if(IsCatching())
 			{
-				if(GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1 && GameServer()->m_apPlayers[i]->m_WillJoin && GameServer()->m_apPlayers[i]->GetTeam() == -1)
-					GameServer()->m_apPlayers[i]->SetTeam(0);
+				if(GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1 && !GameServer()->m_apPlayers[i]->m_IsJoined && GameServer()->m_apPlayers[i]->GetTeam() != -1)
+					GameServer()->m_apPlayers[i]->m_IsJoined = true;
 				GameServer()->m_apPlayers[i]->m_CatchingTeam = GameServer()->m_apPlayers[i]->m_BaseCatchingTeam;
+				GameServer()->m_apPlayers[i]->m_PrevCatchingTeam = GameServer()->m_apPlayers[i]->m_BaseCatchingTeam;
 				OnPlayerInfoChange(GameServer()->m_apPlayers[i]);
 				if(m_RoundRestart)
 				{

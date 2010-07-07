@@ -936,16 +936,21 @@ void CCharacter::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient) ||
 		GameServer()->m_pController->IsCatching() &&
-		!GameServer()->m_World.m_Paused &&
+		(!GameServer()->m_World.m_Paused &&
 		g_Config.m_SvHideOuts &&
 		(GameServer()->m_apPlayers[SnappingClient]->GetTeam() == 0 &&
-		GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible))
+		GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)) ||
+		(!GameServer()->m_apPlayers[SnappingClient]->m_IsJoined &&
+		GameServer()->m_apPlayers[SnappingClient]->GetTeam() == 0 && GameServer()->m_apPlayers[SnappingClient] != m_pPlayer))
 		return;
-	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts &&
+	if(GameServer()->m_pController->IsCatching() &&
+		(g_Config.m_SvHideOuts &&
 		(SnappingClient == m_pPlayer->GetCID() &&
 		!m_Visible ||
 		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
-		!m_Visible)))
+		!m_Visible))) ||
+		(!m_pPlayer->m_IsJoined &&
+		m_pPlayer->GetTeam() == 0))
 	{
 		CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
 		shield->m_X = (int)m_Core.m_Pos.x;

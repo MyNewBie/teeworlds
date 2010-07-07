@@ -67,7 +67,7 @@ public:
 	int m_BaseCatchingTeam;
 	int m_DoesDamage;
 	bool m_IsUsingCatchClient;
-	bool m_WillJoin;
+	bool m_IsJoined;
 	int m_NoBroadcast;
 	bool m_TickBroadcast;
 	int m_Colorassign;
