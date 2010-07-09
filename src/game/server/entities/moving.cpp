@@ -63,7 +63,7 @@ void CMoving::Tick()
 	if(!pOwner || m_PowerupTime <= 0)
 	{
 		GameServer()->CreateExplosion(m_Pos, -1, WEAPON_POWERUP, true);
-		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, CmaskCatch(GameServer(), m_Owner));
 		if(pOwner)
 			pOwner->m_NoBroadcast = 0;
 		GameWorld()->DestroyEntity(this);
@@ -75,7 +75,7 @@ void CMoving::Tick()
 	{
 		GameServer()->CreateDeath(m_Pos, -1);
 		if(g_Config.m_SvPowerupSound)
-			GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
+			GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, CmaskCatch(GameServer(), m_Owner));
 	}
 
 	if(m_PowerupTime) // Broadcast overlap with catching messages // Need fixes

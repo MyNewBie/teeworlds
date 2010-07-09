@@ -69,7 +69,7 @@ void CProjectile::Tick()
 	if(TargetChr || Collide || m_LifeSpan < 0)
 	{
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
-			GameServer()->CreateSound(CurPos, m_SoundImpact);
+			GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatch(GameServer(), m_Owner));
 
 		if(m_Explosive)
 			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
@@ -98,6 +98,8 @@ void CProjectile::Snap(int SnappingClient)
 	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
 	
 	if(NetworkClipped(SnappingClient, GetPos(Ct)))
+		return;
+	if(!GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 		return;
 
 	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_Id, sizeof(CNetObj_Projectile)));

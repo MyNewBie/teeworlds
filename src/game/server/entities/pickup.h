@@ -17,7 +17,7 @@ public:
 private:
 	int m_Type;
 	int m_Subtype;
-	int m_SpawnTick;
+	int m_SpawnTick[2];
 };
 
 #endif

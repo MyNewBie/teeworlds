@@ -110,12 +110,12 @@ public:
 	CVoteOption *m_pVoteOptionLast;
 
 	// helper functions
-	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
+	void CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner);
 	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage);
 	void CreateSmoke(vec2 Pos);
-	void CreateHammerHit(vec2 Pos);
-	void CreatePlayerSpawn(vec2 Pos);
-	void CreateDeath(vec2 Pos, int Who);
+	void CreateHammerHit(vec2 Pos, int Owner);
+	void CreatePlayerSpawn(vec2 Pos, int Owner);
+	void CreateDeath(vec2 Pos, int Who, int Owner = -1);
 	void CreateSound(vec2 Pos, int Sound, int Mask=-1);
 	void CreateSoundGlobal(int Sound, int Target=-1);	
 
@@ -166,4 +166,6 @@ inline int CmaskAll() { return -1; }
 inline int CmaskOne(int ClientId) { return 1<<ClientId; }
 inline int CmaskAllExceptOne(int ClientId) { return 0x7fffffff^CmaskOne(ClientId); }
 inline bool CmaskIsSet(int Mask, int ClientId) { return (Mask&CmaskOne(ClientId)) != 0; }
+inline int CmaskCatch(CGameContext *pGameServer, int Owner);
+int CmaskPickup(CGameContext *pGameServer, int Team);
 #endif

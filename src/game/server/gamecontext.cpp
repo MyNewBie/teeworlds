@@ -81,7 +81,7 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientId)
 	return m_apPlayers[ClientId]->GetCharacter();
 }
 
-void CGameContext::CreateDamageInd(vec2 p, float Angle, int Amount)
+void CGameContext::CreateDamageInd(vec2 p, float Angle, int Amount, int Owner)
 {
 	float a = 3 * 3.14159f / 2 + Angle;
 	//float a = get_angle(dir);
@@ -90,7 +90,7 @@ void CGameContext::CreateDamageInd(vec2 p, float Angle, int Amount)
 	for(int i = 0; i < Amount; i++)
 	{
 		float f = mix(s, e, float(i+1)/float(Amount+2));
-		NETEVENT_DAMAGEIND *ev = (NETEVENT_DAMAGEIND *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(NETEVENT_DAMAGEIND));
+		NETEVENT_DAMAGEIND *ev = (NETEVENT_DAMAGEIND *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(NETEVENT_DAMAGEIND), CmaskCatch(this, Owner));
 		if(ev)
 		{
 			ev->m_X = (int)p.x;
@@ -100,10 +100,10 @@ void CGameContext::CreateDamageInd(vec2 p, float Angle, int Amount)
 	}
 }
 
-void CGameContext::CreateHammerHit(vec2 p)
+void CGameContext::CreateHammerHit(vec2 p, int Owner)
 {
 	// create the event
-	NETEVENT_HAMMERHIT *ev = (NETEVENT_HAMMERHIT *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(NETEVENT_HAMMERHIT));
+	NETEVENT_HAMMERHIT *ev = (NETEVENT_HAMMERHIT *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(NETEVENT_HAMMERHIT), CmaskCatch(this, Owner));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
@@ -115,7 +115,7 @@ void CGameContext::CreateHammerHit(vec2 p)
 void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage)
 {
 	// create the event
-	NETEVENT_EXPLOSION *ev = (NETEVENT_EXPLOSION *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(NETEVENT_EXPLOSION));
+	NETEVENT_EXPLOSION *ev = (NETEVENT_EXPLOSION *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(NETEVENT_EXPLOSION), CmaskCatch(this, Owner));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
@@ -156,10 +156,10 @@ void create_smoke(vec2 p)
 	}
 }*/
 
-void CGameContext::CreatePlayerSpawn(vec2 p)
+void CGameContext::CreatePlayerSpawn(vec2 p, int Owner)
 {
 	// create the event
-	NETEVENT_SPAWN *ev = (NETEVENT_SPAWN *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(NETEVENT_SPAWN));
+	NETEVENT_SPAWN *ev = (NETEVENT_SPAWN *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(NETEVENT_SPAWN), CmaskCatch(this, Owner));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
@@ -167,10 +167,18 @@ void CGameContext::CreatePlayerSpawn(vec2 p)
 	}
 }
 
-void CGameContext::CreateDeath(vec2 p, int ClientId)
+void CGameContext::CreateDeath(vec2 p, int ClientId, int Owner)
 {
+	int CID;
+	if(ClientId == -1)
+		CID = Owner;
+	else
+		CID = ClientId;
+	if(CID == -1)
+		return;
+
 	// create the event
-	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH));
+	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH), CmaskCatch(this, CID));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
@@ -641,6 +649,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 						p->m_IsJoined = false;
 						p->m_BaseCatchingTeam = -1;
 						p->m_CatchingTeam = -1;
+						p->GetCharacter()->CreateDieExplosion(false);
 					}
 					else
 					{
@@ -1244,6 +1253,35 @@ void CGameContext::OnShutdown()
 	delete m_pController;
 	m_pController = 0;
 	Clear();
+}
+
+int CmaskCatch(CGameContext *pGameServer, int Owner)
+{
+	int Mask = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(pGameServer->m_apPlayers[i] && (!pGameServer->m_apPlayers[i]->m_IsJoined || (pGameServer->m_apPlayers[Owner] && pGameServer->m_apPlayers[Owner]->m_IsJoined && pGameServer->m_apPlayers[i]->m_IsJoined) || i == Owner))
+			Mask = Mask|(1<<i);
+	}
+	return Mask;
+}
+
+int CmaskPickup(CGameContext *pGameServer, int Team)
+{
+	int Mask = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(!pGameServer->m_apPlayers[i])
+			continue;
+			
+		if(pGameServer->m_apPlayers[i]->m_IsJoined)
+			Mask = Mask|(1<<i);
+	}
+	
+	if(Team)
+		return Mask;
+	else
+		return ~Mask;
 }
 
 void CGameContext::OnSnap(int ClientId)

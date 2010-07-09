@@ -70,6 +70,7 @@ void CCharacterCore::Reset()
 	m_HookState = HOOK_IDLE;
 	m_HookedPlayer = -1;
 	m_HookedPowerup = false;
+	m_Joined = false;
 	m_Jumped = 0;
 	m_TriggeredEvents = 0;
 }
@@ -215,6 +216,8 @@ void CCharacterCore::Tick(bool UseInput)
 				CCharacterCore *p = m_pWorld->m_apCharacters[i];
 				if(!p || p == this)
 					continue;
+				if(!p->m_Joined || !p->m_Joined && m_pWorld->m_apCharacters[m_HookedPlayer]->m_Joined) // last dunno
+					continue;
 
 				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, p->m_Pos);
 				if(distance(p->m_Pos, ClosestPoint) < PhysSize+2.0f)
@@ -308,6 +311,8 @@ void CCharacterCore::Tick(bool UseInput)
 		{
 			CCharacterCore *p = m_pWorld->m_apCharacters[i];
 			if(!p)
+				continue;
+			if(!p->m_Joined)
 				continue;
 			
 			//player *p = (player*)ent;

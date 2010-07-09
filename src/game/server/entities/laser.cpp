@@ -67,7 +67,7 @@ void CLaser::DoBounce()
 			if(m_Bounces > GameServer()->Tuning()->m_LaserBounceNum)
 				m_Energy = -1;
 				
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE);
+			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE, CmaskCatch(GameServer(), m_Owner));
 			
 			if(GameServer()->m_pController->IsCatching() && m_Bounces == 1 && g_Config.m_SvLaserjumps)
 				GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GAME, false);
@@ -98,6 +98,9 @@ void CLaser::Tick()
 void CLaser::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient))
+		return;
+
+	if(!GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 		return;
 
 	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_Id, sizeof(CNetObj_Laser)));

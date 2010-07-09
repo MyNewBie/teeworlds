@@ -58,6 +58,8 @@ void CPlayer::Tick()
 			m_Latency.m_AccumMax = 0;
 		}
 	}
+	if(!GameServer()->m_pController->IsCatching() && !m_IsJoined)
+		m_IsJoined = true;
 
 	if(GameServer()->m_pController->IsCatching())
 	{
@@ -309,6 +311,6 @@ void CPlayer::TryRespawn()
 		m_Spawning = false;
 		Character = new(m_ClientID) CCharacter(&GameServer()->m_World);
 		Character->Spawn(this, SpawnPos);
-		GameServer()->CreatePlayerSpawn(SpawnPos);
+		GameServer()->CreatePlayerSpawn(SpawnPos, m_ClientID);
 	}
 }
