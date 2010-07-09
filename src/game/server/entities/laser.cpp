@@ -25,12 +25,19 @@ bool CLaser::HitCharacter(vec2 From, vec2 To)
 	CCharacter *Hit = GameServer()->m_World.IntersectCharacter(m_Pos, To, 0.f, At, OwnerChar);
 	if(!Hit)
 		return false;
-
-	m_From = From;
-	m_Pos = At;
-	m_Energy = -1;		
-	Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
-	return true;
+	if((GameServer()->m_pController->IsCatching() &&
+		((Hit->GetPlayer()->m_IsJoined && OwnerChar->GetPlayer()->m_IsJoined) ||
+		(!Hit->GetPlayer()->m_IsJoined && !OwnerChar->GetPlayer()->m_IsJoined))) ||
+		!GameServer()->m_pController->IsCatching())
+	{
+		m_From = From;
+		m_Pos = At;
+		m_Energy = -1;		
+		Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
+		return true;
+	}
+	else
+		return false;
 }
 
 void CLaser::DoBounce()

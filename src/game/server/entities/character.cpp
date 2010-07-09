@@ -335,16 +335,26 @@ void CCharacter::FireWeapon()
 					continue;
 
 				// set his velocity to fast upward (for now)
-				GameServer()->CreateHammerHit(m_Pos, Target->GetPlayer()->GetCID());
-				aEnts[i]->TakeDamage(vec2(0.f, -1.f), g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer->GetCID(), m_ActiveWeapon);
+				if((GameServer()->m_pController->IsCatching() &&
+					((Target->GetPlayer()->m_IsJoined && m_pPlayer->m_IsJoined) ||
+					(!Target->GetPlayer()->m_IsJoined && !m_pPlayer->m_IsJoined))) ||
+					!GameServer()->m_pController->IsCatching())
+				{
+					GameServer()->CreateHammerHit(m_Pos, Target->GetPlayer()->GetCID());
+					aEnts[i]->TakeDamage(vec2(0.f, -1.f), g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer->GetCID(), m_ActiveWeapon);
+				}
 				
 				vec2 Dir;
 				if (length(Target->m_Pos - m_Pos) > 0.0f)
 					Dir = normalize(Target->m_Pos - m_Pos);
 				else
 					Dir = vec2(0.f, -1.f);
-					
-				Target->m_Core.m_Vel += normalize(Dir + vec2(0.f, -1.1f)) * 10.0f;
+				
+				if((GameServer()->m_pController->IsCatching() &&
+					((Target->GetPlayer()->m_IsJoined && m_pPlayer->m_IsJoined) ||
+					(!Target->GetPlayer()->m_IsJoined && !m_pPlayer->m_IsJoined))) ||
+					!GameServer()->m_pController->IsCatching())
+					Target->m_Core.m_Vel += normalize(Dir + vec2(0.f, -1.1f)) * 10.0f;
 				Hits++;
 			}
 			

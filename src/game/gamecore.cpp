@@ -216,7 +216,7 @@ void CCharacterCore::Tick(bool UseInput)
 				CCharacterCore *p = m_pWorld->m_apCharacters[i];
 				if(!p || p == this)
 					continue;
-				if(!p->m_Joined || !p->m_Joined && m_pWorld->m_apCharacters[m_HookedPlayer]->m_Joined) // last dunno
+				if(!p->m_Joined && m_Joined || p->m_Joined && !m_Joined)
 					continue;
 
 				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, p->m_Pos);
@@ -312,7 +312,7 @@ void CCharacterCore::Tick(bool UseInput)
 			CCharacterCore *p = m_pWorld->m_apCharacters[i];
 			if(!p)
 				continue;
-			if(!p->m_Joined)
+			if(!p->m_Joined && m_Joined || p->m_Joined && !m_Joined)
 				continue;
 			
 			//player *p = (player*)ent;

@@ -139,7 +139,13 @@ void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage)
 			l = 1-clamp((l-InnerRadius)/(Radius-InnerRadius), 0.0f, 1.0f);
 			float Dmg = 6 * l;
 			if((int)Dmg)
-				apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
+			{
+				if((m_pController->IsCatching() &&
+					((apEnts[i]->GetPlayer()->m_IsJoined && GetPlayerChar(Owner)->GetPlayer()->m_IsJoined) ||
+					(!apEnts[i]->GetPlayer()->m_IsJoined && !GetPlayerChar(Owner)->GetPlayer()->m_IsJoined))) ||
+					!m_pController->IsCatching())
+					apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
+			}
 		}
 	}
 }
