@@ -180,9 +180,9 @@ void CGameContext::CreateDeath(vec2 p, int ClientId, int Owner)
 		CID = ClientId;
 	if(CID == -1)
 		return;
-	
+
 	// create the event
-	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH));
+	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH), CmaskCatch(this, CID));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
