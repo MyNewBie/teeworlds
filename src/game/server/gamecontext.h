@@ -166,6 +166,6 @@ inline int CmaskAll() { return -1; }
 inline int CmaskOne(int ClientId) { return 1<<ClientId; }
 inline int CmaskAllExceptOne(int ClientId) { return 0x7fffffff^CmaskOne(ClientId); }
 inline bool CmaskIsSet(int Mask, int ClientId) { return (Mask&CmaskOne(ClientId)) != 0; }
-inline int CmaskCatch(CGameContext *pGameServer, int Owner);
+int CmaskCatch(CGameContext *pGameServer, int Owner);
 int CmaskPickup(CGameContext *pGameServer, int Team);
 #endif
