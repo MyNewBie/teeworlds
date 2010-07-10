@@ -146,8 +146,10 @@ public:
 	bool CheckTeamBalance();
 	bool CanChangeTeam(CPlayer *pPplayer, int JoinTeam);
 	int ClampTeam(int Team);
+	
+	// Catching
 	virtual bool IsCatching() const;
-
+	virtual bool CheckJoined(CCharacter *pChr1, CCharacter *pChr2);
 	virtual void PostReset();
 	class CPathfind m_Path;
 	int GetGameOverTick() { return m_GameOverTick; };

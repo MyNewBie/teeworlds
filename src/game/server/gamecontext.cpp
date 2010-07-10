@@ -175,16 +175,14 @@ void CGameContext::CreatePlayerSpawn(vec2 p, int Owner)
 
 void CGameContext::CreateDeath(vec2 p, int ClientId, int Owner)
 {
-	int CID;
-	if(ClientId == -1)
-		CID = Owner;
-	else
+	int CID = Owner;
+	if(ClientId != -1)
 		CID = ClientId;
 	if(CID == -1)
 		return;
-
+	
 	// create the event
-	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH), CmaskCatch(this, CID));
+	NETEVENT_DEATH *ev = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH));
 	if(ev)
 	{
 		ev->m_X = (int)p.x;
@@ -1264,6 +1262,8 @@ void CGameContext::OnShutdown()
 int CmaskCatch(CGameContext *pGameServer, int Owner)
 {
 	int Mask = 0;
+	if(!pGameServer->m_pController->IsCatching())
+		return -1;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(pGameServer->m_apPlayers[i] && (!pGameServer->m_apPlayers[i]->m_IsJoined || (pGameServer->m_apPlayers[Owner] && pGameServer->m_apPlayers[Owner]->m_IsJoined && pGameServer->m_apPlayers[i]->m_IsJoined) || i == Owner))

@@ -152,7 +152,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		SubType = WEAPON_NINJA;
 	}
 	
-	if(Type != -1 && ((IsCatching() && !g_Config.m_SvInstagib || Type == POWERUP_NINJA) || !IsCatching()))
+	if(Type != -1 && ((IsCatching() && (!g_Config.m_SvInstagib || Type == POWERUP_NINJA)) || !IsCatching()))
 	{
 		CPickup *pPickup = new CPickup(&GameServer()->m_World, Type, SubType);
 		pPickup->m_Pos = Pos;
@@ -435,7 +435,7 @@ void IGameController::Tick()
 	if(m_GameOverTick != -1)
 	{
 		// game over.. wait for restart
-		if(IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvGameOverTime || !IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10)
+		if((IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvGameOverTime) || (!IsCatching() && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10))
 		{
 			CycleMap();
 			StartRound();
@@ -811,4 +811,13 @@ int IGameController::ClampTeam(int Team)
 bool IGameController::IsCatching() const
 {
 	return false;
+}
+
+bool IGameController::CheckJoined(CCharacter *pChr1, CCharacter *pChr2)
+{
+	if((pChr1->GetPlayer()->m_IsJoined && pChr2->GetPlayer()->m_IsJoined) ||
+		(!pChr1->GetPlayer()->m_IsJoined && !pChr2->GetPlayer()->m_IsJoined))
+		return true;
+	else
+		return false;
 }
