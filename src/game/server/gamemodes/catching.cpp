@@ -39,7 +39,7 @@ bool CGameControllerCatching::OnEntity(int Index, vec2 Pos)
 		Index == ENTITY_WEAPON_SHOTGUN ||
 		Index == ENTITY_WEAPON_GRENADE ||
 		Index == ENTITY_WEAPON_RIFLE ||
-		Index == ENTITY_POWERUP_NINJA))
+		(Index == ENTITY_POWERUP_NINJA && !g_Config.m_SvInstagib)))
 		return false;
 
 	return IGameController::OnEntity(Index, Pos);
