@@ -12,6 +12,7 @@
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
 #include "gamemodes/catching.h"
+#include "gamemodes/zcatch.h"
 #include <stdio.h>
 
 enum
@@ -1196,6 +1197,8 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	if(str_comp(g_Config.m_SvGametype, "catch") == 0 ||
 		str_comp(g_Config.m_SvGametype, "Catch") == 0)
 		m_pController = new CGameControllerCatching(this);
+	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0)
+		m_pController = new CGameControllerZcatch(this);
 	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)

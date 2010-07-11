@@ -813,6 +813,11 @@ bool IGameController::IsCatching() const
 	return false;
 }
 
+bool IGameController::IsZcatch() const
+{
+	return false;
+}
+
 bool IGameController::CheckJoined(CCharacter *pChr1, CCharacter *pChr2)
 {
 	if((pChr1->GetPlayer()->m_IsJoined && pChr2->GetPlayer()->m_IsJoined) ||

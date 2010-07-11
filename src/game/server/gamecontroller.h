@@ -149,6 +149,7 @@ public:
 	
 	// Catching
 	virtual bool IsCatching() const;
+	virtual bool IsZcatch() const;
 	virtual bool CheckJoined(CCharacter *pChr1, CCharacter *pChr2);
 	virtual void PostReset();
 	class CPathfind m_Path;
