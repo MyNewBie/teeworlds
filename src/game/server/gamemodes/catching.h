@@ -4,12 +4,21 @@
 
 class CGameControllerCatching : public IGameController
 {
+private:
+	int m_IsInstagib;
+	int m_IsHammerParty;
+	int m_GiveWeapons;
+	int m_Pickups;
+	bool m_RoundRestart;
+	
 public:
 	CGameControllerCatching(class CGameContext *pGameServer);
 	virtual void Tick();
 	virtual bool IsCatching() const;
+	void DoPlayerNumWincheck();
 	bool OnEntity(int Index, vec2 Pos);
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
 	void OnCharacterSpawn(class CCharacter *pChr);
+	void PostReset();
 };
 #endif
