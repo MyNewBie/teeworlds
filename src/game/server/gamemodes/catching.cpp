@@ -25,6 +25,26 @@ bool CGameControllerCatching::IsCatching() const
 	return true;
 }
 
+void CGameControllerCatching::OnCharacterSpawn(class CCharacter *pChr)
+{
+	// default health
+	pChr->IncreaseHealth(10);
+	
+	// give default weapons
+	if(g_Config.m_SvHammerParty)
+		pChr->GiveWeapon(WEAPON_HAMMER, -1);
+	else if(g_Config.m_SvGiveWeapons)
+	{
+		pChr->GiveWeapon(WEAPON_HAMMER, -1);
+		pChr->GiveWeapon(WEAPON_RIFLE, -1);
+		pChr->GiveWeapon(WEAPON_GRENADE, -1);
+		pChr->GiveWeapon(WEAPON_SHOTGUN, -1);
+		pChr->GiveWeapon(WEAPON_GUN, 10);
+	}
+	else if(g_Config.m_SvInstagib)
+		pChr->GiveWeapon(WEAPON_RIFLE, -1);
+}
+
 void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pPlayer)
 {
 	// Teamcolorwave \o/
