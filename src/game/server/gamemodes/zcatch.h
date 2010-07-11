@@ -10,6 +10,7 @@ public:
 	virtual bool IsZcatch() const;
 	//void StartRound();
 	//void EndRound();
+	bool OnEntity(int Index, vec2 Pos);
 	void OnCharacterSpawn(class CCharacter *pChr);
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
 };

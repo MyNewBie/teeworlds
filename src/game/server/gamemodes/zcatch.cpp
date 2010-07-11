@@ -20,6 +20,26 @@ bool CGameControllerZcatch::IsZcatch() const
 	return true;
 }
 
+bool CGameControllerZcatch::OnEntity(int Index, vec2 Pos)
+{
+	if((Index == ENTITY_ARMOR_1 || Index == ENTITY_HEALTH_1) && (
+		g_Config.m_SvHammerParty ||
+		g_Config.m_SvInstagib ||
+		!g_Config.m_SvPickups))
+		return false;
+	else if(
+		(g_Config.m_SvHammerParty ||
+		g_Config.m_SvInstagib ||
+		g_Config.m_SvGiveWeapons) && (
+		Index == ENTITY_WEAPON_SHOTGUN ||
+		Index == ENTITY_WEAPON_GRENADE ||
+		Index == ENTITY_WEAPON_RIFLE ||
+		(Index == ENTITY_POWERUP_NINJA && !g_Config.m_SvInstagib)))
+		return false;
+
+	return IGameController::OnEntity(Index, Pos);
+}
+
 void CGameControllerZcatch::OnCharacterSpawn(class CCharacter *pChr)
 {
 	// default health

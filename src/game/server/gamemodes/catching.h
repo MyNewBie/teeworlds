@@ -15,10 +15,10 @@ public:
 	CGameControllerCatching(class CGameContext *pGameServer);
 	virtual void Tick();
 	virtual bool IsCatching() const;
+	virtual bool OnEntity(int Index, vec2 Pos);
+	virtual void OnPlayerInfoChange(class CPlayer *pPlayer);
+	virtual void OnCharacterSpawn(class CCharacter *pChr);
+	virtual void PostReset();
 	void DoPlayerNumWincheck();
-	bool OnEntity(int Index, vec2 Pos);
-	void OnPlayerInfoChange(class CPlayer *pPlayer);
-	void OnCharacterSpawn(class CCharacter *pChr);
-	void PostReset();
 };
 #endif
