@@ -127,21 +127,21 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		m_aaSpawnPoints[1][m_aNumSpawnPoints[1]++] = Pos;
 	else if(Index == ENTITY_SPAWN_BLUE)
 		m_aaSpawnPoints[2][m_aNumSpawnPoints[2]++] = Pos;
-	else if(Index == ENTITY_ARMOR_1 && ((IsCatching() && g_Config.m_SvPickups) || !IsCatching()))
+	else if(Index == ENTITY_ARMOR_1)
 		Type = POWERUP_ARMOR;
-	else if(Index == ENTITY_HEALTH_1 && g_Config.m_SvPickups)
+	else if(Index == ENTITY_HEALTH_1)
 		Type = POWERUP_HEALTH;
-	else if(Index == ENTITY_WEAPON_SHOTGUN && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
+	else if(Index == ENTITY_WEAPON_SHOTGUN)
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_SHOTGUN;
 	}
-	else if(Index == ENTITY_WEAPON_GRENADE && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
+	else if(Index == ENTITY_WEAPON_GRENADE)
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_GRENADE;
 	}
-	else if(Index == ENTITY_WEAPON_RIFLE && ((IsCatching() && !g_Config.m_SvHammerParty && !g_Config.m_SvGiveWeapons) || !IsCatching()))
+	else if(Index == ENTITY_WEAPON_RIFLE)
 	{
 		Type = POWERUP_WEAPON;
 		SubType = WEAPON_RIFLE;
@@ -152,7 +152,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		SubType = WEAPON_NINJA;
 	}
 	
-	if(Type != -1 && ((IsCatching() && (!g_Config.m_SvInstagib || Type == POWERUP_NINJA)) || !IsCatching()))
+	if(Type != -1)
 	{
 		CPickup *pPickup = new CPickup(&GameServer()->m_World, Type, SubType);
 		pPickup->m_Pos = Pos;

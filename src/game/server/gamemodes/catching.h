@@ -8,6 +8,7 @@ public:
 	CGameControllerCatching(class CGameContext *pGameServer);
 	virtual void Tick();
 	virtual bool IsCatching() const;
+	bool OnEntity(int Index, vec2 Pos);
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
 	void OnCharacterSpawn(class CCharacter *pChr);
 };
