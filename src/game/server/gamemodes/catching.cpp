@@ -3,7 +3,6 @@
 #include <game/server/gamecontext.h>
 #include <engine/shared/config.h>
 
-
 CGameControllerCatching::CGameControllerCatching(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
@@ -11,7 +10,7 @@ CGameControllerCatching::CGameControllerCatching(class CGameContext *pGameServer
 		m_pGameType = "iCatch";
 	else
 		m_pGameType = "Catch";
-		
+	
 	m_IsInstagib = g_Config.m_SvInstagib;
 	m_IsHammerParty = g_Config.m_SvHammerParty;
 	m_GiveWeapons = g_Config.m_SvGiveWeapons;

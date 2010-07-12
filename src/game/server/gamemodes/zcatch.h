@@ -1,17 +1,27 @@
-#ifndef GAME_SERVER_GAMEMODES_ZCATCH_H
-#define GAME_SERVER_GAMEMODES_ZCATCH_H
+#ifndef GAME_SERVER_GAMEMODES_ZCatch_H
+#define GAME_SERVER_GAMEMODES_ZCatch_H
 #include <game/server/gamecontroller.h>
 
-class CGameControllerZcatch : public IGameController
+class CGameControllerZCatch : public IGameController
 {
+private:
+	int m_IsInstagib;
+	int m_IsHammerParty;
+	int m_GiveWeapons;
+	int m_Pickups;
+	bool m_RoundRestart;
+
 public:
-	CGameControllerZcatch(class CGameContext *pGameServer);
+	CGameControllerZCatch(class CGameContext *pGameServer);
 	virtual void Tick();
-	virtual bool IsZcatch() const;
-	//void StartRound();
-	//void EndRound();
-	bool OnEntity(int Index, vec2 Pos);
-	void OnCharacterSpawn(class CCharacter *pChr);
-	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
+	virtual bool IsZCatch() const;
+	//virtual void StartRound();
+	//virtual void EndRound();
+	virtual bool OnEntity(int Index, vec2 Pos);
+	virtual void OnCharacterSpawn(class CCharacter *pChr);
+	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
+	virtual void PostReset();
+	void DoPlayerNumWincheck();
+	int GetLeaderID();
 };
 #endif

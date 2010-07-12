@@ -1198,7 +1198,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		str_comp(g_Config.m_SvGametype, "Catch") == 0)
 		m_pController = new CGameControllerCatching(this);
 	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0)
-		m_pController = new CGameControllerZcatch(this);
+		m_pController = new CGameControllerZCatch(this);
 	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)

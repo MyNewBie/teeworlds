@@ -10,7 +10,7 @@ private:
 	int m_GiveWeapons;
 	int m_Pickups;
 	bool m_RoundRestart;
-	
+
 public:
 	CGameControllerCatching(class CGameContext *pGameServer);
 	virtual void Tick();
