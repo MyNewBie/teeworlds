@@ -950,33 +950,19 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
 void CCharacter::Snap(int SnappingClient)
 {
-	// Joinsystem
-	/*if(!GameServer()->m_apPlayers[SnappingClient]->GetTeam() &&
-		!GameServer()->m_apPlayers[SnappingClient]->m_IsJoined &&
-		m_pPlayer->m_IsJoined)
-		return;
-	// Hiden Players and Snapping
-	if(NetworkClipped(SnappingClient) ||
-		(GameServer()->m_pController->IsCatching() &&
-		!GameServer()->m_World.m_Paused &&
-		g_Config.m_SvHideOuts &&
-		!GameServer()->m_apPlayers[SnappingClient]->GetTeam() &&
-		GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam &&
-		!m_Visible))
-		return;*/
 	if(NetworkClipped(SnappingClient))
 		return;
 
-	if(GameServer()->m_pController->IsCatching() && SnappingClient != m_pPlayer->GetCID())
+	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) && SnappingClient != m_pPlayer->GetCID())
 	{
-		if(!GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && !GameServer()->m_apPlayers[SnappingClient]->GetTeam() && GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)
+		if(GameServer()->m_pController->IsCatching() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && !GameServer()->m_apPlayers[SnappingClient]->GetTeam() && GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)
 			return;
 
 		if(!m_pPlayer->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 			return;
 	}
 
-	if((GameServer()->m_pController->IsCatching() &&
+	/*if((GameServer()->m_pController->IsCatching() &&
 		(g_Config.m_SvHideOuts &&
 		((SnappingClient == m_pPlayer->GetCID() && !m_Visible) ||
 		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
@@ -989,6 +975,24 @@ void CCharacter::Snap(int SnappingClient)
 		shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
 		shield->m_Type = 1;
 		shield->m_Subtype = 0;
+	}*/
+	if(GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch())
+	{
+		bool Passed = false;
+		if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (SnappingClient == m_pPlayer->GetCID() && !m_Visible))
+			Passed = true;
+		else if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam && !m_Visible))
+			Passed = true;
+		else if(!m_pPlayer->m_IsJoined && m_pPlayer->GetTeam() == 0)
+			Passed = true;
+		if(Passed)
+		{
+			CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
+			shield->m_X = (int)m_Core.m_Pos.x;
+			shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
+			shield->m_Type = 1;
+			shield->m_Subtype = 0;
+		}
 	}
 	
 	CNetObj_Character *Character = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, m_pPlayer->GetCID(), sizeof(CNetObj_Character)));

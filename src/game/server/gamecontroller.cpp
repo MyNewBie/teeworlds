@@ -681,7 +681,7 @@ bool IGameController::IsCatching() const
 	return false;
 }
 
-bool IGameController::IsZcatch() const
+bool IGameController::IsZCatch() const
 {
 	return false;
 }
