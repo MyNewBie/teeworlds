@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\src\game\server\gamemodes\dm.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\mod.cpp" />
     <ClCompile Include="..\..\src\game\server\gamemodes\tdm.cpp" />
+    <ClCompile Include="..\..\src\game\server\gamemodes\zcatch.cpp" />
     <ClCompile Include="..\..\src\game\server\gameworld.cpp" />
     <ClCompile Include="..\..\src\game\server\pathfind.cpp" />
     <ClCompile Include="..\..\src\game\server\player.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="..\..\src\game\server\gamemodes\dm.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\mod.h" />
     <ClInclude Include="..\..\src\game\server\gamemodes\tdm.h" />
+    <ClInclude Include="..\..\src\game\server\gamemodes\zcatch.h" />
     <ClInclude Include="..\..\src\game\server\gameworld.h" />
     <ClInclude Include="..\..\src\game\server\pathfind.h" />
     <ClInclude Include="..\..\src\game\server\player.h" />
