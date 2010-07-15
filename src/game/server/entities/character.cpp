@@ -529,7 +529,7 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 void CCharacter::GiveNinja()
 {
 	if(GameServer()->m_pController->IsCatching())
-		CMoving *pMoving = new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
+		/*CMoving *pMoving = */new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
 	else
 	{
 		m_Ninja.m_ActivationTick = Server()->Tick();
@@ -976,12 +976,11 @@ void CCharacter::Snap(int SnappingClient)
 			return;
 	}
 
-	if(GameServer()->m_pController->IsCatching() &&
+	if((GameServer()->m_pController->IsCatching() &&
 		(g_Config.m_SvHideOuts &&
-		(SnappingClient == m_pPlayer->GetCID() &&
-		!m_Visible ||
+		((SnappingClient == m_pPlayer->GetCID() && !m_Visible) ||
 		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
-		!m_Visible))) ||
+		!m_Visible)))) ||
 		(!m_pPlayer->m_IsJoined &&
 		m_pPlayer->GetTeam() == 0))
 	{

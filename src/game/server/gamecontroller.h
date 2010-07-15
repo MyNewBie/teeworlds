@@ -17,11 +17,6 @@ class IGameController
 	class CGameContext *m_pGameServer;
 	class IServer *m_pServer;
 	
-private:
-	int m_IsInstagib;
-	int m_IsHammerParty;
-	int m_GiveWeapons;
-	int m_Pickups;
 protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const { return m_pServer; }
@@ -63,7 +58,6 @@ protected:
 	int m_GameFlags;
 	int m_UnbalancedTick;
 	bool m_ForceBalanced;
-	bool m_RoundRestart;
 	
 public:
 	const char *m_pGameType;
@@ -75,7 +69,6 @@ public:
 
 	void DoTeamScoreWincheck();
 	void DoPlayerScoreWincheck();
-	void DoPlayerNumWincheck();
 	
 	void DoWarmup(int Seconds);
 	
@@ -146,11 +139,14 @@ public:
 	bool CheckTeamBalance();
 	bool CanChangeTeam(CPlayer *pPplayer, int JoinTeam);
 	int ClampTeam(int Team);
+	
+	// Catching
 	virtual bool IsCatching() const;
-
+	virtual bool IsZcatch() const;
+	bool CheckJoined(CCharacter *pChr1, CCharacter *pChr2);
 	virtual void PostReset();
 	class CPathfind m_Path;
-	int GetGameOverTick() { return m_GameOverTick; };
+	//int GetGameOverTick() { return m_GameOverTick; };
 };
 
 #endif
