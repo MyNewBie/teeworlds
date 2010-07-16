@@ -15,6 +15,7 @@ public:
 	CGameControllerZCatch(class CGameContext *pGameServer);
 	virtual void Tick();
 	virtual bool IsZCatch() const;
+	virtual bool JoiningSystem() const;
 	//virtual void StartRound();
 	//virtual void EndRound();
 	virtual bool OnEntity(int Index, vec2 Pos);

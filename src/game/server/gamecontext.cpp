@@ -1265,7 +1265,7 @@ void CGameContext::OnShutdown()
 int CmaskCatch(CGameContext *pGameServer, int Owner)
 {
 	int Mask = 0;
-	if(!pGameServer->m_pController->IsCatching())
+	if(!pGameServer->m_pController->JoiningSystem())
 		return -1;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{

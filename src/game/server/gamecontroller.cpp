@@ -686,6 +686,11 @@ bool IGameController::IsZCatch() const
 	return false;
 }
 
+bool IGameController::JoiningSystem() const
+{
+	return false;
+}
+
 bool IGameController::CheckJoined(CCharacter *pChr1, CCharacter *pChr2)
 {
 	if((pChr1->GetPlayer()->m_IsJoined && pChr2->GetPlayer()->m_IsJoined) ||

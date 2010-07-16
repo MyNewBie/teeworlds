@@ -759,6 +759,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		m_Alive = false;
 		GameServer()->m_World.RemoveEntity(this);
 		GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
+		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 	
 		// we got to wait 0.5 secs before respawning
 		m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
@@ -976,15 +977,15 @@ void CCharacter::Snap(int SnappingClient)
 		shield->m_Type = 1;
 		shield->m_Subtype = 0;
 	}*/
-	if(GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch())
+	if(GameServer()->m_pController->JoiningSystem())
 	{
 		bool Passed = false;
 		if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (SnappingClient == m_pPlayer->GetCID() && !m_Visible))
-			Passed = true;
+			Passed = true; // Catching: Hideouts Check 1
 		else if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam && !m_Visible))
-			Passed = true;
+			Passed = true; // Catching: Hideouts Check 2
 		else if(!m_pPlayer->m_IsJoined && m_pPlayer->GetTeam() == 0)
-			Passed = true;
+			Passed = true; // Joining System
 		if(Passed)
 		{
 			CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));

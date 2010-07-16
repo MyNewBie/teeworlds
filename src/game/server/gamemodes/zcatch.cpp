@@ -30,6 +30,11 @@ bool CGameControllerZCatch::IsZCatch() const
 	return true;
 }
 
+bool CGameControllerZCatch::JoiningSystem() const
+{
+	return true;
+}
+
 void CGameControllerZCatch::DoPlayerNumWincheck()
 {
 	if(m_GameOverTick == -1  && !m_Warmup)

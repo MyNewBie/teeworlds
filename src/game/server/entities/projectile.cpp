@@ -71,22 +71,22 @@ void CProjectile::Tick()
 		
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 		{
-			if((GameServer()->m_pController->IsCatching() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
-				!GameServer()->m_pController->IsCatching() || (GameServer()->m_pController->IsCatching() && !TargetChr))
+			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 				GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatch(GameServer(), m_Owner));
 		}
 
 		if(m_Explosive)
 		{
-			if((GameServer()->m_pController->IsCatching() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
-				!GameServer()->m_pController->IsCatching() || (GameServer()->m_pController->IsCatching() && !TargetChr))
+			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
 		}
 			
 		else if(TargetChr)
 		{
-			if((GameServer()->m_pController->IsCatching() && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
-				!GameServer()->m_pController->IsCatching())
+			if((GameServer()->m_pController->JoiningSystem() && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+				!GameServer()->m_pController->JoiningSystem())
 				TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
 			else
 				return;
@@ -94,8 +94,8 @@ void CProjectile::Tick()
 
 		//CPickup *pPickup = new CPickup(&GameServer()->m_World, POWERUP_HEALTH, 0);
 		//pPickup->m_Pos = PrevPos;
-		if((GameServer()->m_pController->IsCatching() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
-			!GameServer()->m_pController->IsCatching() || (GameServer()->m_pController->IsCatching() && !TargetChr))
+		if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+			!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 			GameServer()->m_World.DestroyEntity(this);
 	}
 }
@@ -116,7 +116,7 @@ void CProjectile::Snap(int SnappingClient)
 	
 	if(NetworkClipped(SnappingClient, GetPos(Ct)))
 		return;
-	if(!GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
+	if(GameServer()->m_pController->JoiningSystem() && !GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 		return;
 
 	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_Id, sizeof(CNetObj_Projectile)));

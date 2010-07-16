@@ -74,6 +74,11 @@ bool CGameControllerCatching::IsCatching() const
 	return true;
 }
 
+bool CGameControllerCatching::JoiningSystem() const
+{
+	return true;
+}
+
 bool CGameControllerCatching::OnEntity(int Index, vec2 Pos)
 {
 	if((Index == ENTITY_ARMOR_1 || Index == ENTITY_HEALTH_1) && (
