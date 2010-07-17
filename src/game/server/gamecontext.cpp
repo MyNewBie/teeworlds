@@ -769,6 +769,21 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				SendChat(ClientId, Team, pMsg->m_pMessage);
 			}
 		}
+		else if(m_pController->IsZCatch() && !str_comp_num(pMsg->m_pMessage, "/", 1))
+		{
+			char aBuf[512];
+			if(!str_comp_num(pMsg->m_pMessage, "/switch", 7)) // only for testing purposes
+			{
+				p->m_IsJoined ^= 1;
+				str_format(aBuf, sizeof(aBuf), "You are now %d", p->m_IsJoined);
+				SendChatTarget(ClientId, aBuf);
+			}
+			else
+			{
+				SendChatTarget(ClientId, "Wrong command.");
+				SendChatTarget(ClientId, "Say \"/cmdlist\" for list of command available.");
+			}
+		}
 		else
 		{
 			// check for invalid chars

@@ -20,6 +20,13 @@ CGameControllerZCatch::CGameControllerZCatch(class CGameContext *pGameServer)
 
 void CGameControllerZCatch::Tick()
 {
+	// Reload Map
+	if((g_Config.m_SvInstagib != m_IsInstagib ||
+		g_Config.m_SvHammerParty != m_IsHammerParty ||
+		g_Config.m_SvGiveWeapons != m_GiveWeapons ||
+		g_Config.m_SvPickups != m_Pickups))
+		GameServer()->Console()->ExecuteLine("reload");
+	
 	DoPlayerNumWincheck();
 	DoPlayerScoreWincheck();
 	IGameController::Tick();
@@ -78,42 +85,56 @@ bool CGameControllerZCatch::OnEntity(int Index, vec2 Pos)
 void CGameControllerZCatch::OnCharacterSpawn(class CCharacter *pChr)
 {
 	// default health
-	pChr->IncreaseHealth(1);
-	pChr->GetPlayer()->m_IsJoined = true;
+	pChr->IncreaseHealth(10);
+	
 	// give default weapons
-	pChr->GiveWeapon(WEAPON_RIFLE, -1);
+	if(g_Config.m_SvInstagib)
+	{
+		pChr->GiveWeapon(WEAPON_RIFLE, -1);
+		pChr->SetWeapon(WEAPON_RIFLE);
+	}
+	else
+	{
+		pChr->GiveWeapon(WEAPON_HAMMER, -1);
+		pChr->GiveWeapon(WEAPON_GUN, 10);
+	}
 }
 
 int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	int ClientID = pVictim->GetPlayer()->GetCID();
+	int VictimID = pVictim->GetPlayer()->GetCID(),
+		KillerID = pKiller->GetCID();
 	if(pKiller == pVictim->GetPlayer()) // suicide
 	{
 		int LeaderID;
 		LeaderID = GetLeaderID();
 		if(LeaderID > -1)
 		{
-			GameServer()->m_apPlayers[LeaderID]->m_Caught |= 1 << ClientID;
+			GameServer()->m_apPlayers[LeaderID]->m_Caught |= 1 << VictimID;
 		}
 	}
 	else
 	{
 		char aBuf[512];
-		GameServer()->m_apPlayers[pKiller->GetCID()]->m_Caught |= 1 << ClientID;
-		str_format(aBuf, sizeof(aBuf), "Caught by \"%s\"", Server()->ClientName(ClientID));
-		GameServer()->SendChatTarget(ClientID, aBuf);
+		GameServer()->m_apPlayers[KillerID]->m_Caught |= 1 << VictimID;
+		str_format(aBuf, sizeof(aBuf), "Caught by \"%s\" (%d)",
+			Server()->ClientName(KillerID), pKiller->m_IsJoined);
+		GameServer()->SendChatTarget(VictimID, aBuf);
+		str_format(aBuf, sizeof(aBuf), "You caught \"%s\" (%d)",
+			Server()->ClientName(VictimID), pVictim->GetPlayer()->m_IsJoined);
+		GameServer()->SendChatTarget(KillerID, aBuf);
 	}
 	for(int i=0; i<MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
-			if(GameServer()->m_apPlayers[ClientID]->m_Caught&(1<<i))
+			if(GameServer()->m_apPlayers[VictimID]->m_Caught&(1<<i))
 			{
 				GameServer()->m_apPlayers[i]->m_IsJoined = true;
 			}
 		}
 	}
-	GameServer()->m_apPlayers[ClientID]->m_Caught = 0;
+	pVictim->GetPlayer()->m_Caught = 0;
 	pVictim->GetPlayer()->m_IsJoined = false;
 	return 0;
 }
@@ -133,7 +154,7 @@ void CGameControllerZCatch::PostReset()
 
 int CGameControllerZCatch::GetLeaderID()
 {
-	int Num, LeaderID, NumPrev = -1;
+	int Num, LeaderID = -1, NumPrev = -1;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])

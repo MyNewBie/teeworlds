@@ -860,7 +860,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 		return false;
 	if(GameServer()->m_pController->IsCatching() && Weapon == WEAPON_GAME)
 		return false;
-	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvInstagib)
+	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch())  && g_Config.m_SvInstagib)
 	{
 		Die(From, Weapon);
 		return true;
