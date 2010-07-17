@@ -262,3 +262,68 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 		}
 	}
 }
+
+int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
+{
+	// do scoreing
+	if(!pKiller || Weapon == WEAPON_GAME)
+		return 0;
+	if(pKiller == pVictim->GetPlayer())
+		pVictim->GetPlayer()->m_Score--; // suicide
+	else
+	{
+		if(IsTeamplay() && pVictim->GetPlayer()->GetTeam() == pKiller->GetTeam())
+			pKiller->m_Score--; // teamkill
+		else
+			pKiller->m_Score++; // normal kill
+	}
+	
+	// set new team, send messages (hinweis an nox: war vorher in character.
+	//								stört da aber da es auch andere gametypen beeinflusst!
+	//								(und ständige "if isCatching()" unschön, unleserlich
+	//								und schwer zu warten sind.))
+	int TeamOwner = -1,
+		KillerID = pKiller->GetCID(),
+		VictimID = pVictim->GetPlayer()->GetCID();
+	char KillerMsg[128], VictimMsg[128], OwnerMsg[128];
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 &&
+			GameServer()->m_apPlayers[i]->m_BaseCatchingTeam == pKiller->m_CatchingTeam &&
+			pKiller->m_BaseCatchingTeam != pKiller->m_CatchingTeam)
+			TeamOwner = i;
+	}
+	if(pKiller->m_CatchingTeam == pKiller->m_BaseCatchingTeam)
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(VictimID));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(KillerID));
+	}
+	else if(TeamOwner != -1)
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in %s's team", Server()->ClientName(VictimID), Server()->ClientName(TeamOwner));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(TeamOwner));
+		str_format(OwnerMsg, sizeof(OwnerMsg),  "%s is now in your team", Server()->ClientName(VictimID));
+	}
+	else
+	{
+		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in the same team as you", Server()->ClientName(VictimID));
+		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in the same team as %s", Server()->ClientName(KillerID));
+	}
+	pKiller->m_NoBroadcast = Server()->TickSpeed() * 5;
+	pKiller->m_TickBroadcast = true;
+	GameServer()->SendBroadcast(KillerMsg, KillerID);
+
+	pVictim->GetPlayer()->m_NoBroadcast = Server()->TickSpeed() * 5;
+	pVictim->GetPlayer()->m_TickBroadcast = true;
+	GameServer()->SendBroadcast(VictimMsg, VictimID);
+
+	if(TeamOwner != -1)
+	{
+		GameServer()->m_apPlayers[TeamOwner]->m_NoBroadcast = Server()->TickSpeed() * 3;
+		GameServer()->m_apPlayers[TeamOwner]->m_TickBroadcast = true;
+		GameServer()->SendBroadcast(OwnerMsg, TeamOwner);
+	}
+	
+	pVictim->ChangeTeam(VictimID, KillerID, pVictim->GetPlayer()->m_CatchingTeam, pKiller->m_CatchingTeam);
+	return 0;
+}

@@ -20,6 +20,7 @@ public:
 	virtual void OnPlayerInfoChange(class CPlayer *pPlayer);
 	virtual void OnCharacterSpawn(class CCharacter *pChr);
 	virtual void PostReset();
+	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
 	void DoPlayerNumWincheck();
 };
 #endif

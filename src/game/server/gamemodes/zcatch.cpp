@@ -98,6 +98,9 @@ void CGameControllerZCatch::OnCharacterSpawn(class CCharacter *pChr)
 		pChr->GiveWeapon(WEAPON_HAMMER, -1);
 		pChr->GiveWeapon(WEAPON_GUN, 10);
 	}
+	
+	// set player to "joined"
+	pChr->GetPlayer()->m_IsJoined = true;
 }
 
 int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)

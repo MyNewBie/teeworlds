@@ -738,20 +738,22 @@ void CCharacter::Die(int Killer, int Weapon)
 	Msg.m_Victim = m_pPlayer->GetCID();
 	Msg.m_Weapon = Weapon;
 	Msg.m_ModeSpecial = ModeSpecial;
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
 			if(!GameServer()->m_apPlayers[i]->m_IsUsingCatchClient && (Weapon == WEAPON_POWERUP || Weapon == WEAPON_HOOK))
 				Msg.m_Weapon = WEAPON_GAME;
-			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
 		}
 	}
 
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
 	
-	if(!GameServer()->m_pController->IsCatching() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
+	if(GameServer()->m_pController->JoiningSystem())
+			CreateDieExplosion(true);
+	if(!GameServer()->m_pController->JoiningSystem() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
 	{
 		// this is for auto respawn after 3 secs
 		m_pPlayer->m_DieTick = Server()->Tick();
@@ -763,55 +765,8 @@ void CCharacter::Die(int Killer, int Weapon)
 	
 		// we got to wait 0.5 secs before respawning
 		m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
-		if(GameServer()->m_pController->IsCatching())
-			CreateDieExplosion(true);
 		return;
 	}
-	CreateDieExplosion(true);
-
-	int TeamOwner = -1;
-	char KillerMsg[128];
-	char VictimMsg[128];
-	char OwnerMsg[128];
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 &&
-			GameServer()->m_apPlayers[i]->m_BaseCatchingTeam == GameServer()->m_apPlayers[Killer]->m_CatchingTeam &&
-			GameServer()->m_apPlayers[Killer]->m_BaseCatchingTeam != GameServer()->m_apPlayers[Killer]->m_CatchingTeam)
-			TeamOwner = i;
-	}
-	if(GameServer()->m_apPlayers[Killer]->m_CatchingTeam == GameServer()->m_apPlayers[Killer]->m_BaseCatchingTeam)
-	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(m_pPlayer->GetCID()));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(Killer));
-	}
-	else if(TeamOwner != -1)
-	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in %s's team", Server()->ClientName(m_pPlayer->GetCID()), Server()->ClientName(TeamOwner));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(TeamOwner));
-		str_format(OwnerMsg, sizeof(OwnerMsg),  "%s is now in your team", Server()->ClientName(m_pPlayer->GetCID()));
-	}
-	else
-	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in the same team as you", Server()->ClientName(m_pPlayer->GetCID()));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in the same team as %s", Server()->ClientName(Killer));
-	}
-	GameServer()->m_apPlayers[Killer]->m_NoBroadcast = Server()->TickSpeed() * 5;
-	GameServer()->m_apPlayers[Killer]->m_TickBroadcast = true;
-	GameServer()->SendBroadcast(KillerMsg, Killer);
-
-	m_pPlayer->m_NoBroadcast = Server()->TickSpeed() * 5;
-	m_pPlayer->m_TickBroadcast = true;
-	GameServer()->SendBroadcast(VictimMsg, m_pPlayer->GetCID());
-
-	if(TeamOwner != -1)
-	{
-		GameServer()->m_apPlayers[TeamOwner]->m_NoBroadcast = Server()->TickSpeed() * 3;
-		GameServer()->m_apPlayers[TeamOwner]->m_TickBroadcast = true;
-		GameServer()->SendBroadcast(OwnerMsg, TeamOwner);
-	}
-	
-	ChangeTeam(m_pPlayer->GetCID(), Killer, m_pPlayer->m_CatchingTeam, GameServer()->m_apPlayers[Killer]->m_CatchingTeam);
 }
 
 void CCharacter::CreateDieExplosion(bool refill)
