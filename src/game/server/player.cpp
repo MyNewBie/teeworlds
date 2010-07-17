@@ -58,7 +58,7 @@ void CPlayer::Tick()
 			m_Latency.m_AccumMax = 0;
 		}
 	}
-	if(!GameServer()->m_pController->IsCatching() && !m_IsJoined)
+	if(!GameServer()->m_pController->JoiningSystem() && !m_IsJoined)
 		m_IsJoined = true;
 
 	if(GameServer()->m_pController->IsCatching())
