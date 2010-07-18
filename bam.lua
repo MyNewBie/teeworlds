@@ -126,7 +126,7 @@ function build(settings)
 	if config.compiler.driver == "cl" then
 		settings.cc.flags:Add("/wd4244")
 	else
-		settings.cc.flags:Add("-Wall", "-fno-exceptions")
+		settings.cc.flags:Add("-Wall", "-fno-exceptions", "-m32")
 		if platform == "macosx" then
 			settings.cc.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
 			settings.link.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
@@ -145,6 +145,8 @@ function build(settings)
 			settings.link.frameworks:Add("AppKit")
 		else
 			settings.link.libs:Add("pthread")
+			settings.link.flags:Add("-m32")
+			settings.link.libpath:Add("/usr/lib32")
 		end
 	elseif family == "windows" then
 		settings.link.libs:Add("gdi32")
