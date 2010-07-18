@@ -59,9 +59,12 @@ void CPlayer::Tick()
 			m_Latency.m_AccumMax = 0;
 		}
 	}
+	if(!Character && m_DieTick+Server()->TickSpeed()*3 <= Server()->Tick())
+		m_Spawning = true;
+	
 	if(!GameServer()->m_pController->JoiningSystem() && !m_IsJoined)
 		m_IsJoined = true;
-
+	
 	if(GameServer()->m_pController->IsCatching())
 	{
 		// Increasing Score if ppl does VAR (Optimal: 20) or more damage
@@ -211,9 +214,7 @@ void CPlayer::Tick()
 		}
 		GameServer()->SendBroadcast(aBuf, m_ClientID);
 	}
-	if(!Character && m_DieTick+Server()->TickSpeed()*3 <= Server()->Tick())
-		m_Spawning = true;
-
+	
 	if(Character)
 	{
 		if(Character->IsAlive())
