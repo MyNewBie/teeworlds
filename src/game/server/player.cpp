@@ -38,8 +38,7 @@ CPlayer::~CPlayer()
 void CPlayer::Tick()
 {
 	Server()->SetClientScore(m_ClientID, m_Score);
-	if(GameServer()->m_pController->IsZCatch())
-		GameServer()->m_pController->SetColor(this);
+	
 	// do latency stuff
 	{
 		IServer::CClientInfo Info;
@@ -179,7 +178,39 @@ void CPlayer::Tick()
 		else if(m_TickBroadcast)
 			m_TickBroadcast = false;
 	}
-	
+	else if(GameServer()->m_pController->IsZCatch())
+	{
+		char aBuf[512];
+		int Total = 0, Num = 0;
+		GameServer()->m_pController->SetColor(this);
+		if(m_CaughtBy == -1)
+		{
+			for(int i = 0; i < MAX_CLIENTS; i++)
+			{
+				if(i != m_ClientID && GameServer()->m_apPlayers[i])
+				{
+					Total++;
+					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_ClientID)
+						Num++;
+				}
+			}
+			str_format(aBuf, sizeof(aBuf), "(%d/%d)", Num, Total);
+		}
+		else
+		{
+			for(int i = 0; i < MAX_CLIENTS; i++)
+			{
+				if(i != m_CaughtBy && GameServer()->m_apPlayers[i])
+				{
+					Total++;
+					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_CaughtBy)
+						Num++;
+				}
+			}
+			str_format(aBuf, sizeof(aBuf), "Caught by %s (%d/%d)", Server()->ClientName(m_CaughtBy), Num, Total);
+		}
+		GameServer()->SendBroadcast(aBuf, m_ClientID);
+	}
 	if(!Character && m_DieTick+Server()->TickSpeed()*3 <= Server()->Tick())
 		m_Spawning = true;
 
