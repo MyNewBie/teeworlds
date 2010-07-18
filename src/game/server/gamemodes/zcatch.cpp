@@ -44,24 +44,60 @@ bool CGameControllerZCatch::JoiningSystem() const
 
 void CGameControllerZCatch::DoPlayerNumWincheck()
 {
+	int LeaderID = GetLeaderID(), Num = 0, Total = 0;
+	char aBuf[512];
 	if(m_GameOverTick == -1  && !m_Warmup)
 	{
-		// DRUEBER NACHDENKEN - STICHWORT SUSHI MASKE
-		/*int Num, NumPrev = 0, LeaderID = -1;
+		if(LeaderID > -1)
+		{
+			for(int i=0; i<MAX_CLIENTS; i++)
+			{
+				if(GameServer()->m_apPlayers[i])
+				{
+					Total++;
+					if(GameServer()->m_apPlayers[i]->m_CaughtBy == LeaderID)
+					{
+						Num++;
+					}
+				}
+			}
+			if(Total > 1 && Num == Total - 1)
+			{
+				GameServer()->m_apPlayers[LeaderID]->m_Score++;
+				str_format(aBuf, sizeof(aBuf), "%s remained, congratulations!", Server()->ClientName(LeaderID));
+				GameServer()->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
+				EndRound();
+			}
+		}
+	}
+}
+
+void CGameControllerZCatch::DoPlayerScoreWincheck()
+{
+	if(m_GameOverTick == -1  && !m_Warmup)
+	{
+		// gather some stats
+		int Topscore = 0;
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
 			if(GameServer()->m_apPlayers[i])
 			{
-				Num = 0;
-				for(int j = 0; j < MAX_CLIENTS; j++)
-					if(GameServer()->m_apPlayers[j])
-						if(GameServer()->m_apPlayers[j]->CaughtBy == i)
-							Num++;
-				if(Num > NumPrev
+				if(GameServer()->m_apPlayers[i]->m_Score > Topscore)
+					Topscore = GameServer()->m_apPlayers[i]->m_Score;
 			}
-		}*/
+		}
+		
+		// check score win condition
+		if((g_Config.m_SvScorelimit > 0 && Topscore >= g_Config.m_SvScorelimit) ||
+			(g_Config.m_SvTimelimit > 0 && (Server()->Tick()-m_RoundStartTick) >= g_Config.m_SvTimelimit*Server()->TickSpeed()*60))
+		{
+			m_RoundRestart = true;
+			GameServer()->SendChat(-1, CGameContext::CHAT_ALL, "Scorelimit reached, starting new Round...");
+			EndRound();
+		}
 	}
 }
+
 bool CGameControllerZCatch::OnEntity(int Index, vec2 Pos)
 {
 	if((Index == ENTITY_ARMOR_1 || Index == ENTITY_HEALTH_1) && (
@@ -76,7 +112,7 @@ bool CGameControllerZCatch::OnEntity(int Index, vec2 Pos)
 		Index == ENTITY_WEAPON_SHOTGUN ||
 		Index == ENTITY_WEAPON_GRENADE ||
 		Index == ENTITY_WEAPON_RIFLE ||
-		(Index == ENTITY_POWERUP_NINJA && !g_Config.m_SvInstagib)))
+		(Index == ENTITY_POWERUP_NINJA && g_Config.m_SvInstagib)))
 		return false;
 
 	return IGameController::OnEntity(Index, Pos);
@@ -98,9 +134,6 @@ void CGameControllerZCatch::OnCharacterSpawn(class CCharacter *pChr)
 		pChr->GiveWeapon(WEAPON_HAMMER, -1);
 		pChr->GiveWeapon(WEAPON_GUN, 10);
 	}
-	
-	// set player to "joined"
-	pChr->GetPlayer()->m_IsJoined = true;
 }
 
 int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
@@ -113,13 +146,20 @@ int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 		LeaderID = GetLeaderID();
 		if(LeaderID > -1)
 		{
-			GameServer()->m_apPlayers[LeaderID]->m_Caught |= 1 << VictimID;
+			pVictim->GiveWeapon(WEAPON_HAMMER, 0);
+			pVictim->SetWeapon(WEAPON_HAMMER);
+			pVictim->GetPlayer()->m_CaughtBy = LeaderID;
+			pVictim->GetPlayer()->m_IsJoined = false;
 		}
 	}
-	else
+	else if(pKiller->m_IsJoined)
 	{
 		char aBuf[512];
-		GameServer()->m_apPlayers[KillerID]->m_Caught |= 1 << VictimID;
+		pVictim->GiveWeapon(WEAPON_HAMMER, 0);
+		pVictim->SetWeapon(WEAPON_HAMMER);
+		pVictim->GetPlayer()->m_IsJoined = false;
+		pVictim->GetPlayer()->m_CaughtBy = KillerID;
+		
 		str_format(aBuf, sizeof(aBuf), "Caught by \"%s\" (%d)",
 			Server()->ClientName(KillerID), pKiller->m_IsJoined);
 		GameServer()->SendChatTarget(VictimID, aBuf);
@@ -127,18 +167,18 @@ int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 			Server()->ClientName(VictimID), pVictim->GetPlayer()->m_IsJoined);
 		GameServer()->SendChatTarget(KillerID, aBuf);
 	}
-	for(int i=0; i<MAX_CLIENTS; i++)
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
-			if(GameServer()->m_apPlayers[VictimID]->m_Caught&(1<<i))
+			if(GameServer()->m_apPlayers[i]->m_CaughtBy == VictimID)
 			{
 				GameServer()->m_apPlayers[i]->m_IsJoined = true;
+				GameServer()->m_apPlayers[i]->m_CaughtBy = -1;
+				GameServer()->m_apPlayers[i]->GetCharacter()->GiveWeapon(WEAPON_HAMMER, -1);
 			}
 		}
 	}
-	pVictim->GetPlayer()->m_Caught = 0;
-	pVictim->GetPlayer()->m_IsJoined = false;
 	return 0;
 }
 
@@ -150,7 +190,10 @@ void CGameControllerZCatch::PostReset()
 		{
 			GameServer()->m_apPlayers[i]->Respawn();
 			GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
-			GameServer()->m_apPlayers[i]->m_Caught = 0;
+			GameServer()->m_apPlayers[i]->m_CaughtBy = -1;
+			GameServer()->m_apPlayers[i]->m_IsJoined = true;
+			if(m_RoundRestart)
+				GameServer()->m_apPlayers[i]->m_Score = 0;
 		}
 	}
 }
@@ -166,7 +209,7 @@ int CGameControllerZCatch::GetLeaderID()
 			for(int j = 0; j < MAX_CLIENTS; j++)
 			{
 				if(GameServer()->m_apPlayers[j])
-					if(GameServer()->m_apPlayers[i]->m_Caught&(1<<j))
+					if(GameServer()->m_apPlayers[j]->m_CaughtBy == i)
 						Num++;
 			}
 			if(Num > NumPrev)
@@ -179,4 +222,30 @@ int CGameControllerZCatch::GetLeaderID()
 		}
 	}
 	return LeaderID;
+}
+
+void CGameControllerZCatch::SetColor(class CPlayer *pP)
+{
+	pP->m_TeeInfos.m_UseCustomColor = 1;
+	if(!pP->m_IsJoined)
+	{
+		pP->m_TeeInfos.m_ColorBody = 255;
+		pP->m_TeeInfos.m_ColorFeet = 255;
+	}
+	else
+	{
+		int Caught = 161;
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(GameServer()->m_apPlayers[i])
+			{
+				if(GameServer()->m_apPlayers[i]->m_CaughtBy == pP->GetCID())
+				{
+					Caught -= 20;
+				}
+			}
+		}
+		pP->m_TeeInfos.m_ColorBody = 0xff00 + Caught * 0x010000;
+		pP->m_TeeInfos.m_ColorFeet = 0xff00 + Caught * 0x010000;
+	}
 }

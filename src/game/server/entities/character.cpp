@@ -230,6 +230,8 @@ void CCharacter::HandleNinja()
 void CCharacter::DoWeaponSwitch()
 {
 	// make sure we can switch
+	if(GameServer()->m_pController->IsZCatch() && !m_pPlayer->m_IsJoined)
+		return;
 	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_aWeapons[WEAPON_NINJA].m_Got)
 		return;
 

@@ -68,7 +68,7 @@ public:
 	virtual ~IGameController();
 
 	void DoTeamScoreWincheck();
-	void DoPlayerScoreWincheck();
+	virtual void DoPlayerScoreWincheck();
 	
 	void DoWarmup(int Seconds);
 	
@@ -144,6 +144,8 @@ public:
 	virtual bool IsCatching() const;
 	virtual bool IsZCatch() const;
 	virtual bool JoiningSystem() const;
+	virtual void SetColor(class CPlayer *pP);
+	virtual int GetLeaderID();
 	bool CheckJoined(CCharacter *pChr1, CCharacter *pChr2);
 	virtual void PostReset();
 	class CPathfind m_Path;

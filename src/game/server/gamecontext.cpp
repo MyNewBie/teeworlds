@@ -520,8 +520,21 @@ void CGameContext::OnClientEnter(int ClientId)
 	dbg_msg("game", "team_join player='%d:%s' team=%d", ClientId, Server()->ClientName(ClientId), m_apPlayers[ClientId]->GetTeam());
 
 	if(m_pController->IsCatching())
-		m_apPlayers[ClientId]->m_Colorassign = Server()->TickSpeed() * 30;
-
+		m_apPlayers[ClientId]->m_Colorassign = Server()->TickSpeed() * 30; // und nachher m_Colorassign herunterzaehlen... ist doch Schwachsinn, nimm gleich den Tick
+	if(m_pController->IsZCatch())
+	{
+		int LeaderId = m_pController->GetLeaderID();
+		if(LeaderId > -1 && LeaderId != ClientId)
+		{
+			m_apPlayers[ClientId]->m_CaughtBy = LeaderId;
+			m_apPlayers[ClientId]->m_IsJoined = false;
+		}
+		else
+		{
+			m_apPlayers[ClientId]->m_CaughtBy = -1;
+			m_apPlayers[ClientId]->m_IsJoined = true;
+		}
+	}
 	m_VoteUpdate = true;
 }
 

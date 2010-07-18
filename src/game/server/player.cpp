@@ -26,6 +26,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int CID, int Team)
 	m_NoBroadcast = 0;
 	m_TickBroadcast = false;
 	m_Colorassign = 0;
+	m_CaughtBy = -1;
 }
 
 CPlayer::~CPlayer()
@@ -37,7 +38,8 @@ CPlayer::~CPlayer()
 void CPlayer::Tick()
 {
 	Server()->SetClientScore(m_ClientID, m_Score);
-
+	if(GameServer()->m_pController->IsZCatch())
+		GameServer()->m_pController->SetColor(this);
 	// do latency stuff
 	{
 		IServer::CClientInfo Info;

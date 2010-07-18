@@ -22,7 +22,9 @@ public:
 	virtual void OnCharacterSpawn(class CCharacter *pChr);
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
 	virtual void PostReset();
+	virtual void DoPlayerScoreWincheck();
+	virtual void SetColor(class CPlayer *pP);
+	virtual int GetLeaderID();
 	void DoPlayerNumWincheck();
-	int GetLeaderID();
 };
 #endif

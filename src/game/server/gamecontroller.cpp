@@ -691,6 +691,9 @@ bool IGameController::JoiningSystem() const
 	return false;
 }
 
+void IGameController::SetColor(class CPlayer *pP){}
+int IGameController::GetLeaderID(){ return -1; }
+
 bool IGameController::CheckJoined(CCharacter *pChr1, CCharacter *pChr2)
 {
 	if((pChr1->GetPlayer()->m_IsJoined && pChr2->GetPlayer()->m_IsJoined) ||

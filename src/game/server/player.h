@@ -71,7 +71,7 @@ public:
 	int m_NoBroadcast;
 	bool m_TickBroadcast;
 	int m_Colorassign;
-	int m_Caught;
+	int m_CaughtBy;
 private:
 	CCharacter *Character;
 	CGameContext *m_pGameServer;
