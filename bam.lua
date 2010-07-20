@@ -127,7 +127,6 @@ function build(settings)
 		settings.cc.flags:Add("/wd4244")
 	else
 		settings.cc.flags:Add("-Wall", "-fno-exceptions")
-		settings.cc.flags:Add("-m32")
 		if platform == "macosx" then
 			settings.cc.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
 			settings.link.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
@@ -146,8 +145,6 @@ function build(settings)
 			settings.link.frameworks:Add("AppKit")
 		else
 			settings.link.libs:Add("pthread")
-			settings.link.flags:Add("-m32")
-			settings.link.libpath:Add("/usr/lib32")
 		end
 	elseif family == "windows" then
 		settings.link.libs:Add("gdi32")
@@ -231,11 +228,11 @@ function build(settings)
 	end
 	
 	-- build client, server, version server and master server
-	client_exe = Link(client_settings, "teeworlds_catching", game_shared, game_client,
+	client_exe = Link(client_settings, "teeworlds", game_shared, game_client,
 		engine, client, game_editor, zlib, pnglite, wavpack,
 		client_link_other, client_osxlaunch)
 
-	server_exe = Link(server_settings, "teeworlds_catching_srv", engine, server,
+	server_exe = Link(server_settings, "teeworlds_srv", engine, server,
 		game_shared, game_server, zlib)
 
 	serverlaunch = {}
