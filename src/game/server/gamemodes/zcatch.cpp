@@ -54,7 +54,8 @@ void CGameControllerZCatch::DoPlayerNumWincheck()
 			{
 				if(GameServer()->m_apPlayers[i])
 				{
-					Total++;
+					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
+						Total++;
 					if(GameServer()->m_apPlayers[i]->m_CaughtBy == LeaderID)
 					{
 						Num++;

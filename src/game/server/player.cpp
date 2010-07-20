@@ -192,7 +192,8 @@ void CPlayer::Tick()
 			{
 				if(i != m_ClientID && GameServer()->m_apPlayers[i])
 				{
-					Total++;
+					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
+						Total++;
 					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_ClientID)
 						Num++;
 				}
@@ -205,7 +206,8 @@ void CPlayer::Tick()
 			{
 				if(i != m_CaughtBy && GameServer()->m_apPlayers[i])
 				{
-					Total++;
+					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
+						Total++;
 					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_CaughtBy)
 						Num++;
 				}
