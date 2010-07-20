@@ -199,6 +199,7 @@ void CGameControllerZCatch::PostReset()
 				GameServer()->m_apPlayers[i]->m_Score = 0;
 		}
 	}
+	m_RoundRestart = 0;
 }
 
 int CGameControllerZCatch::GetLeaderID()

@@ -728,6 +728,8 @@ bool CCharacter::IncreaseArmor(int Amount)
 
 void CCharacter::Die(int Killer, int Weapon)
 {
+	if(GameServer()->m_pController->JoiningSystem())
+			CreateDieExplosion(true);
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	dbg_msg("game", "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
@@ -753,8 +755,6 @@ void CCharacter::Die(int Killer, int Weapon)
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
 	
-	if(GameServer()->m_pController->JoiningSystem())
-			CreateDieExplosion(true);
 	if(!GameServer()->m_pController->JoiningSystem() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
 	{
 		// this is for auto respawn after 3 secs
