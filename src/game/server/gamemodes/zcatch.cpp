@@ -62,7 +62,7 @@ void CGameControllerZCatch::DoPlayerNumWincheck()
 					}
 				}
 			}
-			if(Total > 1 && Num == Total - 1)
+			if(Total > 1 && Num >= Total - 1)
 			{
 				GameServer()->m_apPlayers[LeaderID]->m_Score += Num;
 				str_format(aBuf, sizeof(aBuf), "%s remained, congratulations!", Server()->ClientName(LeaderID));
