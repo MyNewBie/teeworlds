@@ -19,7 +19,12 @@ public:
 	virtual IOHANDLE OpenFile(const char *pFilename, int Flags, char *pBuffer = 0, int BufferSize = 0) = 0;
 };
 
-extern IStorage *CreateStorage(const char *pApplicationName, const char *pArgv0);
+/*
+ * Change Matthis:
+ * - added Datadir
+ */
+extern IStorage *CreateStorage(const char *pApplicationName, const char *pArgv0, char Datadir[512]);
+
 
 
 #endif
