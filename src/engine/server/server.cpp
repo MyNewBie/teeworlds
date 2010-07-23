@@ -1393,7 +1393,22 @@ int main(int argc, const char **argv) // ignore_convention
 	IGameServer *pGameServer = CreateGameServer();
 	IConsole *pConsole = CreateConsole(CFGFLAG_SERVER);
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
-	IStorage *pStorage = CreateStorage("Teeworlds", argv[0]); // ignore_convention
+
+        /*                 
+         * Change Matthis:      
+         * - Check if parameter '-d' defined to change datadir
+         */
+        char Datadir[512] = "data";
+        for(int i = 1; i < argc; i++)
+        {            
+                if(argv[i][0] == '-' && argv[i][1] == 'd' && argv[i][2] == 0 && argc - 1 > 1)
+                {
+                        str_copy(Datadir, argv[i+1], sizeof(Datadir));
+                        break;     
+                }    
+        }
+        IStorage *pStorage = CreateStorage("Teeworlds", argv[0], Datadir); // ignore_convention
+
 	IConfig *pConfig = CreateConfig();
 	
 	pServer->InitRegister(&pServer->m_NetServer, pEngineMasterServer);
