@@ -18,8 +18,14 @@ public:
 		m_aDatadir[0] = 0;
 	}
 	
-	int Init(const char *pApplicationName, const char *pArgv0)
-	{
+        int Init(const char *pApplicationName, const char *pArgv0, char Datadir[512])
+        {
+                /*
+                 * Change Matthis:
+                 * - adopt Datadir
+                 */
+                str_copy(m_aDatadir, Datadir, sizeof(m_aDatadir));
+
 		char aPath[1024] = {0};
 		fs_storage_path(pApplicationName, m_aApplicationSavePath, sizeof(m_aApplicationSavePath));
 		if(fs_makedir(m_aApplicationSavePath) == 0)
@@ -48,8 +54,15 @@ public:
 		// 1) use provided data-dir override
 		if(m_aDatadir[0])
 		{
-			if(fs_is_dir(m_aDatadir))
-				return 0;
+                        if(fs_is_dir(m_aDatadir))
+                        {
+                                /*
+                                 * Change Matthis:
+                                 * - added dbg_msg()
+                                 */
+                                dbg_msg("engine/datadir", "data-dir specified to '%s'", m_aDatadir);
+                                return 0;
+                        }
 			else
 			{
 				dbg_msg("engine/datadir", "specified data-dir '%s' does not exist", m_aDatadir);
@@ -183,17 +196,24 @@ public:
 		pBuffer[0] = 0;
 		return 0;		
 	}
-
-	static IStorage *Create(const char *pApplicationName, const char *pArgv0)
-	{
-		CStorage *p = new CStorage();
-		if(p->Init(pApplicationName, pArgv0))
-		{
-			delete p;
-			p = 0;
-		}
-		return p;
-	}
+        /*
+         * Change Matthis:
+         * - added Datadir
+         */
+        static IStorage *Create(const char *pApplicationName, const char *pArgv0, char Datadir[512])
+        {
+                CStorage *p = new CStorage();       
+                if(p->Init(pApplicationName, pArgv0, Datadir))
+                {
+                        delete p;                
+                        p = 0;
+                }                 
+                return p;
+        }
 };
 
-IStorage *CreateStorage(const char *pApplicationName, const char *pArgv0) { return CStorage::Create(pApplicationName, pArgv0); }
+/*               
+ * Change Matthis:
+ * - added Datadir               
+ */              
+IStorage *CreateStorage(const char *pApplicationName, const char *pArgv0, char Datadir[512]) { return CStorage::Create(pApplicationName, pArgv0, Datadir); }
