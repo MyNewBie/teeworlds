@@ -87,6 +87,7 @@
     <ClCompile Include="..\..\src\game\gamecore.cpp" />
     <ClCompile Include="..\..\src\game\layers.cpp" />
     <ClCompile Include="..\..\src\game\localization.cpp" />
+    <ClCompile Include="..\..\src\game\server\chatcmd.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\character.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\laser.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\moving.cpp" />

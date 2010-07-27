@@ -520,7 +520,7 @@ void CGameContext::OnClientEnter(int ClientId)
 	dbg_msg("game", "team_join player='%d:%s' team=%d", ClientId, Server()->ClientName(ClientId), m_apPlayers[ClientId]->GetTeam());
 
 	if(m_pController->IsCatching())
-		m_apPlayers[ClientId]->m_Colorassign = Server()->TickSpeed() * 30; // und nachher m_Colorassign herunterzaehlen... ist doch Schwachsinn, nimm gleich den Tick
+		m_apPlayers[ClientId]->m_Colorassign = Server()->TickSpeed() * 30; // und nachher m_Colorassign herunterzaehlen... ist doch Schwachsinn, nimm gleich den Tick // Niemals
 	if(m_pController->IsZCatch())
 	{
 		int LeaderId = m_pController->GetLeaderID();
@@ -607,157 +607,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 
 		if(m_pController->IsCatching())
 		{
-			if(!str_comp(pMsg->m_pMessage, "/info"))
-			{
-				char aVersionBuf[128];
-				str_format(aVersionBuf, sizeof(aVersionBuf), "Catching %s for Teeworlds %s", CATCHING_VERSION, GAME_VERSION);
-				SendChatTarget(ClientId, "----------------------------------------");
-				SendChatTarget(ClientId, aVersionBuf);
-				SendChatTarget(ClientId, "By Nox Nebula (www.Teeworlds-Community.de)");
-				SendChatTarget(ClientId, "Special Thanks to: SushiTee:");
-				SendChatTarget(ClientId, "     Wincondition and Pathfinding");
-				SendChatTarget(ClientId, " ");
-				if(p->m_BaseCatchingTeam == -1)
-					SendChatTarget(ClientId, "Say \"/color\" to select a teamcolor.");
-				else
-					SendChatTarget(ClientId, "Say \"/cmdlist\" for list of command available.");
-
-				SendChatTarget(ClientId, "----------------------------------------");
-			}
-			else if(!str_comp(pMsg->m_pMessage, "/cmdlist"))
-			{
-				SendChatTarget(ClientId, "----------------------------------------");
-				SendChatTarget(ClientId, "Say \"/info\" for modinfo.");
-				if(p->m_BaseCatchingTeam == -1)
-				{
-					SendChatTarget(ClientId, "Say \"/color\" to select your catching-color.");
-					SendChatTarget(ClientId, "Say \"/colorlist\" for list of colors available.");
-				}
-				SendChatTarget(ClientId, "----------------------------------------");
-			}
-			else if(!str_comp(pMsg->m_pMessage, "/about:color"))
-			{
-				char Buf[128];
-				str_format(Buf, sizeof(Buf),  "Your Color: %d", p->m_BaseCatchingTeam);
-				SendChatTarget(ClientId, Buf);
-			}
-			else if(!str_comp(pMsg->m_pMessage, "/colorlist"))
-			{
-				SendChatTarget(ClientId, "----------------------------------------");
-				SendChatTarget(ClientId, "ID - Color  |  ID - Color");
-				SendChatTarget(ClientId, "0 - white  |  8 - purple");
-				SendChatTarget(ClientId, "1 - orange  |  9 - black/grey");
-				SendChatTarget(ClientId, "2 - aqua  |  10 - rose");
-				SendChatTarget(ClientId, "3 - pink  |  11 - light purple");
-				SendChatTarget(ClientId, "4 - yellow  |  12 - light blue");
-				SendChatTarget(ClientId, "5 - green  |  13 - light yellow");
-				SendChatTarget(ClientId, "6 - red  |  14 - light orange");
-				SendChatTarget(ClientId, "7 - blue  |  15 - light green");
-				SendChatTarget(ClientId, "0 - any color");
-			}
-			else if(!str_comp_num(pMsg->m_pMessage, "/color", 6))
-			{
-				int Color;
-				sscanf(pMsg->m_pMessage, "/color %d", &Color);
-
-				if(m_apPlayers[ClientId]->m_BaseCatchingTeam != -1)
-				{
-					if(Color == -1)
-					{
-						p->m_IsJoined = false;
-						p->m_BaseCatchingTeam = -1;
-						p->m_CatchingTeam = -1;
-						p->GetCharacter()->CreateDieExplosion(false);
-					}
-					else
-					{
-						SendChatTarget(ClientId, "----------------------------------------");
-						SendChatTarget(ClientId, "Use /color -1 to delete your team");
-						SendChatTarget(ClientId, "----------------------------------------");
-					}
-				}
-				else
-				{
-					// Check for used Colors and how many players playing
-					int UsedColor[MAX_CLIENTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-					int NumPlayers = 0;
-					for(int i = 0; i < MAX_CLIENTS; i++)
-					{
-						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_BaseCatchingTeam != -1)
-							UsedColor[m_apPlayers[i]->m_BaseCatchingTeam] = 1;
-
-						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_IsJoined)
-							NumPlayers++;
-					}
-
-					if(Color >= 0 && Color < MAX_CLIENTS)
-					{
-						if(!UsedColor[Color]) // Check if Color is already used
-						{
-							p->m_BaseCatchingTeam = Color;
-
-							if(NumPlayers < g_Config.m_SvCheatProtection)
-							{
-								p->m_IsJoined = true;
-								p->GetCharacter()->CreateDieExplosion(false);
-							}
-							else
-							{
-								SendChatTarget(ClientId, "----------------------------------------");
-								SendChatTarget(ClientId, "Please wait for the end of this Round");
-								SendChatTarget(ClientId, "----------------------------------------");
-							}
-							dbg_msg("Colorselect", "Player: %d -> Color: %d", ClientId, Color);
-							m_pController->OnPlayerInfoChange(p);
-						}
-						else if(Color == 0) // Give a random Color
-						{
-							for(int i = 0; i < MAX_CLIENTS; i++)
-							{
-								if(!UsedColor[i])
-								{
-									Color = i;
-									break;
-								}
-							}
-							p->m_BaseCatchingTeam = Color;
-
-							if(NumPlayers < g_Config.m_SvCheatProtection)
-							{
-								p->m_IsJoined = true;
-								p->GetCharacter()->CreateDieExplosion(false);
-							}
-							else
-							{
-								SendChatTarget(ClientId, "----------------------------------------");
-								SendChatTarget(ClientId, "Please wait for the end of this Round");
-								SendChatTarget(ClientId, "----------------------------------------");
-							}
-							dbg_msg("Colorselect", "Player: %d -> Random-Color: %d", ClientId, Color);
-							m_pController->OnPlayerInfoChange(p);
-							char Buf[128];
-							str_format(Buf, sizeof(Buf),  "Random Color: %d", Color);
-							SendChatTarget(ClientId, Buf);
-						}
-						else
-							SendChatTarget(ClientId, "This color is already in use");
-					}
-					else
-					{
-						SendChatTarget(ClientId, "----------------------------------------");
-						SendChatTarget(ClientId, "Use /color <color ID>");
-						SendChatTarget(ClientId, "Use /color 0 to get any color");
-						SendChatTarget(ClientId, "Use /colorlist to displays the Colorlist");
-						SendChatTarget(ClientId, "----------------------------------------");
-					}
-				}
-			}
-			else if(!str_comp_num(pMsg->m_pMessage, "/", 1))
-			{
-				SendChatTarget(ClientId, "Wrong command.");
-				SendChatTarget(ClientId, "Say \"/cmdlist\" for list of command available.");
-			}
-			else if(p->GetTeam() != -1 && Team != CGameContext::CHAT_ALL)
+			bool DisplayChat = ChatCommandsCatching(ClientId, p, pMsg);
+			if(DisplayChat && p->GetTeam() != -1 && Team != CGameContext::CHAT_ALL)
 			{
 				for(int i = 0; i < MAX_CLIENTS; i++)
 				{
@@ -766,9 +617,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 						SendChatTarget(i, pMsg->m_pMessage, ClientId, 1);
 					}
 				}
-				//SendChatTarget(ClientId, pMsg->m_pMessage, ClientId, 1);
 			}
-			else
+			else if(DisplayChat)
 			{
 				// check for invalid chars
 				unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
@@ -784,18 +634,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 		}
 		else if(m_pController->IsZCatch() && !str_comp_num(pMsg->m_pMessage, "/", 1))
 		{
-			char aBuf[512];
-			if(!str_comp_num(pMsg->m_pMessage, "/switch", 7)) // only for testing purposes
-			{
-				p->m_IsJoined ^= 1;
-				str_format(aBuf, sizeof(aBuf), "You are now %d", p->m_IsJoined);
-				SendChatTarget(ClientId, aBuf);
-			}
-			else
-			{
-				SendChatTarget(ClientId, "Wrong command.");
-				SendChatTarget(ClientId, "Say \"/cmdlist\" for list of command available.");
-			}
+			ChatCommandsZCatch(ClientId, p, pMsg);
 		}
 		else
 		{

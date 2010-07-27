@@ -365,6 +365,9 @@
     <ClCompile Include="..\..\src\game\server\gamemodes\zcatch.cpp">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\server\chatcmd.cpp">
+      <Filter>Quelldateien\game\server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\collision.h">

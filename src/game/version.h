@@ -5,5 +5,5 @@
 //#define GAME_NETVERSION "0.5 " GAME_NETVERSION_HASH 
 // TODO: hash forced during refactoring. Remove later on 
 #define GAME_NETVERSION "0.5 b67d1f1a1eea234e"
-#define CATCHING_VERSION "*dev*"
+#define CATCHING_VERSION "1.0 *dev*"
 #endif

@@ -117,7 +117,7 @@ public:
 	void CreatePlayerSpawn(vec2 Pos, int Owner);
 	void CreateDeath(vec2 Pos, int Who, int Owner = -1);
 	void CreateSound(vec2 Pos, int Sound, int Mask=-1);
-	void CreateSoundGlobal(int Sound, int Target=-1);	
+	void CreateSoundGlobal(int Sound, int Target=-1);
 
 
 	enum
@@ -151,6 +151,9 @@ public:
 	virtual void OnPostSnap();
 	
 	virtual void OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId);
+	virtual bool ChatCommands(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
+	virtual bool ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
+	virtual void ChatCommandsZCatch(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
 
 	virtual void OnClientConnected(int ClientId);
 	virtual void OnClientEnter(int ClientId);
