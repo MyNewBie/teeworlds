@@ -79,6 +79,7 @@ bool CGameContext::ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say
 				p->m_IsJoined = false;
 				p->m_BaseCatchingTeam = -1;
 				p->m_CatchingTeam = -1;
+				m_pController->OnPlayerInfoChange(p);
 				p->GetCharacter()->CreateDieExplosion(false);
 			}
 			else

@@ -1018,6 +1018,17 @@ void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *p
 	}
 }
 
+void CGameContext::ConPause(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	pSelf->m_World.m_Paused ^= 1;
+
+	if(pSelf->m_World.m_Paused)
+		pSelf->SendChat(-1, CGameContext::CHAT_ALL, "Game paused by admin");
+	else
+		pSelf->SendChat(-1, CGameContext::CHAT_ALL, "Game continued by admin");
+}
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1037,6 +1048,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
+
+	Console()->Register("pause", "", CFGFLAG_SERVER, ConPause, this, "");
 
 }
 
@@ -1062,9 +1075,12 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	// select gametype
 	if(str_comp(g_Config.m_SvGametype, "catch") == 0 ||
-		str_comp(g_Config.m_SvGametype, "Catch") == 0)
+		str_comp(g_Config.m_SvGametype, "Catch") == 0 ||
+		str_comp(g_Config.m_SvGametype, "catching") == 0 ||
+		str_comp(g_Config.m_SvGametype, "Catching") == 0)
 		m_pController = new CGameControllerCatching(this);
-	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0)
+	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0 ||
+		str_comp(g_Config.m_SvGametype, "zCatch") == 0)
 		m_pController = new CGameControllerZCatch(this);
 	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
