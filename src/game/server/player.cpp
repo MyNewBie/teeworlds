@@ -76,6 +76,16 @@ void CPlayer::Tick()
 		}
 		
 		// Collorassign
+		int UsedColor[MAX_CLIENTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		int NumPlayers = 0;
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1)
+				UsedColor[GameServer()->m_apPlayers[i]->m_BaseCatchingTeam] = 1;
+			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
+				NumPlayers++;
+		}
+
 		if(m_Colorassign && !m_IsJoined)
 		{
 			m_Colorassign--;
@@ -87,16 +97,7 @@ void CPlayer::Tick()
 		}
 		else if(m_AssignColor && !m_IsJoined)
 		{
-			int UsedColor[MAX_CLIENTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-			int NumPlayers = 0;
 			int Color = -1;
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1)
-					UsedColor[GameServer()->m_apPlayers[i]->m_BaseCatchingTeam] = 1;
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
-					NumPlayers++;
-			}
 
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
@@ -121,7 +122,7 @@ void CPlayer::Tick()
 			GameServer()->SendChatTarget(m_ClientID, "You got a random color");
 			m_AssignColor = false;
 		}
-		else if(!m_IsJoined)
+		else if(!m_IsJoined && NumPlayers < g_Config.m_SvCheatProtection)
 			GameServer()->SendBroadcast("Please wait until this round ends", m_ClientID);
 
 		// Teambroadcast
