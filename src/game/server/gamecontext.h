@@ -53,7 +53,13 @@ class CGameContext : public IGameServer
 	static void ConAddVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+	
+	// Catching commands
 	static void ConPause(IConsole::IResult *pResult, void *pUserData);
+	static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
+	static void ConTeleportTo(IConsole::IResult *pResult, void *pUserData);
+	static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
+	static void ConChat(IConsole::IResult *pResult, void *pUserData);
 	
 	CGameContext(int Resetting);
 	void Construct(int Resetting);

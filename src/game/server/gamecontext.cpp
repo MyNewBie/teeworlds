@@ -1029,6 +1029,56 @@ void CGameContext::ConPause(IConsole::IResult *pResult, void *pUserData)
 		pSelf->SendChat(-1, CGameContext::CHAT_ALL, "Game continued by admin");
 }
 
+void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int CID1 = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
+	int CID2 = clamp(pResult->GetInteger(1), 0, (int)MAX_CLIENTS-1);
+	if(pSelf->m_apPlayers[CID1] && pSelf->m_apPlayers[CID2])
+	{
+		CCharacter* pChr = pSelf->GetPlayerChar(CID1);
+		if(pChr)
+			pChr->m_Core.m_Pos = pSelf->m_apPlayers[CID2]->m_ViewPos;
+		else
+			pSelf->m_apPlayers[CID1]->m_ViewPos = pSelf->m_apPlayers[CID2]->m_ViewPos;
+	}
+}
+
+void CGameContext::ConTeleportTo(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int CID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
+	if(pSelf->m_apPlayers[CID])
+	{
+		CCharacter* pChr = pSelf->GetPlayerChar(CID);
+		vec2 TelePos = vec2(pResult->GetInteger(1), pResult->GetInteger(2));
+		if(pChr)
+			pChr->m_Core.m_Pos = TelePos;
+		else
+			pSelf->m_apPlayers[CID]->m_ViewPos = TelePos;
+	}
+}
+
+void CGameContext::ConGetPos(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int CID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
+	if(pSelf->m_apPlayers[CID])
+	{
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "%s Position (X, Y): %d, %d", pSelf->Server()->ClientName(CID), (int)pSelf->m_apPlayers[CID]->m_ViewPos.x, (int)pSelf->m_apPlayers[CID]->m_ViewPos.y);
+		pSelf->Console()->Print(aBuf);
+	}
+}
+
+void CGameContext::ConChat(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "%s", pResult->GetString(0)); //Name left :|
+	pSelf->Console()->Print(aBuf);
+}
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1049,7 +1099,12 @@ void CGameContext::OnConsoleInit()
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
+	// Catching commands
 	Console()->Register("pause", "", CFGFLAG_SERVER, ConPause, this, "");
+	Console()->Register("teleport", "ii", CFGFLAG_SERVER, ConTeleport, this, "");
+	Console()->Register("teleport_to", "iii", CFGFLAG_SERVER, ConTeleportTo, this, "");
+	Console()->Register("get_pos", "i", CFGFLAG_SERVER, ConGetPos, this, "");
+	Console()->Register("chat", "r", CFGFLAG_SERVER, ConChat, this, "");
 
 }
 
@@ -1075,12 +1130,9 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	// select gametype
 	if(str_comp(g_Config.m_SvGametype, "catch") == 0 ||
-		str_comp(g_Config.m_SvGametype, "Catch") == 0 ||
-		str_comp(g_Config.m_SvGametype, "catching") == 0 ||
-		str_comp(g_Config.m_SvGametype, "Catching") == 0)
+		str_comp(g_Config.m_SvGametype, "catching") == 0)
 		m_pController = new CGameControllerCatching(this);
-	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0 ||
-		str_comp(g_Config.m_SvGametype, "zCatch") == 0)
+	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0)
 		m_pController = new CGameControllerZCatch(this);
 	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);

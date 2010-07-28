@@ -67,20 +67,22 @@ void CPlayer::Tick()
 	
 	if(GameServer()->m_pController->IsCatching())
 	{
+		char aBuf[512];
 		// Increasing Score if ppl does VAR (Optimal: 20) or more damage
 		if(m_DoesDamage >= g_Config.m_SvDamagePoint)
 		{
 			m_Score++;
 			m_DoesDamage -= g_Config.m_SvDamagePoint;
 		}
-
+		
+		// Collorassign
 		if(m_Colorassign && !m_IsJoined)
 		{
 			m_Colorassign--;
 			int left = m_Colorassign/Server()->TickSpeed();
-			char Buf[128];
-			str_format(Buf, sizeof(Buf),  "%d Seconds left to select a team.", left);
-			GameServer()->SendBroadcast(Buf, m_ClientID);
+			//int mili = m_Colorassign*1000/left/Server()->TickSpeed() - 1000;
+			str_format(aBuf, sizeof(aBuf),  "%d Seconds left to select a team.", left);
+			GameServer()->SendBroadcast(aBuf, m_ClientID);
 			m_AssignColor = true;
 		}
 		else if(m_AssignColor && !m_IsJoined)
@@ -109,24 +111,23 @@ void CPlayer::Tick()
 			if(NumPlayers < g_Config.m_SvCheatProtection)
 			{
 				m_IsJoined = true;
+				GameServer()->SendBroadcast("", m_ClientID);
 				GetCharacter()->CreateDieExplosion(false);
 			}
 			else
-			{
-				GameServer()->SendChatTarget(m_ClientID, "----------------------------------------");
-				GameServer()->SendChatTarget(m_ClientID, "Please wait for the end of this Round");
-				GameServer()->SendChatTarget(m_ClientID, "----------------------------------------");
-			}
+				GameServer()->SendChatTarget(m_ClientID, "Please wait until this round ends");
+
 			GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
-			GameServer()->SendChatTarget(m_ClientID, "You got a Random Color");
+			GameServer()->SendChatTarget(m_ClientID, "You got a random color");
 			m_AssignColor = false;
 		}
+		else if(!m_IsJoined)
+			GameServer()->SendBroadcast("Please wait until this round ends", m_ClientID);
 
-		if(!GameServer()) //Strange bug
-			return;
+		// Teambroadcast
 		if(Server()->Tick()%Server()->TickSpeed()/2 == 0)
 		{
-			if(m_Team != -1 && m_Colorassign)
+			if(m_IsJoined && m_Colorassign)
 			{
 				m_Colorassign = 0;
 				m_AssignColor = false;
@@ -151,7 +152,7 @@ void CPlayer::Tick()
 			}
 			if((TeamPlayers > 0 || m_HasTeam) && !m_NoBroadcast && m_Team != -1 && m_IsJoined && NumPlayers > 2)
 			{
-				if(TeamPlayers == 0)
+				if(TeamPlayers == 0 && m_HasTeam)
 				{
 					m_HasTeam = false;
 					m_NoBroadcast = Server()->TickSpeed() * 3;
@@ -176,6 +177,7 @@ void CPlayer::Tick()
 				GameServer()->SendBroadcast(Buf, m_ClientID);
 			}
 		}
+
 		if(m_TickBroadcast && m_NoBroadcast > 0)
 			m_NoBroadcast--;
 		else if(m_TickBroadcast)

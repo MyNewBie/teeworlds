@@ -598,11 +598,13 @@ void CCharacter::Tick()
 		m_Core.m_Joined = false;
 	
 	// handle tiles
-	if(GameServer()->m_pController->IsCatching() && !m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
+	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) &&
+		!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
 	{
 		m_Visible = true;
 	}
-	if(GameServer()->m_pController->IsCatching() && GameServer()->Collision()->IsHideTile(m_Pos))
+	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) &&
+		GameServer()->Collision()->IsHideTile(m_Pos))
 	{
 		m_Visible = false;
 	}
