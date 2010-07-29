@@ -196,7 +196,7 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 	int TopID = -1;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() > -1 && GameServer()->m_apPlayers[i]->m_CatchingTeam > -1)
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() > -1 && GameServer()->m_apPlayers[i]->m_CatchingTeam > -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
 		{
 			NumPlayers++;
 			if(GameServer()->m_apPlayers[i]->m_Score > Topscore)

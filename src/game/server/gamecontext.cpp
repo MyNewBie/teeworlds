@@ -783,6 +783,17 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				p->SetTeam(pMsg->m_Team);
 				if(pMsg->m_Team == -1)
 					p->m_IsJoined = false;
+				else
+				{
+					int NumPlayers = 0;
+					for(int i = 0; i < MAX_CLIENTS; i++)
+					{
+						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_IsJoined)
+							NumPlayers++;
+					}
+					if(NumPlayers < g_Config.m_SvCheatProtection)
+						p->m_IsJoined = true;
+				}
 				(void)m_pController->CheckTeamBalance();
 			}
 			else

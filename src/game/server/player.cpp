@@ -65,7 +65,7 @@ void CPlayer::Tick()
 	if(!GameServer()->m_pController->JoiningSystem() && !m_IsJoined)
 		m_IsJoined = true;
 	
-	if(GameServer()->m_pController->IsCatching())
+	if(GameServer()->m_pController->IsCatching() && m_Team != -1)
 	{
 		char aBuf[512];
 		// Increasing Score if ppl does VAR (Optimal: 20) or more damage
@@ -124,6 +124,10 @@ void CPlayer::Tick()
 		}
 		else if(!m_IsJoined && NumPlayers < g_Config.m_SvCheatProtection)
 			GameServer()->SendBroadcast("Please wait until this round ends", m_ClientID);
+
+		//Strange bug
+		if(!GameServer())
+			return;
 
 		// Teambroadcast
 		if(Server()->Tick()%Server()->TickSpeed()/2 == 0)
