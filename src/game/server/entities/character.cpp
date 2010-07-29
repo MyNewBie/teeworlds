@@ -922,29 +922,16 @@ void CCharacter::Snap(int SnappingClient)
 
 	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) && SnappingClient != m_pPlayer->GetCID())
 	{
-		if(GameServer()->m_pController->IsCatching() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && !GameServer()->m_apPlayers[SnappingClient]->GetTeam() && GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)
+		if(GameServer()->m_pController->IsCatching() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && GameServer()->m_apPlayers[SnappingClient]->GetTeam() != -1 && GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)
 			return;
 
-		if(GameServer()->m_pController->IsZCatch()); // Hideouts for zCatch
+		if(GameServer()->m_pController->IsZCatch() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && GameServer()->m_apPlayers[SnappingClient]->GetTeam() != -1 && !m_Visible)
+			return; // Hideouts for zCatch
 
 		if(!m_pPlayer->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 			return;
 	}
 
-	/*if((GameServer()->m_pController->IsCatching() &&
-		(g_Config.m_SvHideOuts &&
-		((SnappingClient == m_pPlayer->GetCID() && !m_Visible) ||
-		(GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam &&
-		!m_Visible)))) ||
-		(!m_pPlayer->m_IsJoined &&
-		m_pPlayer->GetTeam() == 0))
-	{
-		CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
-		shield->m_X = (int)m_Core.m_Pos.x;
-		shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
-		shield->m_Type = 1;
-		shield->m_Subtype = 0;
-	}*/
 	if(GameServer()->m_pController->JoiningSystem())
 	{
 		bool Passed = false;
@@ -952,8 +939,8 @@ void CCharacter::Snap(int SnappingClient)
 			Passed = true; // Catching: Hideouts Check 1
 		else if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam && !m_Visible))
 			Passed = true; // Catching: Hideouts Check 2
-		//else if(GameServer()->m_pController->IsZCatch())
-			//Passed = true; // Hideouts for zCatch
+		else if(GameServer()->m_pController->IsZCatch() && g_Config.m_SvHideOuts && (SnappingClient == m_pPlayer->GetCID() && !m_Visible))
+			Passed = true; // Hideouts for zCatch
 		else if(!m_pPlayer->m_IsJoined && m_pPlayer->GetTeam() == 0)
 			Passed = true; // Joining System
 		if(Passed)
