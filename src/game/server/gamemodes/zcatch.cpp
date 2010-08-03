@@ -154,6 +154,10 @@ int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 {
 	int VictimID = pVictim->GetPlayer()->GetCID(),
 		KillerID = pKiller->GetCID();
+	
+	// explosion
+	pVictim->CreateDieExplosion(true);
+	
 	if(pKiller == pVictim->GetPlayer()) // suicide
 	{
 		int LeaderID;
