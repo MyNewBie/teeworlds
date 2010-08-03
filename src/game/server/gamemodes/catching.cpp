@@ -280,6 +280,9 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 
 int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
+	// explosion
+	pVictim->CreateDieExplosion(true);
+	
 	// do scoreing
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;

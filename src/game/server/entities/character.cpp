@@ -713,8 +713,6 @@ bool CCharacter::IncreaseArmor(int Amount)
 
 void CCharacter::Die(int Killer, int Weapon)
 {
-	if(GameServer()->m_pController->JoiningSystem())
-			CreateDieExplosion(true);
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	dbg_msg("game", "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",

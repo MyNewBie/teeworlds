@@ -189,6 +189,7 @@ int CGameControllerZCatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 			{
 				GameServer()->m_apPlayers[i]->m_IsJoined = true;
 				GameServer()->m_apPlayers[i]->m_CaughtBy = -1;
+				GameServer()->m_apPlayers[i]->GetCharacter()->CreateDieExplosion(true);
 				if(m_IsInstagib)
 					GameServer()->m_apPlayers[i]->GetCharacter()->SetWeapon(WEAPON_RIFLE);
 				else
