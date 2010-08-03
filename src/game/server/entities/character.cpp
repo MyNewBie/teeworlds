@@ -805,7 +805,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 		Die(From, Weapon);
 		return true;
 	}
-	if(GameServer()->m_pController->IsZCatch() && !GameServer()->m_apPlayers[From]->m_IsJoined)
+	if(GameServer()->m_pController->JoiningSystem() && !GameServer()->m_apPlayers[From]->m_IsJoined)
+		return false;
+	if(GameServer()->m_pController->JoiningSystem() && !m_pPlayer->m_IsJoined)
 		return false;
 	
 	// Add Damage
