@@ -269,9 +269,12 @@ void CGameControllerZCatch::SetColor(class CPlayer *pP)
 		{
 			if(GameServer()->m_apPlayers[i])
 			{
-				if(GameServer()->m_apPlayers[i]->m_CaughtBy == pP->GetCID())
+				if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
 				{
-					Caught -= 20;
+					if(GameServer()->m_apPlayers[i]->m_CaughtBy == pP->GetCID())
+					{
+						Caught -= 20;
+					}
 				}
 			}
 		}
