@@ -55,10 +55,12 @@ void CGameControllerZCatch::DoPlayerNumWincheck()
 				if(GameServer()->m_apPlayers[i])
 				{
 					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
-						Total++;
-					if(GameServer()->m_apPlayers[i]->m_CaughtBy == LeaderID)
 					{
-						Num++;
+						Total++;
+						if(GameServer()->m_apPlayers[i]->m_CaughtBy == LeaderID)
+						{
+							Num++;
+						}
 					}
 				}
 			}
@@ -125,7 +127,12 @@ void CGameControllerZCatch::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 	
 	// give default weapons
-	if(g_Config.m_SvHammerParty)
+	if(!pChr->GetPlayer()->m_IsJoined)
+	{
+		pChr->GiveWeapon(WEAPON_HAMMER, 0);
+		pChr->SetWeapon(WEAPON_HAMMER);
+	}
+	else if(g_Config.m_SvHammerParty)
 	{
 		pChr->GiveWeapon(WEAPON_HAMMER, -1);
 		pChr->SetWeapon(WEAPON_HAMMER);
