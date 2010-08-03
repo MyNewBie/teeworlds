@@ -57,33 +57,9 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_EmoteStop = -1;
 	m_LastAction = -1;
 
-	if(GameServer()->m_pController->IsCatching())
-	{
-		if(g_Config.m_SvHammerParty)
-		{
-			m_ActiveWeapon = WEAPON_HAMMER;
-			m_LastWeapon = WEAPON_HAMMER;
-			m_QueuedWeapon = -1;
-		}
-		else if(g_Config.m_SvInstagib)
-		{
-			m_ActiveWeapon = WEAPON_RIFLE;
-			m_LastWeapon = WEAPON_RIFLE;
-			m_QueuedWeapon = -1;
-		}
-		else
-		{
-			m_ActiveWeapon = WEAPON_GUN;
-			m_LastWeapon = WEAPON_HAMMER;
-			m_QueuedWeapon = -1;
-		}
-	}
-	else
-	{
-		m_ActiveWeapon = WEAPON_GUN;
-		m_LastWeapon = WEAPON_HAMMER;
-		m_QueuedWeapon = -1;
-	}
+	m_ActiveWeapon = WEAPON_GUN;
+	m_LastWeapon = WEAPON_HAMMER;
+	m_QueuedWeapon = -1;
 	
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;

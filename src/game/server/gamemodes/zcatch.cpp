@@ -125,10 +125,23 @@ void CGameControllerZCatch::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 	
 	// give default weapons
-	if(g_Config.m_SvInstagib)
+	if(g_Config.m_SvHammerParty)
+	{
+		pChr->GiveWeapon(WEAPON_HAMMER, -1);
+		pChr->SetWeapon(WEAPON_HAMMER);
+	}
+	else if(g_Config.m_SvInstagib)
 	{
 		pChr->GiveWeapon(WEAPON_RIFLE, -1);
 		pChr->SetWeapon(WEAPON_RIFLE);
+	}
+	else if(g_Config.m_SvGiveWeapons)
+	{
+		pChr->GiveWeapon(WEAPON_HAMMER, -1);
+		pChr->GiveWeapon(WEAPON_RIFLE, -1);
+		pChr->GiveWeapon(WEAPON_GRENADE, -1);
+		pChr->GiveWeapon(WEAPON_SHOTGUN, -1);
+		pChr->GiveWeapon(WEAPON_GUN, 10);
 	}
 	else
 	{
