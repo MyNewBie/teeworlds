@@ -313,10 +313,10 @@ void CCharacter::FireWeapon()
 					continue;
 
 				// set his velocity to fast upward (for now)
-				if((GameServer()->m_pController->IsCatching() &&
+				if((GameServer()->m_pController->JoiningSystem() &&
 					((Target->GetPlayer()->m_IsJoined && m_pPlayer->m_IsJoined) ||
 					(!Target->GetPlayer()->m_IsJoined && !m_pPlayer->m_IsJoined))) ||
-					!GameServer()->m_pController->IsCatching())
+					!GameServer()->m_pController->JoiningSystem())
 				{
 					GameServer()->CreateHammerHit(m_Pos, Target->GetPlayer()->GetCID());
 					aEnts[i]->TakeDamage(vec2(0.f, -1.f), g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer->GetCID(), m_ActiveWeapon);

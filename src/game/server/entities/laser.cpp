@@ -76,7 +76,7 @@ void CLaser::DoBounce()
 				
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE, CmaskCatch(GameServer(), m_Owner));
 			
-			if(GameServer()->m_pController->IsCatching() && m_Bounces == 1 && g_Config.m_SvLaserjumps)
+			if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) && m_Bounces == 1 && g_Config.m_SvLaserjumps)
 				GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GAME, false);
 		}
 	}
