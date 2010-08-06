@@ -58,6 +58,9 @@ void CCollision::Init(class CLayers *pLayers)
 		default:
 			m_pTiles[i].m_Index = 0;
 		}
+
+		if(Index >= 28 && Index <= 59)
+			m_pTiles[i].m_Index = Index;
 	}
 }
 
