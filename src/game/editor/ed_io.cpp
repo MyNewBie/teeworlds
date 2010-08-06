@@ -277,9 +277,31 @@ int CEditorMap::Save(class IStorage *pStorage, const char *pFileName)
 				
 				Item.m_Width = pLayer->m_Width;
 				Item.m_Height = pLayer->m_Height;
-				Item.m_Flags = pLayer->m_Game;
+				if(pLayer->m_Tele)
+					Item.m_Flags = 2;
+				else if(pLayer->m_Speedup)
+					Item.m_Flags = 4;
+				else
+					Item.m_Flags = pLayer->m_Game;
 				Item.m_Image = pLayer->m_Image;
-				Item.m_Data = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CTile), pLayer->m_pTiles);
+				if(pLayer->m_Tele)
+				{
+					CTile *Tiles = new CTile[pLayer->m_Width*pLayer->m_Height];
+					mem_zero(Tiles, pLayer->m_Width*pLayer->m_Height*sizeof(CTile));
+					Item.m_Data = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CTile), Tiles);
+					Item.m_Tele = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CTeleTile), ((CLayerTele *)pLayer)->m_pTeleTile);
+					delete[] Tiles;
+				}
+				else if(pLayer->m_Speedup)
+				{
+					CTile *Tiles = new CTile[pLayer->m_Width*pLayer->m_Height];
+					mem_zero(Tiles, pLayer->m_Width*pLayer->m_Height*sizeof(CTile));
+					Item.m_Data = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CTile), Tiles);
+					Item.m_Speedup = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CSpeedupTile), ((CLayerSpeedup *)pLayer)->m_pSpeedupTile);
+					delete[] Tiles;
+				}
+				else
+					Item.m_Data = df.AddData(pLayer->m_Width*pLayer->m_Height*sizeof(CTile), pLayer->m_pTiles);
 				df.AddItem(MAPITEMTYPE_LAYER, LayerCount, sizeof(Item), &Item);
 				
 				GItem.m_NumLayers++;
@@ -323,7 +345,7 @@ int CEditorMap::Save(class IStorage *pStorage, const char *pFileName)
 		Item.m_Channels = m_lEnvelopes[e]->m_Channels;
 		Item.m_StartPoint = PointCount;
 		Item.m_NumPoints = m_lEnvelopes[e]->m_lPoints.size();
-		Item.m_Name = -1;
+		str_copy(Item.m_aName, m_lEnvelopes[e]->m_aName, sizeof(Item.m_aName));
 		
 		df.AddItem(MAPITEMTYPE_ENVELOPE, e, sizeof(Item), &Item);
 		PointCount += Item.m_NumPoints;
@@ -485,6 +507,16 @@ int CEditorMap::Load(class IStorage *pStorage, const char *pFileName)
 							MakeGameLayer(pTiles);
 							MakeGameGroup(pGroup);
 						}
+						else if(pTilemapItem->m_Flags&2)
+						{
+							pTiles = new CLayerTele(pTilemapItem->m_Width, pTilemapItem->m_Height);
+							MakeTeleLayer(pTiles);
+						}
+						else if(pTilemapItem->m_Flags&4)
+						{
+							pTiles = new CLayerSpeedup(pTilemapItem->m_Width, pTilemapItem->m_Height);
+							MakeSpeedupLayer(pTiles);
+						}
 						else
 						{
 							pTiles = new CLayerTiles(pTilemapItem->m_Width, pTilemapItem->m_Height);
@@ -510,6 +542,38 @@ int CEditorMap::Load(class IStorage *pStorage, const char *pFileName)
 						}
 						
 						DataFile.UnloadData(pTilemapItem->m_Data);
+
+					if(pTiles->m_Tele)
+						{
+							void *pTeleData = DataFile.GetData(pTilemapItem->m_Tele);
+							mem_copy(((CLayerTele*)pTiles)->m_pTeleTile, pTeleData, pTiles->m_Width*pTiles->m_Height*sizeof(CTeleTile));
+							
+							for(int i = 0; i < pTiles->m_Width*pTiles->m_Height; i++)
+							{
+								if(((CLayerTele*)pTiles)->m_pTeleTile[i].m_Type == TILE_TELEIN)
+									((CLayerTiles*)pTiles)->m_pTiles[i].m_Index = TILE_TELEIN;
+								else if(((CLayerTele*)pTiles)->m_pTeleTile[i].m_Type == TILE_TELEOUT)
+									((CLayerTiles*)pTiles)->m_pTiles[i].m_Index = TILE_TELEOUT;
+								else
+									((CLayerTiles*)pTiles)->m_pTiles[i].m_Index = 0;
+							}
+							DataFile.UnloadData(pTilemapItem->m_Tele);
+						}
+						else if(pTiles->m_Speedup)
+						{
+							void *pSpeedupData = DataFile.GetData(pTilemapItem->m_Speedup);
+							mem_copy(((CLayerSpeedup*)pTiles)->m_pSpeedupTile, pSpeedupData, pTiles->m_Width*pTiles->m_Height*sizeof(CSpeedupTile));
+							
+							for(int i = 0; i < pTiles->m_Width*pTiles->m_Height; i++)
+							{
+								if(((CLayerSpeedup*)pTiles)->m_pSpeedupTile[i].m_Force > 0)
+									((CLayerTiles*)pTiles)->m_pTiles[i].m_Index = TILE_BOOST;
+								else
+									((CLayerTiles*)pTiles)->m_pTiles[i].m_Index = 0;
+							}
+							
+							DataFile.UnloadData(pTilemapItem->m_Speedup);
+						}
 					}
 					else if(pLayerItem->m_Type == LAYERTYPE_QUADS)
 					{
@@ -552,6 +616,8 @@ int CEditorMap::Load(class IStorage *pStorage, const char *pFileName)
 				CEnvelope *pEnv = new CEnvelope(pItem->m_Channels);
 				pEnv->m_lPoints.set_size(pItem->m_NumPoints);
 				mem_copy(pEnv->m_lPoints.base_ptr(), &pPoints[pItem->m_StartPoint], sizeof(CEnvPoint)*pItem->m_NumPoints);
+				if(pItem->m_aName[0] != -1)	// compatibility with old maps
+					str_copy(pEnv->m_aName, pItem->m_aName, sizeof(pEnv->m_aName));
 				m_lEnvelopes.add(pEnv);
 			}
 		}

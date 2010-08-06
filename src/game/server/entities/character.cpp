@@ -1,4 +1,6 @@
 #include <new>
+#include <stdio.h>
+#include <string.h>
 #include <engine/shared/config.h>
 #include <game/server/gamecontext.h>
 #include <game/mapitems.h>
@@ -63,6 +65,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
+	m_PrevPos = Pos;
 	m_ShieldID = Server()->SnapNewID();
 	m_Visible = true;
 
@@ -83,6 +86,8 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	
 	GameServer()->m_World.InsertEntity(this);
 	m_Alive = true;
+
+	m_LastSpeedup = -1;
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
 
@@ -565,6 +570,9 @@ void CCharacter::Tick()
 		m_pPlayer->m_ForceBalanced = false;
 	}
 
+	// save jumping state
+	int Jumped = m_Core.m_Jumped;
+
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 	
@@ -574,17 +582,88 @@ void CCharacter::Tick()
 		m_Core.m_Joined = false;
 	
 	// handle tiles
-	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) &&
-		!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
+	if(GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch())
 	{
-		m_Visible = true;
+		// tile index
+		int TileIndex = GameServer()->Collision()->GetIndex(m_PrevPos, m_Pos);
+	
+		if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPL)
+		{
+			if(m_Core.m_Vel.x > 0)
+			{
+				if((int)GameServer()->Collision()->GetPos(TileIndex).x < (int)m_Core.m_Pos.x)
+					m_Core.m_Pos.x = m_PrevPos.x;
+				m_Core.m_Vel.x = 0;
+			}
+		}
+		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPR)
+		{
+			if(m_Core.m_Vel.x < 0)
+			{
+				if((int)GameServer()->Collision()->GetPos(TileIndex).x > (int)m_Core.m_Pos.x)
+					m_Core.m_Pos.x = m_PrevPos.x;
+				m_Core.m_Vel.x = 0;
+			}
+		}
+		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPB)
+		{
+			if(m_Core.m_Vel.y < 0)
+			{
+				if((int)GameServer()->Collision()->GetPos(TileIndex).y > (int)m_Core.m_Pos.y)
+					m_Core.m_Pos.y = m_PrevPos.y;
+				m_Core.m_Vel.y = 0;
+			}
+		}
+		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPT)
+		{
+			if(m_Core.m_Vel.y > 0)
+			{
+				if((int)GameServer()->Collision()->GetPos(TileIndex).y < (int)m_Core.m_Pos.y)
+					m_Core.m_Pos.y = m_PrevPos.y;
+				if(Jumped&3 && m_Core.m_Jumped != Jumped) // check double jump
+					m_Core.m_Jumped = Jumped;
+				m_Core.m_Vel.y = 0;
+			}
+		}
+	
+		// handle speedup tiles
+		int CurrentSpeedup = GameServer()->Collision()->IsSpeedup(TileIndex);
+		if(m_LastSpeedup != CurrentSpeedup && CurrentSpeedup > -1)
+		{
+			vec2 Direction;
+			int Force;
+			GameServer()->Collision()->GetSpeedup(TileIndex, &Direction, &Force);
+		
+			m_Core.m_Vel += Direction*Force;
+		}
+	
+		m_LastSpeedup = CurrentSpeedup;
+	
+		// handle teleporter
+		int z = GameServer()->Collision()->IsTeleport(TileIndex);
+		if(g_Config.m_SvTeleport && z)
+		{
+			m_Core.m_HookedPlayer = -1;
+			m_Core.m_HookState = HOOK_RETRACTED;
+			m_Core.m_TriggeredEvents |= COREEVENT_HOOK_RETRACT;
+			m_Core.m_HookState = HOOK_RETRACTED;
+			m_Core.m_Pos = (GameServer()->m_pController)->m_pTeleporter[z-1];
+			m_Core.m_HookPos = m_Core.m_Pos;
+			//Resetting velocity to prevent exploit
+			if(g_Config.m_SvTeleportVelReset)
+				m_Core.m_Vel = vec2(0,0);
+		}
+
+		if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
+		{
+			m_Visible = true;
+		}
+		if(GameServer()->Collision()->IsHideTile(m_Pos))
+		{
+			m_Visible = false;
+		}
 	}
-	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) &&
-		GameServer()->Collision()->IsHideTile(m_Pos))
-	{
-		m_Visible = false;
-	}
-	else if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
+	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH)
@@ -606,6 +685,8 @@ void CCharacter::Tick()
 
 	// Previnput
 	m_PrevInput = m_Input;
+
+	m_PrevPos = m_Core.m_Pos;
 	return;
 }
 

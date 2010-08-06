@@ -141,6 +141,9 @@ public:
 	int ClampTeam(int Team);
 	
 	// Catching
+	vec2 *m_pTeleporter;
+	void InitTeleporter();
+
 	virtual bool IsCatching() const;
 	virtual bool IsZCatch() const;
 	virtual bool JoiningSystem() const;

@@ -781,10 +781,35 @@ void CEditor::DoToolbar(CUIRect ToolBar)
 		static int s_BorderBut = 0;
 		CLayerTiles *pT = (CLayerTiles *)GetSelectedLayerType(0, LAYERTYPE_TILES);
 		
-		if(DoButton_Editor(&s_BorderBut, Localize("Border"), pT?0:-1, &Button, 0, Localize("Border")))
+		// no border for tele layer
+		if(pT && (pT->m_Tele || pT->m_Speedup))
+			pT = 0;
+			
+		if(DoButton_Editor(&s_BorderBut, "Border", pT?0:-1, &Button, 0, Localize("Border")))
 		{
 			if(pT)
                 DoMapBorder();
+		}
+
+		// do tele button
+		TB_Bottom.VSplitLeft(5.0f, &Button, &TB_Bottom);
+		TB_Bottom.VSplitLeft(60.0f, &Button, &TB_Bottom);
+		static int s_TeleButton = 0;
+		CLayerTiles *pS = (CLayerTiles *)GetSelectedLayerType(0, LAYERTYPE_TILES);
+		
+		if(DoButton_Ex(&s_TeleButton, "Teleporter", (pS && pS->m_Tele)?0:-1, &Button, 0, "Teleporter", CUI::CORNER_ALL))
+		{
+			static int s_TelePopupId = 0;
+			UiInvokePopupMenu(&s_TelePopupId, 0, UI()->MouseX(), UI()->MouseY(), 120, 23, PopupTele);
+		}
+		
+		TB_Bottom.VSplitLeft(5.0f, &Button, &TB_Bottom);
+		TB_Bottom.VSplitLeft(60.0f, &Button, &TB_Bottom);
+		static int s_SpeedupButton = 0;
+		if(DoButton_Ex(&s_SpeedupButton, "Speedup", (pS && pS->m_Speedup)?0:-1, &Button, 0, "Speedup", CUI::CORNER_ALL))
+		{
+			static int s_SpeedupPopupId = 0;
+			UiInvokePopupMenu(&s_SpeedupPopupId, 0, UI()->MouseX(), UI()->MouseY(), 120, 43, PopupSpeedup);
 		}
 	}
 
@@ -1104,12 +1129,17 @@ void CEditor::DoMapEditor(CUIRect View, CUIRect ToolBar)
 			//UI()->ClipEnable(&view);
 		}
 
-		// render the game above everything else
-		if(m_Map.m_pGameGroup->m_Visible && m_Map.m_pGameLayer->m_Visible)
-		{
-			m_Map.m_pGameGroup->MapScreen();
-			m_Map.m_pGameLayer->Render();
-		}
+		// render the game and tele above everything else
+		if(m_Map.m_pGameGroup->m_Visible)
+ 		{
+ 			m_Map.m_pGameGroup->MapScreen();
+			if(m_Map.m_pGameLayer->m_Visible)
+				m_Map.m_pGameLayer->Render();
+			if(m_Map.m_pTeleLayer && m_Map.m_pTeleLayer->m_Visible)
+				m_Map.m_pTeleLayer->Render();
+			if(m_Map.m_pSpeedupLayer && m_Map.m_pSpeedupLayer->m_Visible)
+				m_Map.m_pSpeedupLayer->Render();
+ 		}
 	}
 
 	static void *s_pEditorId = (void *)&s_pEditorId;
@@ -1758,6 +1788,8 @@ void CEditor::RenderLayers(CUIRect ToolBox, CUIRect ToolBar, CUIRect View)
 				if(int Result = DoButton_Ex(m_Map.m_lGroups[g]->m_lLayers[i], aBuf, g==m_SelectedGroup&&i==m_SelectedLayer, &Button,
 					BUTTON_CONTEXT, Localize("Select layer. Right click for properties."), CUI::CORNER_R))
 				{
+					if(m_Map.m_lGroups[g]->m_lLayers[i] == m_Map.m_pTeleLayer || m_Map.m_lGroups[g]->m_lLayers[i] == m_Map.m_pSpeedupLayer)
+						m_Brush.Clear();
 					m_SelectedLayer = i;
 					m_SelectedGroup = g;
 					static int s_LayerPopupId = 0;
@@ -2315,6 +2347,20 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 	{
 		CUIRect Button;
 		CEnvelope *pNewEnv = 0;
+
+		// Delete button
+		if(m_Map.m_lEnvelopes.size())
+		{
+			ToolBar.VSplitRight(5.0f, &ToolBar, &Button);
+			ToolBar.VSplitRight(50.0f, &ToolBar, &Button);
+			static int s_DelButton = 0;
+			if(DoButton_Editor(&s_DelButton, Localize("Delete"), 0, &Button, 0, Localize("Delete this envelope")))
+				m_Map.DeleteEnvelope(m_SelectedEnvelope);
+		
+			// little space
+			ToolBar.VSplitRight(10.0f, &ToolBar, &Button);
+		}
+
 
 		ToolBar.VSplitRight(50.0f, &ToolBar, &Button);
 		static int s_New4dButton = 0;
@@ -2900,11 +2946,34 @@ void CEditor::Reset(bool CreateDefault)
 	m_MouseDeltaWy = 0;
 }
 
+void CEditorMap::DeleteEnvelope(int Index)
+{
+	m_lEnvelopes.remove_index(Index);
+	
+	for(int i = 0; i < m_lGroups.size(); i++)
+		for(int j = 0; j < m_lGroups[i]->m_lLayers.size(); j++)
+			m_lGroups[i]->m_lLayers[j]->CheckQuads();
+}
+
 void CEditorMap::MakeGameLayer(CLayer *pLayer)
 {
 	m_pGameLayer = (CLayerGame *)pLayer;
 	m_pGameLayer->m_pEditor = m_pEditor;
 	m_pGameLayer->m_TexId = m_pEditor->ms_EntitiesTexture;
+}
+
+void CEditorMap::MakeTeleLayer(CLayer *pLayer)
+{
+	m_pTeleLayer = (CLayerTele *)pLayer;
+	m_pTeleLayer->m_pEditor = m_pEditor;
+	m_pTeleLayer->m_TexId = m_pEditor->ms_EntitiesTexture;
+}
+
+void CEditorMap::MakeSpeedupLayer(CLayer *pLayer)
+{
+	m_pSpeedupLayer = (CLayerSpeedup *)pLayer;
+	m_pSpeedupLayer->m_pEditor = m_pEditor;
+	m_pSpeedupLayer->m_TexId = m_pEditor->ms_EntitiesTexture;
 }
 
 void CEditorMap::MakeGameGroup(CLayerGroup *pGroup)
@@ -2923,6 +2992,8 @@ void CEditorMap::Clean()
 	m_lImages.delete_all();
 
 	m_pGameLayer = 0x0;
+	m_pTeleLayer = 0x0;
+	m_pSpeedupLayer = 0x0;
 	m_pGameGroup = 0x0;
 }
 
@@ -2953,6 +3024,8 @@ void CEditorMap::CreateDefault(int EntitiesTexture)
 	MakeGameGroup(NewGroup());
 	MakeGameLayer(new CLayerGame(50, 50));
 	m_pGameGroup->AddLayer(m_pGameLayer);
+	m_pTeleLayer = 0x0;
+	m_pSpeedupLayer = 0x0;
 }
 
 void CEditor::Init()

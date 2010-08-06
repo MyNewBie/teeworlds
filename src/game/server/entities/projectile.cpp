@@ -98,6 +98,16 @@ void CProjectile::Tick()
 			!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 			GameServer()->m_World.DestroyEntity(this);
 	}
+
+	int z = GameServer()->Collision()->IsTeleport(GameServer()->Collision()->GetIndex(PrevPos, CurPos));
+  	if(g_Config.m_SvTeleport && z)
+  	{
+		if(g_Config.m_SvTeleportGrenade && m_Weapon == WEAPON_GRENADE)
+		{
+ 			m_Pos = (GameServer()->m_pController)->m_pTeleporter[z-1];
+  			m_StartTick = Server()->Tick();
+		}
+	}
 }
 
 void CProjectile::FillInfo(CNetObj_Projectile *pProj)
