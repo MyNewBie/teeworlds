@@ -1,3 +1,4 @@
+#include <engine/shared/config.h>
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
 #include "projectile.h"
