@@ -29,13 +29,6 @@ float CConsole::CResult::GetFloat(unsigned Index)
 }
 
 // the maximum number of tokens occurs in a string of length CONSOLE_MAX_STR_LENGTH with tokens size 1 separated by single spaces
-static char *SkipBlanks(char *pStr)
-{
-	while(*pStr && (*pStr == ' ' || *pStr == '\t' || *pStr == '\n'))
-		pStr++;
-	return pStr;
-}
-
 static char *SkipToBlank(char *pStr)
 {
 	while(*pStr && (*pStr != ' ' && *pStr != '\t' && *pStr != '\n'))
@@ -55,7 +48,7 @@ int CConsole::ParseStart(CResult *pResult, const char *pString, int Length)
 	pStr = pResult->m_aStringStorage;
 	
 	// get command
-	pStr = SkipBlanks(pStr);
+	pStr = str_skip_whitespaces(pStr);
 	pResult->m_pCommand = pStr;
 	pStr = SkipToBlank(pStr);
 	
@@ -91,7 +84,7 @@ int CConsole::ParseArgs(CResult *pResult, const char *pFormat)
 			Optional = 1;
 		else
 		{
-			pStr = SkipBlanks(pStr);
+			pStr = str_skip_whitespaces(pStr);
 		
 			if(!(*pStr)) // error, non optional command needs value
 			{
@@ -164,11 +157,15 @@ void CConsole::RegisterPrintCallback(FPrintCallback pfnPrintCallback, void *pUse
 	m_pPrintCallbackUserdata = pUserData;
 }
 
-void CConsole::Print(const char *pStr)
+void CConsole::Print(int Level, const char *pFrom, const char *pStr)
 {
-	dbg_msg("console" ,"%s", pStr);
-	if (m_pfnPrintCallback)
-		m_pfnPrintCallback(pStr, m_pPrintCallbackUserdata);
+	dbg_msg(pFrom ,"%s", pStr);
+	if (Level <= g_Config.m_ConsoleOutputLevel && m_pfnPrintCallback)
+	{
+		char aBuf[1024];
+		str_format(aBuf, sizeof(aBuf), "[%s]: %s", pFrom, pStr);
+		m_pfnPrintCallback(aBuf, m_pPrintCallbackUserdata);
+	}
 }
 
 void CConsole::ExecuteLineStroked(int Stroke, const char *pStr)
@@ -225,7 +222,7 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr)
 				{
 					char aBuf[256];
 					str_format(aBuf, sizeof(aBuf), "Invalid arguments... Usage: %s %s", pCommand->m_pName, pCommand->m_pParams);
-					Print(aBuf);
+					Print(OUTPUT_LEVEL_STANDARD, "Console", aBuf);
 				}
 				else if(m_StoreCommands && pCommand->m_Flags&CFGFLAG_STORE)
 				{
@@ -241,7 +238,7 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr)
 		{
 			char aBuf[256];
 			str_format(aBuf, sizeof(aBuf), "No such command: %s.", pResult->m_pCommand);
-			Print(aBuf);
+			Print(OUTPUT_LEVEL_STANDARD, "Console", aBuf);
 		}
 		
 		pStr = pNextPart;
@@ -305,12 +302,14 @@ void CConsole::ExecuteFile(const char *pFilename)
 	// exec the file
 	IOHANDLE File = m_pStorage->OpenFile(pFilename, IOFLAG_READ);
 	
+	char aBuf[256];
 	if(File)
 	{
 		char *pLine;
 		CLineReader lr;
 		
-		dbg_msg("console", "executing '%s'", pFilename);
+		str_format(aBuf, sizeof(aBuf), "executing '%s'", pFilename);
+		Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 		lr.Init(File);
 
 		while((pLine = lr.Get()))
@@ -319,14 +318,17 @@ void CConsole::ExecuteFile(const char *pFilename)
 		io_close(File);
 	}
 	else
-		dbg_msg("console", "failed to open '%s'", pFilename);
+	{
+		str_format(aBuf, sizeof(aBuf), "failed to open '%s'", pFilename);
+		Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
+	}
 	
 	m_pFirstExec = pPrev;
 }
 
 void CConsole::Con_Echo(IResult *pResult, void *pUserData)
 {
-	((CConsole*)pUserData)->Print(pResult->GetString(0));
+	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", pResult->GetString(0));
 }
 
 void CConsole::Con_Exec(IResult *pResult, void *pUserData)
@@ -372,7 +374,7 @@ static void IntVariableCommand(IConsole::IResult *pResult, void *pUserData)
 	{
 		char aBuf[1024];
 		str_format(aBuf, sizeof(aBuf), "Value: %d", *(pData->m_pVariable));
-		pData->m_pConsole->Print(aBuf);
+		pData->m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuf);
 	}
 }
 
@@ -386,7 +388,7 @@ static void StrVariableCommand(IConsole::IResult *pResult, void *pUserData)
 	{
 		char aBuf[1024];
 		str_format(aBuf, sizeof(aBuf), "Value: %s", pData->m_pStr);
-		pData->m_pConsole->Print(aBuf);
+		pData->m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuf);
 	}
 }
 
@@ -473,7 +475,9 @@ void CConsole::Chain(const char *pName, FChainCommandCallback pfnChainFunc, void
 	
 	if(!pCommand)
 	{
-		dbg_msg("console", "failed to chain '%s'", pName);
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "failed to chain '%s'", pName);
+		Print(IConsole::OUTPUT_LEVEL_DEBUG, "console", aBuf);
 		return;
 	}
 	

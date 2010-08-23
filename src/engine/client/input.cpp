@@ -31,7 +31,6 @@ CInput::CInput()
 {
 	mem_zero(m_aInputCount, sizeof(m_aInputCount));
 	mem_zero(m_aInputState, sizeof(m_aInputState));
-	mem_zero(m_Keys, sizeof(m_Keys));
 
 	m_InputCurrent = 0;
 	m_InputGrabbed = 0;
@@ -66,8 +65,8 @@ void CInput::MouseRelative(int *x, int *y)
 		}
 	}
 
-	*x = nx*Sens;
-	*y = ny*Sens;
+	*x = (int)(nx*Sens);
+	*y = (int)(ny*Sens);
 }
 
 void CInput::MouseModeAbsolute()
@@ -146,20 +145,11 @@ void CInput::Update()
 				// handle keys
 				case SDL_KEYDOWN:
 					AddEvent(Event.key.keysym.unicode, 0, 0); // ignore_convention
-                    if(Event.key.keysym.unicode != 0 && Event.key.keysym.unicode < 256) // ignore_convention
-                    {
-                        Key = Event.key.keysym.unicode;  // ignore_convention
-                        m_Keys[Event.key.keysym.sym] = Event.key.keysym.unicode; // ignore_convention
-                    }
-                    else
-                        Key = Event.key.keysym.sym;  // ignore_convention
+                    Key = Event.key.keysym.sym;  // ignore_convention
 					break;
 				case SDL_KEYUP:
 					Action = IInput::FLAG_RELEASE;
-					if(m_Keys[Event.key.keysym.sym] != 0) // ignore_convention
-                        Key = m_Keys[Event.key.keysym.sym]; // ignore_convention
-                    else
-                        Key = Event.key.keysym.sym; // ignore_convention
+					Key = Event.key.keysym.sym; // ignore_convention
 					break;
 
 				// handle mouse buttons

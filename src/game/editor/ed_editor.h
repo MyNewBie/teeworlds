@@ -465,6 +465,7 @@ class CEditor : public IEditor
 {
 	class IInput *m_pInput;
 	class IClient *m_pClient;
+	class IConsole *m_pConsole;
 	class IGraphics *m_pGraphics;
 	class ITextRender *m_pTextRender;
 	CRenderTools m_RenderTools;
@@ -472,6 +473,7 @@ class CEditor : public IEditor
 public:
 	class IInput *Input() { return m_pInput; };
 	class IClient *Client() { return m_pClient; };
+	class IConsole *Console() { return m_pConsole; };
 	class IGraphics *Graphics() { return m_pGraphics; };
 	class ITextRender *TextRender() { return m_pTextRender; };
 	CUI *UI() { return &m_UI; }
@@ -617,7 +619,7 @@ public:
 	void UiInvokePopupMenu(void *pId, int Flags, float x, float y, float w, float h, int (*pfnFunc)(CEditor *pEditor, CUIRect Rect), void *pExtra=0);
 	void UiDoPopupMenu();
 	
-	int UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Current, int Min, int Max, float Scale);
+	int UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Current, int Min, int Max, float Scale, const char *pToolTip);
 
 	static int PopupGroup(CEditor *pEditor, CUIRect View);
 	static int PopupLayer(CEditor *pEditor, CUIRect View);

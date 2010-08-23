@@ -8,6 +8,7 @@
 #include <engine/shared/config.h>
 #include <engine/shared/engine.h>
 #include <engine/client.h>
+#include <engine/console.h>
 #include <engine/graphics.h>
 #include <engine/textrender.h>
 #include <engine/input.h>
@@ -462,7 +463,7 @@ void CEditor::RenderBackground(CUIRect View, int Texture, float Size, float Brig
 	Graphics()->QuadsEnd();
 }
 
-int CEditor::UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Current, int Min, int Max, float Scale)
+int CEditor::UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Current, int Min, int Max, float Scale, const char *pToolTip)
 {
     // logic
     static float s_Value;
@@ -496,6 +497,8 @@ int CEditor::UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Cu
 					Current = Max;
 			}
 		}
+		if(pToolTip)
+			m_pTooltip = pToolTip;
 	}
 	else if(UI()->HotItem() == pId)
 	{
@@ -505,6 +508,8 @@ int CEditor::UiDoValueSelector(void *pId, CUIRect *r, const char *pLabel, int Cu
 			s_Value = 0;
 			UI()->SetActiveItem(pId);
 		}
+		if(pToolTip)
+			m_pTooltip = pToolTip;
 	}
 
 	if(Inside)
@@ -726,7 +731,7 @@ void CEditor::DoToolbar(CUIRect ToolBar)
 
 		TB_Top.VSplitLeft(30.0f, &Button, &TB_Top);
 		static int s_RotationAmount = 90;
-		s_RotationAmount = UiDoValueSelector(&s_RotationAmount, &Button, "", s_RotationAmount, 1, 360, 2.0f);
+		s_RotationAmount = UiDoValueSelector(&s_RotationAmount, &Button, "", s_RotationAmount, 1, 360, 2.0f, Localize("Rotation of the brush in degrees. Use left mouse button to drag and change the value. Hold shift to be more precise."));
 
 		TB_Top.VSplitLeft(5.0f, &Button, &TB_Top);
 		TB_Top.VSplitLeft(30.0f, &Button, &TB_Top);
@@ -1297,7 +1302,9 @@ void CEditor::DoMapEditor(CUIRect View, CUIRect ToolBar)
 					if(!UI()->MouseButton(0))
 					{
 						// grab brush
-						dbg_msg("editor", "grabbing %f %f %f %f", r.x, r.y, r.w, r.h);
+						char aBuf[256];
+						str_format(aBuf, sizeof(aBuf),"grabbing %f %f %f %f", r.x, r.y, r.w, r.h);
+						Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "editor", aBuf);
 
 						// TODO: do all layers
 						int Grabs = 0;
@@ -1631,7 +1638,7 @@ int CEditor::DoProperties(CUIRect *pToolBox, CProperty *pProps, int *pIds, int *
 		}
 		else if(pProps[i].m_Type == PROPTYPE_INT_SCROLL)
 		{
-			int NewValue = UiDoValueSelector(&pIds[i], &Shifter, "", pProps[i].m_Value, pProps[i].m_Min, pProps[i].m_Max, 1.0f);
+			int NewValue = UiDoValueSelector(&pIds[i], &Shifter, "", pProps[i].m_Value, pProps[i].m_Min, pProps[i].m_Max, 1.0f, Localize("Use left mouse button to drag and change the value. Hold shift to be more precise."));
 			if(NewValue != pProps[i].m_Value)
 			{
 				*pNewVal = NewValue;
@@ -1647,7 +1654,7 @@ int CEditor::DoProperties(CUIRect *pToolBox, CProperty *pProps, int *pIds, int *
 			for(int c = 0; c < 4; c++)
 			{
 				int v = (pProps[i].m_Value >> s_aShift[c])&0xff;
-				NewColor |= UiDoValueSelector(((char *)&pIds[i])+c, &Shifter, s_paTexts[c], v, 0, 255, 1.0f)<<s_aShift[c];
+				NewColor |= UiDoValueSelector(((char *)&pIds[i])+c, &Shifter, s_paTexts[c], v, 0, 255, 1.0f, Localize("Use left mouse button to drag and change the color value. Hold shift to be more precise."))<<s_aShift[c];
 
 				if(c != 3)
 				{
@@ -1848,7 +1855,7 @@ static void ExtractName(const char *pFileName, char *pName)
 	int FinalLen = End-Start;
 	mem_copy(pName, &pFileName[Start], FinalLen);
 	pName[FinalLen] = 0;
-	dbg_msg("", "%s %s %d %d", pFileName, pName, Start, End);
+	//dbg_msg("", "%s %s %d %d", pFileName, pName, Start, End);
 }
 
 void CEditor::ReplaceImage(const char *pFileName, void *pUser)
@@ -2097,7 +2104,7 @@ void CEditor::RenderImages(CUIRect ToolBox, CUIRect ToolBar, CUIRect View)
 	static int s_NewImageButton = 0;
 	ToolBox.HSplitTop(10.0f, &Slot, &ToolBox);
 	ToolBox.HSplitTop(12.0f, &Slot, &ToolBox);
-	if(DoButton_Editor(&s_NewImageButton, "Add", 0, &Slot, 0, Localize("Load a new image to use in the map")))
+	if(DoButton_Editor(&s_NewImageButton, Localize("Add"), 0, &Slot, 0, Localize("Load a new image to use in the map")))
 		InvokeFileDialog(IStorage::TYPE_ALL, Localize("Add Image"), Localize("Add"), "mapres/", "", AddImage, this);
 }
 
@@ -2442,11 +2449,14 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 
 			ToolBar.VSplitLeft(15.0f, &Button, &ToolBar);
 
-			static const char *s_paNames[4][4] = {
-				{"X", "", "", ""},
-				{"X", "Y", "", ""},
+			static const char *s_paNames[2][4] = {
 				{"X", "Y", "R", ""},
 				{"R", "G", "B", "A"},
+			};
+
+			const char *paDescriptions[2][4] = {
+				{Localize("X-axis of the envelope"), Localize("Y-axis of the envelope"), Localize("Rotation of the envelope"), ""},
+				{Localize("Red value of the envelope"), Localize("Green value of the envelope"), Localize("Blue value of the envelope"), Localize("Alpha value of the envelope")},
 			};
 
 			static int s_aChannelButtons[4] = {0};
@@ -2461,7 +2471,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 				else if(i == envelope->channels-1) draw_func = draw_editor_button_r;
 				else draw_func = draw_editor_button_m;*/
 
-				if(DoButton_Editor(&s_aChannelButtons[i], s_paNames[pEnvelope->m_Channels-1][i], s_ActiveChannels&Bit, &Button, 0, 0))
+				if(DoButton_Editor(&s_aChannelButtons[i], s_paNames[pEnvelope->m_Channels-3][i], s_ActiveChannels&Bit, &Button, 0, paDescriptions[pEnvelope->m_Channels-3][i]))
 					s_ActiveChannels ^= Bit;
 			}
 		}
@@ -2765,7 +2775,7 @@ int CEditor::PopupMenuFile(CEditor *pEditor, CUIRect View)
 
 	View.HSplitTop(10.0f, &Slot, &View);
 	View.HSplitTop(12.0f, &Slot, &View);
-	if(pEditor->DoButton_MenuItem(&s_ExitButton, "Exit", 0, &Slot, 0, Localize("Exits from the editor")))
+	if(pEditor->DoButton_MenuItem(&s_ExitButton, Localize("Exit"), 0, &Slot, 0, Localize("Exits from the editor")))
 	{
 		g_Config.m_ClEditor = 0;
 		return 1;
@@ -3063,6 +3073,7 @@ void CEditor::Init()
 {
 	m_pInput = Kernel()->RequestInterface<IInput>();
 	m_pClient = Kernel()->RequestInterface<IClient>();
+	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pGraphics = Kernel()->RequestInterface<IGraphics>();
 	m_pTextRender = Kernel()->RequestInterface<ITextRender>();
 	m_RenderTools.m_pGraphics = m_pGraphics;

@@ -284,7 +284,7 @@ void CScoreboard::OnRender()
 		return;
 		
 	// if the score board is active, then we should clear the motd message aswell
-	if(m_Active)
+	if(m_pClient->m_pMotd->IsActive())
 		m_pClient->m_pMotd->Clear();
 	
 
@@ -321,4 +321,9 @@ void CScoreboard::OnRender()
 
 	RenderGoals(Width/2-w/2, 150+750+25, w);
 	RenderSpectators(Width/2-w/2, 150+750+25+50+25, w);
+}
+
+bool CScoreboard::Active()
+{
+	return m_Active | (m_pClient->m_Snap.m_pGameobj && m_pClient->m_Snap.m_pGameobj->m_GameOver);
 }

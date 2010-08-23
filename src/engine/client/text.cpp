@@ -509,7 +509,7 @@ public:
 		return Cursor.m_X;
 	}
 	
-	virtual float TextLineCount(void *pFontSetV, float Size, const char *pText, int LineWidth)
+	virtual int TextLineCount(void *pFontSetV, float Size, const char *pText, float LineWidth)
 	{
 		CTextCursor Cursor;
 		SetCursor(&Cursor, 0, 0, Size, 0);
@@ -551,14 +551,14 @@ public:
 		
 		FakeToScreenX = (Graphics()->ScreenWidth()/(ScreenX1-ScreenX0));
 		FakeToScreenY = (Graphics()->ScreenHeight()/(ScreenY1-ScreenY0));
-		ActualX = pCursor->m_X * FakeToScreenX;
-		ActualY = pCursor->m_Y * FakeToScreenY;
+		ActualX = (int)(pCursor->m_X * FakeToScreenX);
+		ActualY = (int)(pCursor->m_Y * FakeToScreenY);
 
 		CursorX = ActualX / FakeToScreenX;
 		CursorY = ActualY / FakeToScreenY;
 
 		// same with size
-		ActualSize = Size * FakeToScreenY;
+		ActualSize = (int)(Size * FakeToScreenY);
 		Size = ActualSize / FakeToScreenY;
 
 		// fetch pFont data
@@ -570,6 +570,8 @@ public:
 
 		pSizeData = GetSize(pFont, ActualSize);
 		RenderSetup(pFont, ActualSize);
+
+		float Scale = 1/pSizeData->m_FontSize;
 		
 		// set length
 		if(Length < 0)
@@ -679,7 +681,7 @@ public:
 							Graphics()->QuadsDrawTL(&QuadItem, 1);
 						}
 
-						Advance = pChr->m_AdvanceX + Kerning(pFont, Character, Nextcharacter)/Size;
+						Advance = pChr->m_AdvanceX + Kerning(pFont, Character, Nextcharacter)*Scale;
 					}
 									
 					if(pCursor->m_Flags&TEXTFLAG_STOP_AT_END && DrawX+(Advance+pChr->m_Width)*Size-pCursor->m_StartX > pCursor->m_LineWidth)
