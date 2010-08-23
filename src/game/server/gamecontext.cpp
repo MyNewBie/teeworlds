@@ -1087,16 +1087,8 @@ void CGameContext::ConGetPos(IConsole::IResult *pResult, void *pUserData)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "%s Position (X, Y): %d, %d", pSelf->Server()->ClientName(CID), (int)pSelf->m_apPlayers[CID]->m_ViewPos.x, (int)pSelf->m_apPlayers[CID]->m_ViewPos.y);
-		pSelf->Console()->Print(aBuf);
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 	}
-}
-
-void CGameContext::ConChat(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "%s", pResult->GetString(0)); //Name left :|
-	pSelf->Console()->Print(aBuf);
 }
 
 void CGameContext::OnConsoleInit()
@@ -1124,7 +1116,6 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("teleport", "ii", CFGFLAG_SERVER, ConTeleport, this, "");
 	Console()->Register("teleport_to", "iii", CFGFLAG_SERVER, ConTeleportTo, this, "");
 	Console()->Register("get_pos", "i", CFGFLAG_SERVER, ConGetPos, this, "");
-	Console()->Register("chat", "r", CFGFLAG_SERVER, ConChat, this, "");
 
 }
 

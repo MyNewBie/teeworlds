@@ -59,7 +59,6 @@ class CGameContext : public IGameServer
 	static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
 	static void ConTeleportTo(IConsole::IResult *pResult, void *pUserData);
 	static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
-	static void ConChat(IConsole::IResult *pResult, void *pUserData);
 	
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
