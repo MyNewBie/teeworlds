@@ -277,8 +277,6 @@ public:
 	}
 
 	void DeleteEnvelope(int Index);
-	
-	void DeleteEnvelope(int Index);
 
 	CLayerGroup *NewGroup()
 	{
