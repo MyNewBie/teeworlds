@@ -275,6 +275,8 @@ public:
 		m_lEnvelopes.add(e);
 		return e;
 	}
+
+	void DeleteEnvelope(int Index);
 	
 	void DeleteEnvelope(int Index);
 

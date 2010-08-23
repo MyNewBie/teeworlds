@@ -18,10 +18,8 @@ public:
 		m_aDatadir[0] = 0;
 	}
 	
-	int Init(const char *pApplicationName, const char *pArgv0, char Datadir[512])
+	int Init(const char *pApplicationName, int NumArgs, const char **ppArguments)
 	{
-		str_copy(m_aDatadir, Datadir, sizeof(m_aDatadir));
-
 		char aPath[1024] = {0};
 		fs_storage_path(pApplicationName, m_aApplicationSavePath, sizeof(m_aApplicationSavePath));
 		if(fs_makedir(m_aApplicationSavePath) == 0)
@@ -41,8 +39,18 @@ public:
 			str_format(aPath, sizeof(aPath), "%s/demos", m_aApplicationSavePath);
 			fs_makedir(aPath);
 		}
+
+		// check for datadir override
+		for(int i = 1; i < NumArgs; i++)
+		{
+			if(ppArguments[i][0] == '-' && ppArguments[i][1] == 'd' && ppArguments[i][2] == 0 && NumArgs - i > 1)
+			{
+				str_copy(m_aDatadir, ppArguments[i+1], sizeof(m_aDatadir));
+				break;
+			}
+		}
 		
-		return FindDatadir(pArgv0);
+		return FindDatadir(ppArguments[0]);
 	}
 		
 	int FindDatadir(const char *pArgv0)
@@ -51,10 +59,7 @@ public:
 		if(m_aDatadir[0])
 		{
 			if(fs_is_dir(m_aDatadir))
-			{
-				dbg_msg("engine/datadir", "data-dir specified to '%s'", m_aDatadir);
 				return 0;
-			}
 			else
 			{
 				dbg_msg("engine/datadir", "specified data-dir '%s' does not exist", m_aDatadir);
@@ -188,20 +193,17 @@ public:
 		pBuffer[0] = 0;
 		return 0;		
 	}
-	
-	static IStorage *Create(const char *pApplicationName, const char *pArgv0, char Datadir[512])
+
+	static IStorage *Create(const char *pApplicationName, int NumArgs, const char **ppArguments)
 	{
-		CStorage *p = new CStorage();       
-		if(p->Init(pApplicationName, pArgv0, Datadir))
+		CStorage *p = new CStorage();
+		if(p && p->Init(pApplicationName, NumArgs, ppArguments))
 		{
-			delete p;                
+			delete p;
 			p = 0;
-		}                 
+		}
 		return p;
 	}
 };
-        
-IStorage *CreateStorage(const char *pApplicationName, const char *pArgv0, char Datadir[512])
-{
-	return CStorage::Create(pApplicationName, pArgv0, Datadir);
-}
+
+IStorage *CreateStorage(const char *pApplicationName, int NumArgs, const char **ppArguments) { return CStorage::Create(pApplicationName, NumArgs, ppArguments); }

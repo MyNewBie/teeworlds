@@ -1065,6 +1065,9 @@ int CServer::Run()
 	GameServer()->OnInit();
 	dbg_msg("server", "version %s", GameServer()->NetVersion());
 
+	// process pending commands
+	m_pConsole->StoreCommands(false);
+
 	// start game
 	{
 		int64 ReportTime = time_get();
@@ -1222,7 +1225,7 @@ void CServer::ConBan(IConsole::IResult *pResult, void *pUser)
 			return;
 		}
 
-		NETADDR Addr = ((CServer *)pUser)->m_NetServer.ClientAddr(ClientId);
+		Addr = ((CServer *)pUser)->m_NetServer.ClientAddr(ClientId);
 		((CServer *)pUser)->BanAdd(Addr, Minutes*60);
 	}
 	
@@ -1352,13 +1355,13 @@ void CServer::RegisterCommands()
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	
 	Console()->Register("kick", "i", CFGFLAG_SERVER, ConKick, this, "");
-	Console()->Register("ban", "s?i", CFGFLAG_SERVER, ConBan, this, "");
-	Console()->Register("unban", "s", CFGFLAG_SERVER, ConUnban, this, "");
-	Console()->Register("bans", "", CFGFLAG_SERVER, ConBans, this, "");
+	Console()->Register("ban", "s?i", CFGFLAG_SERVER|CFGFLAG_STORE, ConBan, this, "");
+	Console()->Register("unban", "s", CFGFLAG_SERVER|CFGFLAG_STORE, ConUnban, this, "");
+	Console()->Register("bans", "", CFGFLAG_SERVER|CFGFLAG_STORE, ConBans, this, "");
 	Console()->Register("status", "", CFGFLAG_SERVER, ConStatus, this, "");
 	Console()->Register("shutdown", "", CFGFLAG_SERVER, ConShutdown, this, "");
 
-	Console()->Register("record", "s", CFGFLAG_SERVER, ConRecord, this, "");
+	Console()->Register("record", "s", CFGFLAG_SERVER|CFGFLAG_STORE, ConRecord, this, "");
 	Console()->Register("stoprecord", "", CFGFLAG_SERVER, ConStopRecord, this, "");
 	
 	Console()->Register("reload", "", CFGFLAG_SERVER, ConMapReload, this, "");
@@ -1420,18 +1423,7 @@ int main(int argc, const char **argv) // ignore_convention
 	IGameServer *pGameServer = CreateGameServer();
 	IConsole *pConsole = CreateConsole(CFGFLAG_SERVER);
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
-
-	char Datadir[512] = "data";
-	for(int i = 1; i < argc; i++)
-	{            
-		if(argv[i][0] == '-' && argv[i][1] == 'd' && argv[i][2] == 0 && argc - 1 > 1)
-		{
-			str_copy(Datadir, argv[i+1], sizeof(Datadir));
-			break;     
-		}    
-	}
-	IStorage *pStorage = CreateStorage("Teeworlds", argv[0], Datadir); // ignore_convention
-
+	IStorage *pStorage = CreateStorage("Teeworlds", argc, argv); // ignore_convention
 	IConfig *pConfig = CreateConfig();
 	
 	pServer->InitRegister(&pServer->m_NetServer, pEngineMasterServer);
@@ -1468,6 +1460,8 @@ int main(int argc, const char **argv) // ignore_convention
 	if(argc > 1) // ignore_convention
 		pConsole->ParseArguments(argc-1, &argv[1]); // ignore_convention
 	
+	pServer->Engine()->InitLogfile();
+
 	// run the server
 	pServer->Run();
 	

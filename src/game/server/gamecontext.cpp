@@ -657,6 +657,12 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 
 		int64 Now = Server()->Tick();
 		p->m_Last_VoteTry = Now;
+		if(p->GetTeam() == -1)
+		{
+			SendChatTarget(ClientId, "Spectators aren't allowed to start a vote.");
+			return;
+		}
+
 		if(m_VoteCloseTime)
 		{
 			SendChatTarget(ClientId, "Wait for current vote to end before calling a new one.");
@@ -1099,8 +1105,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("tune_reset", "", CFGFLAG_SERVER, ConTuneReset, this, "");
 	Console()->Register("tune_dump", "", CFGFLAG_SERVER, ConTuneDump, this, "");
 
-	Console()->Register("change_map", "r", CFGFLAG_SERVER, ConChangeMap, this, "");
-	Console()->Register("restart", "?i", CFGFLAG_SERVER, ConRestart, this, "");
+	Console()->Register("change_map", "r", CFGFLAG_SERVER|CFGFLAG_STORE, ConChangeMap, this, "");
+	Console()->Register("restart", "?i", CFGFLAG_SERVER|CFGFLAG_STORE, ConRestart, this, "");
 	Console()->Register("broadcast", "r", CFGFLAG_SERVER, ConBroadcast, this, "");
 	Console()->Register("say", "r", CFGFLAG_SERVER, ConSay, this, "");
 	Console()->Register("set_team", "ii", CFGFLAG_SERVER, ConSetTeam, this, "");

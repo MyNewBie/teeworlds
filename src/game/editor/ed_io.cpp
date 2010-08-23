@@ -1,5 +1,6 @@
 #include <engine/graphics.h>
 #include <engine/storage.h>
+#include <game/gamecore.h>
 #include "ed_editor.h"
 
 template<typename T>
