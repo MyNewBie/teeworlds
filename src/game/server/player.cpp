@@ -122,7 +122,7 @@ void CPlayer::Tick()
 			GameServer()->SendChatTarget(m_ClientID, "You got a random color");
 			m_AssignColor = false;
 		}
-		else if(!m_IsJoined && NumPlayers < g_Config.m_SvCheatProtection)
+		else if(!m_IsJoined && NumPlayers >= g_Config.m_SvCheatProtection)
 			GameServer()->SendBroadcast("Please wait until this round ends", m_ClientID);
 
 		//Strange bug

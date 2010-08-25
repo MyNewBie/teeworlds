@@ -806,11 +806,14 @@ void CCharacter::Die(int Killer, int Weapon)
 
 	// send the kill message
 	CNetMsg_Sv_KillMsg Msg;
-	Msg.m_Killer = Killer;
-	Msg.m_Victim = m_pPlayer->GetCID();
-	Msg.m_Weapon = Weapon;
-	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	if(!m_pPlayer->m_IsJoined)
+	{
+		Msg.m_Killer = Killer;
+		Msg.m_Victim = m_pPlayer->GetCID();
+		Msg.m_Weapon = Weapon;
+		Msg.m_ModeSpecial = ModeSpecial;
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	}
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
@@ -823,7 +826,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
 	
-	if(!GameServer()->m_pController->JoiningSystem() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD))
+	if(!GameServer()->m_pController->JoiningSystem() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD) || !m_pPlayer->m_IsJoined)
 	{
 		// this is for auto respawn after 3 secs
 		m_pPlayer->m_DieTick = Server()->Tick();
@@ -881,7 +884,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	
 	if(!GameServer()->m_pController->IsCatching() && GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
-	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam)
+	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam && m_pPlayer->m_IsJoined)
 		return false;
 	if(GameServer()->m_pController->IsCatching() && Weapon == WEAPON_GAME)
 		return false;

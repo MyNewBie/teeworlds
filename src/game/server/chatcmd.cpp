@@ -57,7 +57,7 @@ bool CGameContext::ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say
 	else if(!str_comp(pMsg->m_pMessage, "/colorlist"))
 	{
 		SendChatTarget(ClientId, "ID - Color  |  ID - Color");
-		SendChatTarget(ClientId, "0 - white  |  8 - purple");
+		SendChatTarget(ClientId, "0 - default  |  8 - purple");
 		SendChatTarget(ClientId, "1 - orange  |  9 - black/grey");
 		SendChatTarget(ClientId, "2 - aqua  |  10 - rose");
 		SendChatTarget(ClientId, "3 - pink  |  11 - light purple");

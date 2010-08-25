@@ -160,8 +160,8 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pPlayer)
 {
 	// Teamcolorwave \o/
 	int black = 0,
-		grey = 196,
 		white = 255,
+		def = 1834896,
 		red = 16776960,
 		pink = 16760679,
 		orange = 1507072,
@@ -175,9 +175,8 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pPlayer)
 		lblue = 9830257,
 		lgreen = 5018235,
 		purple = 12896518,
-		lpurple = 12896649;
-	int TeamColors[MAX_CLIENTS] = {grey, orange, aqua, rpink, yellow, green, red, blue, purple, black, pink, lpurple, lblue, lyellow, lorange, lgreen};
-	TeamColors[-1] = white;
+		lpurple = 12896649;					//>Start
+	int TeamColors[MAX_CLIENTS + 1] = {white, def, orange, aqua, rpink, yellow, green, red, blue, purple, black, pink, lpurple, lblue, lyellow, lorange, lgreen};
 
 	if(pPlayer->m_BaseCatchingTeam != -1 && pPlayer->m_CatchingTeam == -1)
 		pPlayer->m_CatchingTeam = pPlayer->m_BaseCatchingTeam;
@@ -185,11 +184,11 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pPlayer)
 	if(/*pPlayer->m_BaseCatchingTeam != -1 && */(pPlayer->m_CatchingTeam >= -1 || pPlayer->m_CatchingTeam < MAX_CLIENTS))
 	{
 		pPlayer->m_TeeInfos.m_UseCustomColor = 1;
-		pPlayer->m_TeeInfos.m_ColorBody = TeamColors[pPlayer->m_CatchingTeam];
+		pPlayer->m_TeeInfos.m_ColorBody = TeamColors[pPlayer->m_CatchingTeam + 1];
 		if(pPlayer->m_PrevCatchingTeam == -1)
-			pPlayer->m_TeeInfos.m_ColorFeet = TeamColors[pPlayer->m_CatchingTeam];
+			pPlayer->m_TeeInfos.m_ColorFeet = TeamColors[pPlayer->m_CatchingTeam + 1];
 		else
-			pPlayer->m_TeeInfos.m_ColorFeet = TeamColors[pPlayer->m_PrevCatchingTeam];
+			pPlayer->m_TeeInfos.m_ColorFeet = TeamColors[pPlayer->m_PrevCatchingTeam + 1];
 	}
 }
 
