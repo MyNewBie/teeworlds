@@ -65,7 +65,9 @@ void CProjectile::Tick()
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
 	CPlayer *pOwner = GameServer()->m_apPlayers[m_Owner];
-	CPlayer *pTarget = TargetChr->GetPlayer();
+	CPlayer *pTarget;
+	if(TargetChr)
+		pTarget = TargetChr->GetPlayer();
 
 	m_LifeSpan--;
 	

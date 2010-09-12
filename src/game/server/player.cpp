@@ -113,7 +113,8 @@ void CPlayer::Tick()
 			{
 				m_IsJoined = true;
 				GameServer()->SendBroadcast("", m_ClientID);
-				GetCharacter()->CreateDieExplosion(false);
+				if(GetCharacter())
+					GetCharacter()->CreateDieExplosion(false);
 			}
 			else
 				GameServer()->SendChatTarget(m_ClientID, "Please wait until this round ends");
