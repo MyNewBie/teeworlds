@@ -736,10 +736,10 @@ bool IGameController::JoiningSystem() const
 void IGameController::SetColor(class CPlayer *pP){}
 int IGameController::GetLeaderID(){ return -1; }
 
-bool IGameController::CheckJoined(CCharacter *pChr1, CCharacter *pChr2)
+bool IGameController::CheckJoined(CPlayer *pP1, CPlayer *pP2)
 {
-	if((pChr1->GetPlayer()->m_IsJoined && pChr2->GetPlayer()->m_IsJoined) ||
-		(!pChr1->GetPlayer()->m_IsJoined && !pChr2->GetPlayer()->m_IsJoined))
+	if((pP1->m_IsJoined && pP2->m_IsJoined) ||
+		(!pP1->m_IsJoined && !pP2->m_IsJoined))
 		return true;
 	else
 		return false;

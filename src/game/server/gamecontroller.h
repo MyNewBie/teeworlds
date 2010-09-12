@@ -149,7 +149,7 @@ public:
 	virtual bool JoiningSystem() const;
 	virtual void SetColor(class CPlayer *pP);
 	virtual int GetLeaderID();
-	bool CheckJoined(CCharacter *pChr1, CCharacter *pChr2);
+	bool CheckJoined(CPlayer *pP1, CPlayer *pP2);
 	virtual void PostReset();
 	class CPathfind m_Path;
 	//int GetGameOverTick() { return m_GameOverTick; };

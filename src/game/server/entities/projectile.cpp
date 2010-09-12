@@ -64,6 +64,8 @@ void CProjectile::Tick()
 	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, 0);
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
+	CPlayer *pOwner = GameServer()->m_apPlayers[m_Owner];
+	CPlayer *pTarget = TargetChr->GetPlayer();
 
 	m_LifeSpan--;
 	
@@ -72,21 +74,21 @@ void CProjectile::Tick()
 		
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 		{
-			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
 				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 				GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatch(GameServer(), m_Owner));
 		}
 
 		if(m_Explosive)
 		{
-			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
 				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
 		}
 			
 		else if(TargetChr)
 		{
-			if((GameServer()->m_pController->JoiningSystem() && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+			if((GameServer()->m_pController->JoiningSystem() && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
 				!GameServer()->m_pController->JoiningSystem())
 				TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
 			else
@@ -95,7 +97,7 @@ void CProjectile::Tick()
 
 		//CPickup *pPickup = new CPickup(&GameServer()->m_World, POWERUP_HEALTH, 0);
 		//pPickup->m_Pos = PrevPos;
-		if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(TargetChr, OwnerChar)) ||
+		if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
 			!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
 			GameServer()->m_World.DestroyEntity(this);
 	}
