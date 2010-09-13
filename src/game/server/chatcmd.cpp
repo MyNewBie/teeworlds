@@ -80,7 +80,8 @@ bool CGameContext::ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say
 				p->m_BaseCatchingTeam = -1;
 				p->m_CatchingTeam = -1;
 				m_pController->OnPlayerInfoChange(p);
-				p->GetCharacter()->CreateDieExplosion(false);
+				if(p->GetCharacter())
+					p->GetCharacter()->CreateDieExplosion(false);
 			}
 			else
 				SendChatTarget(ClientId, "Use /color -1 to delete your team");
@@ -108,7 +109,8 @@ bool CGameContext::ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say
 					if(NumPlayers < g_Config.m_SvCheatProtection)
 					{
 						p->m_IsJoined = true;
-						p->GetCharacter()->CreateDieExplosion(false);
+						if(p->GetCharacter())
+							p->GetCharacter()->CreateDieExplosion(false);
 					}
 					else
 						SendChatTarget(ClientId, "Please wait until this round ends");
@@ -131,7 +133,8 @@ bool CGameContext::ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say
 					if(NumPlayers < g_Config.m_SvCheatProtection)
 					{
 						p->m_IsJoined = true;
-						p->GetCharacter()->CreateDieExplosion(false);
+						if(p->GetCharacter())
+							p->GetCharacter()->CreateDieExplosion(false);
 					}
 					else
 						SendChatTarget(ClientId, "Please wait until this round ends");
