@@ -5,7 +5,7 @@
 #include <engine/map.h>
 #include <engine/storage.h>
 #include <engine/serverbrowser.h>
-#include <engine/shared/demorec.h>
+#include <engine/shared/demo.h>
 #include <engine/shared/config.h>
 
 #include <game/generated/protocol.h>
@@ -255,7 +255,7 @@ void CGameClient::OnInit()
 	// load textures
 	for(int i = 0; i < g_pData->m_NumImages; i++)
 	{
-		g_GameClient.m_pMenus->RenderLoading(gs_LoadCurrent/gs_LoadTotal);
+		g_GameClient.m_pMenus->RenderLoading(gs_LoadCurrent/(float)gs_LoadTotal);
 		g_pData->m_aImages[i].m_Id = Graphics()->LoadTexture(g_pData->m_aImages[i].m_pFilename, CImageInfo::FORMAT_AUTO, 0);
 		gs_LoadCurrent++;
 	}
@@ -471,6 +471,13 @@ void CGameClient::OnRender()
 		}
 		m_LastSendInfo = 0;
 	}
+}
+
+void CGameClient::OnRelease()
+{
+	// release all systems
+	for(int i = 0; i < m_All.m_Num; i++)
+		m_All.m_paComponents[i]->OnRelease();
 }
 
 void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
@@ -796,7 +803,6 @@ void CGameClient::OnNewSnapshot()
 		else
 			m_ServerMode = SERVERMODE_PUREMOD;
 	}
-	
 	// send Catch msg
 	if(m_Snap.m_pGameobj)
 	{
@@ -817,9 +823,6 @@ void CGameClient::OnNewSnapshot()
 	//dbg_msg("Point", "+A");
 	
 
-	// update render info
-	for(int i = 0; i < MAX_CLIENTS; i++)
-		m_aClients[i].UpdateRenderInfo();
 }
 
 void CGameClient::OnPredict()
@@ -956,7 +959,7 @@ void CGameClient::CClientData::UpdateRenderInfo()
 	if(g_GameClient.m_Snap.m_pGameobj && g_GameClient.m_Snap.m_pGameobj->m_Flags&GAMEFLAG_TEAMS)
 	{
 		const int TeamColors[2] = {65387, 10223467};
-		if(m_Team >= 0 || m_Team <= 1)
+		if(m_Team >= 0 && m_Team <= 1)
 		{
 			m_RenderInfo.m_Texture = g_GameClient.m_pSkins->Get(m_SkinId)->m_ColorTexture;
 			m_RenderInfo.m_ColorBody = g_GameClient.m_pSkins->GetColor(TeamColors[m_Team]);

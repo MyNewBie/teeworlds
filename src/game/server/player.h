@@ -28,6 +28,8 @@ public:
 	void OnDirectInput(CNetObj_PlayerInput *NewInput);
 	void OnPredictedInput(CNetObj_PlayerInput *NewInput);
 	void OnDisconnect();
+
+	void AddBroadcast(char Broadcast[512], int BroadcastTime, int BroadcastLevel, char SystemMessage[512] = "");
 	
 	void KillCharacter(int Weapon = WEAPON_GAME);
 	CCharacter *GetCharacter();
@@ -79,7 +81,27 @@ private:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const;
 	
-	//
+	void BroadcastSystem();
+	class CBroadcasts
+	{
+	public:
+		char Broadcast[512];
+		int BroadcastTime;
+		int BroadcastLevel;
+		char SystemMessage[512];
+		int BroadcastTick;
+
+		int GetImportance()
+		{
+			int BroadcastTickTime = Server()->Tick() - this->BroadcastTick;
+			double TickImportance = 1 / BroadcastTickTime;
+			return (this->BroadcastLevel * (TickImportance * 100));
+		}
+
+		bool operator<(const CBroadcasts& Other) const { return (this->GetImportance() > Other.GetImportance()); }
+	};
+	sorted_array<CBroadcasts> m_Broadcast;
+
 	bool m_Spawning;
 	int m_ClientID;
 	int m_Team;

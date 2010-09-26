@@ -3,8 +3,10 @@
 
 
 #include <engine/graphics.h>
+#include <engine/storage.h>
 #include <engine/textrender.h>
 #include <engine/shared/config.h>
+#include <engine/shared/linereader.h>
 
 #include <game/generated/protocol.h>
 #include <game/generated/client_data.h>
@@ -31,7 +33,7 @@ bool CMenusKeyBinder::OnInput(IInput::CEvent Event)
 {
 	if(m_TakeKey)
 	{
-		if(Event.m_Flags&IInput::FLAG_PRESS && Event.m_Key != KEY_ESCAPE)
+		if(Event.m_Flags&IInput::FLAG_PRESS)
 		{
 			m_Key = Event;
 			m_GotKey = true;
@@ -207,28 +209,27 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
         MainView.HSplitTop(MainView.h/2, 0, &MainView);
 
 		// render skinselector
-		static const int s_MaxSkins = 256;
-		static const CSkins::CSkin *s_paSkinList[s_MaxSkins];
-		static int s_NumSkins = -1;
+		static bool s_InitSkinlist = true;
+		static sorted_array<const CSkins::CSkin *> s_paSkinList;
 		static float s_ScrollValue = 0;
-		if(s_NumSkins == -1)
+		if(s_InitSkinlist)
 		{
-			mem_zero(s_paSkinList, sizeof(s_paSkinList));
-			s_NumSkins = 0;
-			for(int i = 0; i < m_pClient->m_pSkins->Num() && i < s_MaxSkins; ++i)
+			s_paSkinList.clear();
+			for(int i = 0; i < m_pClient->m_pSkins->Num(); ++i)
 			{
 				const CSkins::CSkin *s = m_pClient->m_pSkins->Get(i);
 				// no special skins
 				if(s->m_aName[0] == 'x' && s->m_aName[1] == '_')
 					continue;
-				s_paSkinList[s_NumSkins++] = s;
+				s_paSkinList.add(s);
 			}
+			s_InitSkinlist = false;
 		}
 
 		int OldSelected = -1;
-		UiDoListboxStart(&s_NumSkins , &MainView, 50.0f, Localize("Skins"), "", s_NumSkins, 4, OldSelected, s_ScrollValue);
+		UiDoListboxStart(&s_InitSkinlist, &MainView, 50.0f, Localize("Skins"), "", s_paSkinList.size(), 4, OldSelected, s_ScrollValue);
 
-		for(int i = 0; i < s_NumSkins; ++i)
+		for(int i = 0; i < s_paSkinList.size(); ++i)
 		{
 			const CSkins::CSkin *s = s_paSkinList[i];
 			if(s == 0)
@@ -337,8 +338,10 @@ void CMenus::UiDoGetButtons(int Start, int Stop, CUIRect View)
 		int NewId = DoKeyReader((void *)&gs_aKeys[i].m_Name, &Button, OldId);
 		if(NewId != OldId)
 		{
-			m_pClient->m_pBinds->Bind(OldId, "");
-			m_pClient->m_pBinds->Bind(NewId, gs_aKeys[i].m_pCommand);
+			if(OldId != 0 || NewId == 0)
+				m_pClient->m_pBinds->Bind(OldId, "");
+			if(NewId != 0)
+				m_pClient->m_pBinds->Bind(NewId, gs_aKeys[i].m_pCommand);
 		}
 		View.HSplitTop(5.0f, 0, &View);
 	}
@@ -645,28 +648,43 @@ public:
 	bool operator<(const CLanguage &Other) { return m_Name < Other.m_Name; }
 };
 
-
-int fs_listdir(const char *pDir, FS_LISTDIR_CALLBACK cb, void *pUser);
-
-void GatherLanguages(const char *pName, int IsDir, void *pUser)
+void LoadLanguageIndexfile(IStorage *pStorage, IConsole *pConsole, sorted_array<CLanguage> *pLanguages)
 {
-	if(IsDir || pName[0] == '.')
+	IOHANDLE File = pStorage->OpenFile("data/languages/index.txt", IOFLAG_READ);
+	if(!File)
+	{
+		pConsole->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "localization", "couldn't open index file");
 		return;
-
-	sorted_array<CLanguage> &Languages = *((sorted_array<CLanguage> *)pUser);
-	char aFileName[128];
-	str_format(aFileName, sizeof(aFileName), "data/languages/%s", pName);
-
-	char NiceName[128];
-	str_format(NiceName, sizeof(NiceName), "%s", pName);
-	NiceName[0] = str_uppercase(NiceName[0]);
-
-
-	for(char *p = NiceName; *p; p++)
-		if(*p == '.')
-			*p = 0;
-
-	Languages.add(CLanguage(NiceName, aFileName));
+	}
+	
+	CLineReader LineReader;
+	LineReader.Init(File);
+	char *pLine;
+	while((pLine = LineReader.Get()))
+	{
+		if(!str_length(pLine) || pLine[0] == '#') // skip empty lines and comments
+			continue;
+			
+		char *pReplacement = LineReader.Get();
+		if(!pReplacement)
+		{
+			pConsole->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "localization", "unexpected end of index file");
+			break;
+		}
+		
+		if(pReplacement[0] != '=' || pReplacement[1] != '=' || pReplacement[2] != ' ')
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "malform replacement for index '%s'", pLine);
+			pConsole->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "localization", aBuf);
+			continue;
+		}
+		
+		char aFileName[128];
+		str_format(aFileName, sizeof(aFileName), "data/languages/%s.txt", pLine);
+		pLanguages->add(CLanguage(pReplacement+3, aFileName));
+	}
+	io_close(File);
 }
 
 void CMenus::RenderSettingsGeneral(CUIRect MainView)
@@ -679,7 +697,7 @@ void CMenus::RenderSettingsGeneral(CUIRect MainView)
 	if(s_Languages.size() == 0)
 	{
 		s_Languages.add(CLanguage("English", ""));
-		fs_listdir("data/languages", GatherLanguages, &s_Languages);
+		LoadLanguageIndexfile(Storage(), Console(), &s_Languages);
 		for(int i = 0; i < s_Languages.size(); i++)
 			if(str_comp(s_Languages[i].m_FileName, g_Config.m_ClLanguagefile) == 0)
 			{

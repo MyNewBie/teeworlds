@@ -89,6 +89,7 @@ public:
 		char m_aClan[MAX_CLANNAME_LENGTH];
 		int m_Score;
 		int m_Authed;
+		int m_AuthTries;
 		
 		void Reset();
 	};
@@ -106,6 +107,7 @@ public:
 	//int m_CurrentGameTick;
 	int m_RunServer;
 	int m_MapReload;
+	int m_RconClientId;
 
 	char m_aBrowseinfoGametype[16];
 	int m_BrowseinfoProgression;

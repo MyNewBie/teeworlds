@@ -37,6 +37,9 @@ CPlayer::~CPlayer()
 
 void CPlayer::Tick()
 {
+	if(!Server()->ClientIngame(m_ClientID))
+		return;
+
 	Server()->SetClientScore(m_ClientID, m_Score);
 	
 	// do latency stuff
@@ -243,6 +246,9 @@ void CPlayer::Tick()
 
 void CPlayer::Snap(int SnappingClient)
 {
+	if(!Server()->ClientIngame(m_ClientID))
+		return;
+
 	CNetObj_ClientInfo *ClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, m_ClientID, sizeof(CNetObj_ClientInfo)));
 	StrToInts(&ClientInfo->m_Name0, 6, Server()->ClientName(m_ClientID));
 	StrToInts(&ClientInfo->m_Skin0, 6, m_TeeInfos.m_SkinName);
@@ -270,7 +276,7 @@ void CPlayer::OnDisconnect()
 	if(Server()->ClientIngame(m_ClientID))
 	{
 		char aBuf[512];
-		str_format(aBuf, sizeof(aBuf),  "\"%s\" has left the game", Server()->ClientName(m_ClientID));
+		str_format(aBuf, sizeof(aBuf),  "'%s' has left the game", Server()->ClientName(m_ClientID));
 		GameServer()->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 
 		str_format(aBuf, sizeof(aBuf), "leave player='%d:%s'", m_ClientID, Server()->ClientName(m_ClientID));
@@ -327,7 +333,7 @@ void CPlayer::SetTeam(int Team)
 		return;
 		
 	char aBuf[512];
-	str_format(aBuf, sizeof(aBuf), "\"%s\" joined the %s", Server()->ClientName(m_ClientID), GameServer()->m_pController->GetTeamName(Team));
+	str_format(aBuf, sizeof(aBuf), "'%s' joined the %s", Server()->ClientName(m_ClientID), GameServer()->m_pController->GetTeamName(Team));
 	GameServer()->SendChat(-1, CGameContext::CHAT_ALL, aBuf); 
 	
 	KillCharacter();

@@ -4,6 +4,7 @@
 #include <engine/demo.h>
 #include <engine/keys.h>
 #include <engine/graphics.h>
+#include <engine/textrender.h>
 #include <engine/storage.h>
 
 #include <game/client/render.h>
@@ -42,11 +43,12 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 	
 	const float SeekBarHeight = 15.0f;
 	const float ButtonbarHeight = 20.0f;
+	const float NameBarHeight = 20.0f;
 	const float Margins = 5.0f;
 	float TotalHeight;
 	
 	if(m_MenuActive)
-		TotalHeight = SeekBarHeight+ButtonbarHeight+Margins*3;
+		TotalHeight = SeekBarHeight+ButtonbarHeight+NameBarHeight+Margins*3;
 	else
 		TotalHeight = SeekBarHeight+Margins*2;
 	
@@ -58,7 +60,7 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 		
 	MainView.Margin(5.0f, &MainView);
 	
-	CUIRect SeekBar, ButtonBar;
+	CUIRect SeekBar, ButtonBar, NameBar;
 	
 	int CurrentTick = pInfo->m_CurrentTick - pInfo->m_FirstTick;
 	int TotalTicks = pInfo->m_LastTick - pInfo->m_FirstTick;
@@ -67,6 +69,8 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 	{
 		MainView.HSplitTop(SeekBarHeight, &SeekBar, &ButtonBar);
 		ButtonBar.HSplitTop(Margins, 0, &ButtonBar);
+		ButtonBar.HSplitBottom(NameBarHeight, &ButtonBar, &NameBar);
+		NameBar.HSplitTop(4.0f, 0, &NameBar);
 	}
 	else
 		SeekBar = MainView;
@@ -102,7 +106,7 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 			{
 				static float PrevAmount = 0.0f;
 				float Amount = (UI()->MouseX()-SeekBar.x)/(float)SeekBar.w;
-				if(Amount > 0 && Amount < 1.0f && PrevAmount != Amount)
+				if(Amount > 0.0f && Amount < 1.0f && absolute(PrevAmount-Amount) >= 0.01f)
 				{
 					PrevAmount = Amount;
 					m_pClient->OnReset();
@@ -198,6 +202,14 @@ void CMenus::RenderDemoPlayer(CUIRect MainView)
 		static int s_ExitButton = 0;
 		if(DoButton_DemoPlayer(&s_ExitButton, Localize("Close"), 0, &Button))
 			Client()->Disconnect();
+
+		// demo name
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "Demofile: %s", DemoPlayer()->GetDemoName());
+		CTextCursor Cursor;
+		TextRender()->SetCursor(&Cursor, NameBar.x, NameBar.y, Button.h*0.5f, TEXTFLAG_RENDER|TEXTFLAG_STOP_AT_END);
+		Cursor.m_LineWidth = MainView.w;
+		TextRender()->TextEx(&Cursor, aBuf, -1);
 	}
 }
 
@@ -396,29 +408,23 @@ int CMenus::UiDoListboxEnd(float *pScrollValue, bool *pItemActivated)
 	return gs_ListBoxNewSelected;
 }
 
-struct FETCH_CALLBACKINFO
-{
-	CMenus *m_pSelf;
-	const char *m_pPrefix;
-};
-
-void CMenus::DemolistFetchCallback(const char *pName, int IsDir, void *pUser)
+void CMenus::DemolistFetchCallback(const char *pName, int IsDir, int DirType, void *pUser)
 {
 	if(pName[0] == '.')
 		return;
 	
-	FETCH_CALLBACKINFO *pInfo = (FETCH_CALLBACKINFO *)pUser;
+	CMenus *pSelf = (CMenus *)pUser;
 	
 	CDemoItem Item;
-	str_format(Item.m_aFilename, sizeof(Item.m_aFilename), "%s/%s", pInfo->m_pPrefix, pName);
+	str_format(Item.m_aFilename, sizeof(Item.m_aFilename), "%s%s%s/%s", pSelf->Storage()->GetDirectory(DirType),
+		pSelf->Storage()->GetDirectory(DirType)[0] ? "/" : "", pSelf->m_aCurrentDemoFolder, pName);
 	str_copy(Item.m_aName, pName, sizeof(Item.m_aName));
-	pInfo->m_pSelf->m_lDemos.add(Item);
+	pSelf->m_lDemos.add(Item);
 }
 
 void CMenus::DemolistPopulate()
 {
 	m_lDemos.clear();
-	
 	
 	if(str_comp(m_aCurrentDemoFolder, "demos") != 0) //add parent folder
 	{
@@ -428,14 +434,7 @@ void CMenus::DemolistPopulate()
 		m_lDemos.add(Item);
 	}
 	
-	
-	char aBuf[512];
-	str_format(aBuf, sizeof(aBuf), "%s/%s", Client()->UserDirectory(), m_aCurrentDemoFolder);
-	
-	FETCH_CALLBACKINFO Info = {this, aBuf};
-	fs_listdir(aBuf, DemolistFetchCallback, &Info);
-	Info.m_pPrefix = m_aCurrentDemoFolder;
-	fs_listdir(m_aCurrentDemoFolder, DemolistFetchCallback, &Info);
+	Storage()->ListDirectory(IStorage::TYPE_SAVE|IStorage::TYPE_CURRENT, m_aCurrentDemoFolder, DemolistFetchCallback, this);
 }
 
 
@@ -517,7 +516,7 @@ void CMenus::RenderDemoList(CUIRect MainView)
 		{
 			if(str_comp(m_lDemos[s_SelectedItem].m_aName, "..") == 0) //parent folder
 			{
-				DemoSetParentDirectory();
+				fs_parent_dir(m_aCurrentDemoFolder);
 				DemolistPopulate();
 				s_SelectedItem = m_lDemos.size() > 0 ? 0 : -1;
 			}
@@ -534,6 +533,11 @@ void CMenus::RenderDemoList(CUIRect MainView)
 				const char *pError = Client()->DemoPlayer_Play(m_lDemos[s_SelectedItem].m_aFilename);
 				if(pError)
 					PopupMessage(Localize("Error"), str_comp(pError, "error loading demo") ? pError : Localize("error loading demo"), Localize("Ok"));
+				else
+				{
+					UI()->SetActiveItem(0);
+					return;
+				}
 			}
 		}
 	}
@@ -544,24 +548,10 @@ void CMenus::RenderDemoList(CUIRect MainView)
 		if(DoButton_Menu(&s_DeleteButton, Localize("Delete"), 0, &DeleteRect) || m_DeletePressed)
 		{
 			if(s_SelectedItem >= 0 && s_SelectedItem < m_lDemos.size())
+			{
+				UI()->SetActiveItem(0);
 				m_Popup = POPUP_DELETE_DEMO;
+			}
 		}
-	}
-}
-
-void CMenus::DemoSetParentDirectory()
-{
-	int Stop = 0;
-	for(int i = 0; i < 256; i++)
-	{
-		if(m_aCurrentDemoFolder[i] == '/')
-			Stop = i;
-	}
-	
-	//keeps chars which are before the last '/' and remove chars which are after
-	for(int i = 0; i < 256; i++)
-	{
-		if(i >= Stop)
-			m_aCurrentDemoFolder[i] = '\0';
 	}
 }
