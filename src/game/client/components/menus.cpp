@@ -12,6 +12,7 @@
 #include <engine/textrender.h>
 #include <engine/serverbrowser.h>
 #include <engine/keys.h>
+#include <engine/storage.h>
 #include <engine/shared/config.h>
 
 #include <game/version.h>
@@ -98,6 +99,7 @@ CMenus::CMenus()
 	m_LastInput = time_get();
 	
 	str_copy(m_aCurrentDemoFolder, "demos", sizeof(m_aCurrentDemoFolder));
+	m_aCallvoteReason[0] = 0;
 }
 
 vec4 CMenus::ButtonColorMul(const void *pID)
@@ -218,7 +220,10 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 {
     int Inside = UI()->MouseInside(pRect);
 	bool ReturnValue = false;
+	bool UpdateOffset = false;
 	static int s_AtIndex = 0;
+	static bool s_DoScroll = false;
+	static float s_ScrollStart = 0.0f;
 
 	if(UI()->LastActiveItem() == pID)
 	{
@@ -228,6 +233,8 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 			
 		if(Inside && UI()->MouseButton(0))
 		{
+			s_DoScroll = true;
+			s_ScrollStart = UI()->MouseX();
 			int MxRel = (int)(UI()->MouseX() - pRect->x);
 
 			for(int i = 1; i <= Len; i++)
@@ -240,6 +247,24 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 
 				if(i == Len)
 					s_AtIndex = Len;
+			}
+		}
+		else if(!UI()->MouseButton(0))
+			s_DoScroll = false;
+		else if(s_DoScroll)
+		{
+			// do scrolling
+			if(UI()->MouseX() < pRect->x && s_ScrollStart-UI()->MouseX() > 10.0f)
+			{
+				s_AtIndex = max(0, s_AtIndex-1);
+				s_ScrollStart = UI()->MouseX();
+				UpdateOffset = true;
+			}
+			else if(UI()->MouseX() > pRect->x+pRect->w && UI()->MouseX()-s_ScrollStart > 10.0f)
+			{
+				s_AtIndex = min(Len, s_AtIndex+1);
+				s_ScrollStart = UI()->MouseX();
+				UpdateOffset = true;
 			}
 		}
 
@@ -255,7 +280,10 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 	if(UI()->ActiveItem() == pID)
 	{
 		if(!UI()->MouseButton(0))
+		{
+			s_DoScroll = false;
 			UI()->SetActiveItem(0);
+		}
 	}
 	else if(UI()->HotItem() == pID)
 	{
@@ -290,7 +318,7 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 	}
 
 	// check if the text has to be moved
-	if(UI()->LastActiveItem() == pID && !JustGotActive && m_NumInputEvents)
+	if(UI()->LastActiveItem() == pID && !JustGotActive && (UpdateOffset || m_NumInputEvents))
 	{
 		float w = TextRender()->TextWidth(0, FontSize, pDisplayStr, s_AtIndex)*UI()->Scale();
 		if(w-*Offset > Textbox.w)
@@ -1259,7 +1287,7 @@ void CMenus::RenderBackground()
 	//Graphics()->Clear(1,1,1);
 	//render_sunrays(0,0);
 	if(gs_TextureBlob == -1)
-		gs_TextureBlob = Graphics()->LoadTexture("blob.png", CImageInfo::FORMAT_AUTO, 0);
+		gs_TextureBlob = Graphics()->LoadTexture("blob.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
 
 
 	float sw = 300*Graphics()->ScreenAspect();

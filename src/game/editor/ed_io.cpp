@@ -384,17 +384,17 @@ int CEditorMap::Save(class IStorage *pStorage, const char *pFileName)
 	return 1;
 }
 
-int CEditor::Load(const char *pFileName)
+int CEditor::Load(const char *pFileName, int StorageType)
 {
 	Reset();
-	return m_Map.Load(Kernel()->RequestInterface<IStorage>(), pFileName);
+	return m_Map.Load(Kernel()->RequestInterface<IStorage>(), pFileName, StorageType);
 }
 
-int CEditorMap::Load(class IStorage *pStorage, const char *pFileName)
+int CEditorMap::Load(class IStorage *pStorage, const char *pFileName, int StorageType)
 {
 	CDataFileReader DataFile;
 	//DATAFILE *df = datafile_load(filename);
-	if(!DataFile.Open(pStorage, pFileName))
+	if(!DataFile.Open(pStorage, pFileName, StorageType))
 		return 0;
 		
 	Clean();
@@ -433,7 +433,7 @@ int CEditorMap::Load(class IStorage *pStorage, const char *pFileName)
 					
 					// load external
 					CEditorImage ImgInfo(m_pEditor);
-					if(m_pEditor->Graphics()->LoadPNG(&ImgInfo, aBuf))
+					if(m_pEditor->Graphics()->LoadPNG(&ImgInfo, aBuf, IStorage::TYPE_ALL))
 					{
 						*pImg = ImgInfo;
 						pImg->m_TexId = m_pEditor->Graphics()->LoadTextureRaw(ImgInfo.m_Width, ImgInfo.m_Height, ImgInfo.m_Format, ImgInfo.m_pData, CImageInfo::FORMAT_AUTO, 0);
@@ -638,13 +638,13 @@ static void ModifyAdd(int *pIndex)
 		*pIndex += gs_ModifyAddAmount;
 }
 
-int CEditor::Append(const char *pFileName)
+int CEditor::Append(const char *pFileName, int StorageType)
 {
 	CEditorMap NewMap;
 	NewMap.m_pEditor = this;
 
 	int Err;
-	Err = NewMap.Load(Kernel()->RequestInterface<IStorage>(), pFileName);
+	Err = NewMap.Load(Kernel()->RequestInterface<IStorage>(), pFileName, StorageType);
 	if(!Err)
 		return Err;
 

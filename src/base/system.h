@@ -830,6 +830,24 @@ int str_comp(const char *a, const char *b);
 int str_comp_num(const char *a, const char *b, const int num);
 
 /*
+	Function: str_comp_filenames
+		Compares two strings case sensitive, digit chars will be compared as numbers.
+	
+	Parameters:
+		a - String to compare.
+		b - String to compare.
+	
+	Returns:	
+		<0 - String a is lesser then string b
+		0 - String a is equal to string b
+		>0 - String a is greater then string b
+
+	Remarks:
+		- The strings are treated as zero-termineted strings.
+*/
+int str_comp_filenames(const char *a, const char *b);
+
+/*
 	Function: str_find_nocase
 		Finds a string inside another string case insensitive.
 
@@ -952,10 +970,13 @@ int fs_chdir(const char *path);
 	Parameters:
 		path - The directory string
 
+	Returns:
+		Returns 0 on success, 1 on failure.
+
 	Remarks:
 		- The string is treated as zero-termineted string.
 */
-void fs_parent_dir(char *path);
+int fs_parent_dir(char *path);
 
 /*
 	Group: Undocumented
@@ -1128,6 +1149,22 @@ int str_utf8_decode(const char **ptr);
 		- Does not do zero termination of the string.
 */
 int str_utf8_encode(char *ptr, int chr);
+
+/*
+	Function: str_utf8_check
+		Checks if a strings contains just valid utf8 characters.
+	
+	Parameters:
+		str - Pointer to a possible utf8 string.
+		
+	Returns:
+		0 - invalid characters found.
+		1 - only valid characters found.
+
+	Remarks:
+		- The string is treated as zero-terminated utf8 string.
+*/
+int str_utf8_check(const char *str);
 
 #ifdef __cplusplus
 }

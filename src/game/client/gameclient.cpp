@@ -151,10 +151,10 @@ void CGameClient::OnConsoleInit()
 	
 	m_All.Add(&gs_MapLayersBackGround); // first to render
 	m_All.Add(&m_pParticles->m_RenderTrail);
-	m_All.Add(&m_pParticles->m_RenderExplosions);
 	m_All.Add(&gs_Items);
 	m_All.Add(&gs_Players);
 	m_All.Add(&gs_MapLayersForeGround);
+	m_All.Add(&m_pParticles->m_RenderExplosions);
 	m_All.Add(&gs_NamePlates);
 	m_All.Add(&m_pParticles->m_RenderGeneral);
 	m_All.Add(m_pDamageind);
@@ -226,7 +226,7 @@ void CGameClient::OnInit()
 	//m_pServerBrowser = Kernel()->RequestInterface<IServerBrowser>();
 	
 	// set the language
-	g_Localization.Load(g_Config.m_ClLanguagefile, Console());
+	g_Localization.Load(g_Config.m_ClLanguagefile, Storage(), Console());
 	
 	// init all components
 	for(int i = 0; i < m_All.m_Num; i++)
@@ -241,7 +241,12 @@ void CGameClient::OnInit()
 	// load default font	
 	static CFont *pDefaultFont;
 	//default_font = gfx_font_load("data/fonts/sazanami-gothic.ttf");
-	pDefaultFont = TextRender()->LoadFont("data/fonts/vera.ttf");
+
+	char aFilename[512];
+	IOHANDLE File = Storage()->OpenFile("fonts/vera.ttf", IOFLAG_READ, IStorage::TYPE_ALL, aFilename, sizeof(aFilename));
+	if(File)
+		io_close(File);
+	pDefaultFont = TextRender()->LoadFont(aFilename);
 	TextRender()->SetDefaultFont(pDefaultFont);
 
 	g_Config.m_ClThreadsoundloading = 0;
@@ -256,7 +261,7 @@ void CGameClient::OnInit()
 	for(int i = 0; i < g_pData->m_NumImages; i++)
 	{
 		g_GameClient.m_pMenus->RenderLoading(gs_LoadCurrent/(float)gs_LoadTotal);
-		g_pData->m_aImages[i].m_Id = Graphics()->LoadTexture(g_pData->m_aImages[i].m_pFilename, CImageInfo::FORMAT_AUTO, 0);
+		g_pData->m_aImages[i].m_Id = Graphics()->LoadTexture(g_pData->m_aImages[i].m_pFilename, IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
 		gs_LoadCurrent++;
 	}
 
@@ -292,7 +297,7 @@ void CGameClient::OnInit()
 	
 	int64 End = time_get();
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "initialisation finished after %f.2ms", ((End-Start)*1000)/(float)time_freq());
+	str_format(aBuf, sizeof(aBuf), "initialisation finished after %.2fms", ((End-Start)*1000)/(float)time_freq());
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "gameclient", aBuf);
 	
 	m_ServerMode = SERVERMODE_PURE;

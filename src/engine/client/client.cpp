@@ -585,7 +585,7 @@ void CClient::ServerInfoRequest()
 
 int CClient::LoadData()
 {
-	m_DebugFont = Graphics()->LoadTexture("debug_font.png", CImageInfo::FORMAT_AUTO, IGraphics::TEXLOAD_NORESAMPLE);
+	m_DebugFont = Graphics()->LoadTexture("debug_font.png", IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, IGraphics::TEXLOAD_NORESAMPLE);
 	return 1;
 }
 
@@ -990,7 +990,7 @@ void CClient::ProcessPacket(CNetChunk *pPacket)
 
 						m_MapdownloadChunk = 0;
 						str_copy(m_aMapdownloadName, pMap, sizeof(m_aMapdownloadName));
-						m_MapdownloadFile = Storage()->OpenFile(m_aMapdownloadFilename, IOFLAG_WRITE);
+						m_MapdownloadFile = Storage()->OpenFile(m_aMapdownloadFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
 						m_MapdownloadCrc = MapCrc;
 						m_MapdownloadTotalsize = -1;
 						m_MapdownloadAmount = 0;
@@ -1537,13 +1537,6 @@ void CClient::Update()
 	m_ServerBrowser.Update();
 }
 
-const char *CClient::UserDirectory()
-{
-	static char saPath[1024] = {0};
-	fs_storage_path("Teeworlds", saPath, sizeof(saPath));
-	return saPath;
-}
-
 void CClient::VersionUpdate()
 {
 	if(m_VersionInfo.m_State == 0)
@@ -1871,7 +1864,7 @@ void CClient::Con_AddFavorite(IConsole::IResult *pResult, void *pUserData)
 		pSelf->m_ServerBrowser.AddFavorite(Addr);
 }
 
-const char *CClient::DemoPlayer_Play(const char *pFilename)
+const char *CClient::DemoPlayer_Play(const char *pFilename, int StorageType)
 {
 	int Crc;
 	const char *pError;
@@ -1881,7 +1874,7 @@ const char *CClient::DemoPlayer_Play(const char *pFilename)
 	// try to start playback
 	m_DemoPlayer.SetListner(this);
 
-	if(m_DemoPlayer.Load(Storage(), m_pConsole, pFilename))
+	if(m_DemoPlayer.Load(Storage(), m_pConsole, pFilename, StorageType))
 		return "error loading demo";
 
 	// load map
@@ -1926,7 +1919,7 @@ const char *CClient::DemoPlayer_Play(const char *pFilename)
 void CClient::Con_Play(IConsole::IResult *pResult, void *pUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	pSelf->DemoPlayer_Play(pResult->GetString(0));
+	pSelf->DemoPlayer_Play(pResult->GetString(0), IStorage::TYPE_ALL);
 }
 
 void CClient::DemoRecorder_Start(const char *pFilename)
@@ -1957,8 +1950,8 @@ void CClient::RegisterCommands()
 {
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	// register server dummy commands for tab completion
-	m_pConsole->Register("kick", "i", CFGFLAG_SERVER, 0, 0, "Kick player with specified id");
-	m_pConsole->Register("ban", "s?i", CFGFLAG_SERVER, 0, 0, "Ban player with ip/id for x minutes");
+	m_pConsole->Register("kick", "i?s", CFGFLAG_SERVER, 0, 0, "Kick player with specified id for any reason");
+	m_pConsole->Register("ban", "s?is", CFGFLAG_SERVER, 0, 0, "Ban player with ip/id for x minutes for any reason");
 	m_pConsole->Register("unban", "s", CFGFLAG_SERVER, 0, 0, "Unban ip");
 	m_pConsole->Register("bans", "", CFGFLAG_SERVER, 0, 0, "Show banlist");
 	m_pConsole->Register("status", "", CFGFLAG_SERVER, 0, 0, "List players");

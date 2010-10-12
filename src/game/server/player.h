@@ -64,7 +64,7 @@ public:
 	int m_Score;
 	int m_ScoreStartTick;
 	bool m_ForceBalanced;
-	int m_CatchingTeam;
+	int m_LastActionTick;	struct	{		int m_TargetX;		int m_TargetY;	} m_LatestActivity;	int m_CatchingTeam;
 	int m_PrevCatchingTeam;
 	int m_BaseCatchingTeam;
 	int m_DoesDamage;

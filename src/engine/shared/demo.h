@@ -103,7 +103,7 @@ public:
 	
 	void SetListner(IListner *pListner);
 		
-	int Load(class IStorage *pStorage, class IConsole *pConsole, const char *pFilename);
+	int Load(class IStorage *pStorage, class IConsole *pConsole, const char *pFilename, int StorageType);
 	int Play();
 	void Pause();
 	void Unpause();
@@ -112,6 +112,7 @@ public:
 	int SetPos(float Precent);
 	const CInfo *BaseInfo() const { return &m_Info.m_Info; }
 	char *GetDemoName();
+	bool GetDemoInfo(class IStorage *pStorage, const char *pFilename, int StorageType, char *pMap, int BufferSize) const;
 	
 	int Update();
 	

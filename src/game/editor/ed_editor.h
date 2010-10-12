@@ -321,10 +321,14 @@ public:
 
 	// io	
 	int Save(class IStorage *pStorage, const char *pFilename);
+<<<<<<< HEAD
 	int Load(class IStorage *pStorage, const char *pFilename);
 
 	void MakeTeleLayer(CLayer *pLayer);
 	void MakeSpeedupLayer(CLayer *pLayer);
+=======
+	int Load(class IStorage *pStorage, const char *pFilename, int StorageType);
+>>>>>>> cd578a0dc24b3ffbd3afc7cdace9b06e75dd91cd
 };
 
 
@@ -346,6 +350,7 @@ enum
 	PROPTYPE_COLOR,
 	PROPTYPE_IMAGE,
 	PROPTYPE_ENVELOPE,
+	PROPTYPE_SHIFT,
 };
 
 typedef struct
@@ -360,7 +365,12 @@ public:
 	CLayerTiles(int w, int h);
 	~CLayerTiles();
 
+<<<<<<< HEAD
 	virtual void Resize(int NewW, int NewH);
+=======
+	void Resize(int NewW, int NewH);
+	void Shift(int Direction);
+>>>>>>> cd578a0dc24b3ffbd3afc7cdace9b06e75dd91cd
 
 	void MakePalette();
 	virtual void Render();
@@ -494,15 +504,19 @@ public:
 		m_pTooltip = 0;
 
 		m_aFileName[0] = 0;
+		m_ValidSaveFilename = false;
 		
-		m_FileDialogDirTypes = 0;
+		m_FileDialogStorageType = 0;
 		m_pFileDialogTitle = 0;
 		m_pFileDialogButtonText = 0;
 		m_pFileDialogUser = 0;
 		m_aFileDialogFileName[0] = 0;
-		m_aFileDialogPath[0] = 0;
-		m_aFileDialogCompleteFilename[0] = 0;
-		m_FilesNum = 0;
+		m_aFileDialogCurrentFolder[0] = 0;
+		m_aFileDialogCurrentLink[0] = 0;
+		m_pFileDialogPath = m_aFileDialogCurrentFolder;
+		m_aFileDialogActivate = false;
+		m_FileDialogScrollValue = 0.0f;
+		m_FilesSelectedIndex = -1;
 		m_FilesStartAt = 0;
 		m_FilesCur = 0;
 		m_FilesStopAt = 999;
@@ -548,15 +562,15 @@ public:
 	virtual void Init();
 	virtual void UpdateAndRender();
 	
-	void FilelistPopulate();
-	void InvokeFileDialog(int ListdirType, const char *pTitle, const char *pButtonText,
+	void FilelistPopulate(int StorageType);
+	void InvokeFileDialog(int StorageType, int FileType, const char *pTitle, const char *pButtonText,
 		const char *pBasepath, const char *pDefaultName,
-		void (*pfnFunc)(const char *pFilename, void *pUser), void *pUser);
+		void (*pfnFunc)(const char *pFilename, int StorageType, void *pUser), void *pUser);
 	
 	void Reset(bool CreateDefault=true);
 	int Save(const char *pFilename);
-	int Load(const char *pFilename);
-	int Append(const char *pFilename);
+	int Load(const char *pFilename, int StorageType);
+	int Append(const char *pFilename, int StorageType);
 	void Render();
 
 	CQuad *GetSelectedQuad();
@@ -571,17 +585,43 @@ public:
 	const char *m_pTooltip;
 
 	char m_aFileName[512];
+	bool m_ValidSaveFilename;
+
+	enum
+	{
+		FILETYPE_MAP,
+		FILETYPE_IMG,
+
+		MAX_PATH_LENGTH = 512
+	};
 	
-	int m_FileDialogDirTypes;
+	int m_FileDialogStorageType;
 	const char *m_pFileDialogTitle;
 	const char *m_pFileDialogButtonText;
-	void (*m_pfnFileDialogFunc)(const char *pFileName, void *pUser);
+	void (*m_pfnFileDialogFunc)(const char *pFileName, int StorageType, void *pUser);
 	void *m_pFileDialogUser;
-	char m_aFileDialogFileName[512];
-	char m_aFileDialogPath[512];
-	char m_aFileDialogCompleteFilename[512];
-	int m_FilesNum;
-	sorted_array<string> m_FileList;
+	char m_aFileDialogFileName[MAX_PATH_LENGTH];
+	char m_aFileDialogCurrentFolder[MAX_PATH_LENGTH];
+	char m_aFileDialogCurrentLink[MAX_PATH_LENGTH];
+	char *m_pFileDialogPath;
+	bool m_aFileDialogActivate;
+	int m_FileDialogFileType;
+	float m_FileDialogScrollValue;
+	int m_FilesSelectedIndex;
+
+	struct CFilelistItem
+	{
+		char m_aFilename[128];
+		char m_aName[128];
+		bool m_IsDir;
+		bool m_IsLink;
+		int m_StorageType;
+		
+		bool operator<(const CFilelistItem &Other) { return !str_comp(m_aFilename, "..") ? true : !str_comp(Other.m_aFilename, "..") ? false :
+														m_IsDir && !Other.m_IsDir ? true : !m_IsDir && Other.m_IsDir ? false :
+														str_comp_filenames(m_aFilename, Other.m_aFilename) < 0; }
+	};
+	sorted_array<CFilelistItem> m_FileList;
 	int m_FilesStartAt;
 	int m_FilesCur;
 	int m_FilesStopAt;
@@ -674,8 +714,8 @@ public:
 	float UiDoScrollbarV(const void *id, const CUIRect *pRect, float Current);
 	vec4 GetButtonColor(const void *id, int Checked);
 	
-	static void ReplaceImage(const char *pFilename, void *pUser);
-	static void AddImage(const char *pFilename, void *pUser);
+	static void ReplaceImage(const char *pFilename, int StorageType, void *pUser);
+	static void AddImage(const char *pFilename, int StorageType, void *pUser);
 	
 	void RenderImages(CUIRect Toolbox, CUIRect Toolbar, CUIRect View);
 	void RenderLayers(CUIRect Toolbox, CUIRect Toolbar, CUIRect View);
@@ -686,7 +726,7 @@ public:
 	void RenderMenubar(CUIRect Menubar);
 	void RenderFileDialog();
 
-	void AddFileDialogEntry(const char *pName, CUIRect *pView);
+	void AddFileDialogEntry(int Index, CUIRect *pView);
 	void SortImages();
 
 	unsigned char m_TeleNum;
