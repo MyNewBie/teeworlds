@@ -81,7 +81,7 @@ private:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const;
 	
-	void BroadcastSystem();
+	/*void BroadcastSystem();
 	class CBroadcasts
 	{
 	public:
@@ -100,7 +100,7 @@ private:
 
 		bool operator<(const CBroadcasts& Other) const { return (this->GetImportance() > Other.GetImportance()); }
 	};
-	sorted_array<CBroadcasts> m_Broadcast;
+	sorted_array<CBroadcasts> m_Broadcast;*/
 
 	bool m_Spawning;
 	int m_ClientID;
