@@ -324,14 +324,11 @@ public:
 
 	// io	
 	int Save(class IStorage *pStorage, const char *pFilename);
-<<<<<<< HEAD
-	int Load(class IStorage *pStorage, const char *pFilename);
 
 	void MakeTeleLayer(CLayer *pLayer);
 	void MakeSpeedupLayer(CLayer *pLayer);
-=======
+
 	int Load(class IStorage *pStorage, const char *pFilename, int StorageType);
->>>>>>> cd578a0dc24b3ffbd3afc7cdace9b06e75dd91cd
 };
 
 
@@ -368,12 +365,8 @@ public:
 	CLayerTiles(int w, int h);
 	~CLayerTiles();
 
-<<<<<<< HEAD
 	virtual void Resize(int NewW, int NewH);
-=======
-	void Resize(int NewW, int NewH);
 	void Shift(int Direction);
->>>>>>> cd578a0dc24b3ffbd3afc7cdace9b06e75dd91cd
 
 	void MakePalette();
 	virtual void Render();

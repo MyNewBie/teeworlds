@@ -2,6 +2,9 @@
 #include <math.h>
 #include <base/math.h>
 #include <engine/graphics.h>
+#include <engine/textrender.h>
+#include <game/generated/protocol.h>
+#include <game/generated/client_data.h>
 
 #include "render.h"
 

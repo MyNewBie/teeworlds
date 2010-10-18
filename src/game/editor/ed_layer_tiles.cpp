@@ -136,7 +136,7 @@ int CLayerTiles::BrushGrab(CLayerGroup *pBrush, CUIRect Rect)
 		return 0;
 	
 	// create new layers
-	CLa CLayerTiles(r.w, r.h);
+	CLayerTele *pGrabbed = new CLayerTele(r.w, r.h);
 	pGrabbed->m_pEditor = m_pEditor;
 	pGrabbed->m_TexId = m_TexId;
 	pGrabbed->m_Image = m_Image;
@@ -443,13 +443,8 @@ int CLayerTiles::RenderProperties(CUIRect *pToolBox)
 		{0},
 	};
 	
-<<<<<<< HEAD
 	if(m_pEditor->m_Map.m_pGameLayer == this || m_pEditor->m_Map.m_pTeleLayer == this || m_pEditor->m_Map.m_pSpeedupLayer == this) // remove the image from the selection if this is the game layer
 		aProps[2].m_pName = 0;
-=======
-	if(m_pEditor->m_Map.m_pGameLayer == this) // remove the image from the selection if this is the game layer
-		aProps[3].m_pName = 0;
->>>>>>> cd578a0dc24b3ffbd3afc7cdace9b06e75dd91cd
 	
 	static int s_aIds[NUM_PROPS] = {0};
 	int NewVal = 0;
