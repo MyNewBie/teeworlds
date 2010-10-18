@@ -1950,8 +1950,8 @@ void CClient::RegisterCommands()
 {
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	// register server dummy commands for tab completion
-	m_pConsole->Register("kick", "i?s", CFGFLAG_SERVER, 0, 0, "Kick player with specified id for any reason");
-	m_pConsole->Register("ban", "s?is", CFGFLAG_SERVER, 0, 0, "Ban player with ip/id for x minutes for any reason");
+	m_pConsole->Register("kick", "i?r", CFGFLAG_SERVER, 0, 0, "Kick player with specified id for any reason");
+	m_pConsole->Register("ban", "s?ir", CFGFLAG_SERVER, 0, 0, "Ban player with ip/id for x minutes for any reason");
 	m_pConsole->Register("unban", "s", CFGFLAG_SERVER, 0, 0, "Unban ip");
 	m_pConsole->Register("bans", "", CFGFLAG_SERVER, 0, 0, "Show banlist");
 	m_pConsole->Register("status", "", CFGFLAG_SERVER, 0, 0, "List players");
@@ -2001,7 +2001,7 @@ int main(int argc, const char **argv) // ignore_convention
 	{
 		if(str_comp("-s", argv[i]) == 0 || str_comp("--silent", argv[i]) == 0) // ignore_convention
 		{
-			ShowWindow(GetConsoleWindow(), SW_HIDE);
+			FreeConsole();
 			break;
 		}
 	}
