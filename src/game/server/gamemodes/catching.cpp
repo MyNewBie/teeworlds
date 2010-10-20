@@ -299,6 +299,8 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 	//								stört da aber da es auch andere gametypen beeinflusst!
 	//								(und ständige "if isCatching()" unschön, unleserlich
 	//								und schwer zu warten sind.))
+	//								(Hinweis an erdi: Jetzt komm ich mit meiner eigenen Mod
+	//								nicht mehr klar :D. Und wo bist du überhaupt D:?)
 	int TeamOwner = -1,
 		KillerID = pKiller->GetCID(),
 		VictimID = pVictim->GetPlayer()->GetCID();
@@ -312,8 +314,11 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 	}
 	if(pKiller->m_CatchingTeam == pKiller->m_BaseCatchingTeam)
 	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(VictimID));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(KillerID));
+		if(Weapon != WEAPON_WORLD)
+		{
+			str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(VictimID));
+			str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(KillerID));
+		}
 	}
 	else if(TeamOwner != -1)
 	{
