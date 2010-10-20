@@ -338,9 +338,9 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 			GameServer()->SendBroadcast(KillerMsg, KillerID);
 
 		// Victim Broadcast
-		pVictim->GetPlayer()->m_NoBroadcast = Server()->TickSpeed() * 5;
-		pVictim->GetPlayer()->m_TickBroadcast = true;
-		GameServer()->SendBroadcast(VictimMsg, VictimID);
+			pVictim->GetPlayer()->m_NoBroadcast = Server()->TickSpeed() * 5;
+			pVictim->GetPlayer()->m_TickBroadcast = true;
+			GameServer()->SendBroadcast(VictimMsg, VictimID);
 
 		if(TeamOwner != -1) // If any; Team owner Broadcast
 		{
