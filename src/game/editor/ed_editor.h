@@ -366,7 +366,7 @@ public:
 	~CLayerTiles();
 
 	virtual void Resize(int NewW, int NewH);
-	void Shift(int Direction);
+	virtual void Shift(int Direction);
 
 	void MakePalette();
 	virtual void Render();
@@ -451,6 +451,7 @@ public:
 	CTeleTile *m_pTeleTile;
 	
 	virtual void Resize(int NewW, int NewH);
+	virtual void Shift(int Direction);
 	virtual void BrushDraw(CLayer *pBrush, float wx, float wy);
 	virtual void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect);
 };
@@ -464,6 +465,7 @@ public:
 	CSpeedupTile *m_pSpeedupTile;
 	
 	virtual void Resize(int NewW, int NewH);
+	virtual void Shift(int Direction);
 	virtual void BrushDraw(CLayer *pBrush, float wx, float wy);
 	virtual void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect);
 };
