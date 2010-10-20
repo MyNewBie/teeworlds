@@ -16,3 +16,11 @@
 /Catching/Catching.sdf
 /Catching/Catching.suo
 /data/editor/stuff
+
+/SDL.dll
+/bam -call.bat
+/client_releasex64.bat
+/config.lua
+/other/icons/teeworlds.res
+/server_releasex64.bat
+/teeworlds_catching_srv.exe
