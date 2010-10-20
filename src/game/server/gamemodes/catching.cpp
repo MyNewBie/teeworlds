@@ -312,40 +312,44 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 			pKiller->m_BaseCatchingTeam != pKiller->m_CatchingTeam)
 			TeamOwner = i;
 	}
-	if(pKiller->m_CatchingTeam == pKiller->m_BaseCatchingTeam)
-	{
-		if(Weapon != WEAPON_WORLD)
-		{
-			str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(VictimID));
-			str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(KillerID));
-		}
-	}
-	else if(TeamOwner != -1)
-	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in %s's team", Server()->ClientName(VictimID), Server()->ClientName(TeamOwner));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(TeamOwner));
-		str_format(OwnerMsg, sizeof(OwnerMsg),  "%s is now in your team", Server()->ClientName(VictimID));
-	}
-	else
-	{
-		str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in the same team as you", Server()->ClientName(VictimID));
-		str_format(VictimMsg, sizeof(VictimMsg),  "You are now in the same team as %s", Server()->ClientName(KillerID));
-	}
-	pKiller->m_NoBroadcast = Server()->TickSpeed() * 5;
-	pKiller->m_TickBroadcast = true;
-	GameServer()->SendBroadcast(KillerMsg, KillerID);
-
-	pVictim->GetPlayer()->m_NoBroadcast = Server()->TickSpeed() * 5;
-	pVictim->GetPlayer()->m_TickBroadcast = true;
-	GameServer()->SendBroadcast(VictimMsg, VictimID);
-
-	if(TeamOwner != -1)
-	{
-		GameServer()->m_apPlayers[TeamOwner]->m_NoBroadcast = Server()->TickSpeed() * 3;
-		GameServer()->m_apPlayers[TeamOwner]->m_TickBroadcast = true;
-		GameServer()->SendBroadcast(OwnerMsg, TeamOwner);
-	}
 	
-	pVictim->ChangeTeam(VictimID, KillerID, pVictim->GetPlayer()->m_CatchingTeam, pKiller->m_CatchingTeam);
+	if(KillerID != VictimID) // Don't display any message if the Killer is the same as the Victim
+	{
+		if(pKiller->m_CatchingTeam == pKiller->m_BaseCatchingTeam) // The Killer is Owner of his team
+		{
+				str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in your team", Server()->ClientName(VictimID));
+				str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(KillerID));
+		}
+		else if(TeamOwner != -1) // The Killer isn't Owner of his team
+		{
+			str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in %s's team", Server()->ClientName(VictimID), Server()->ClientName(TeamOwner));
+			str_format(VictimMsg, sizeof(VictimMsg),  "You are now in %s's team", Server()->ClientName(TeamOwner));
+			str_format(OwnerMsg, sizeof(OwnerMsg),  "%s is now in your team", Server()->ClientName(VictimID));
+		}
+		else // All Other (Teamowner leave the game)
+		{
+			str_format(KillerMsg, sizeof(KillerMsg),  "You caught %s in the same team as you are", Server()->ClientName(VictimID));
+			str_format(VictimMsg, sizeof(VictimMsg),  "You are now in the same team as %s", Server()->ClientName(KillerID));
+		}
+
+		// Killer Broadcast
+			pKiller->m_NoBroadcast = Server()->TickSpeed() * 5;
+			pKiller->m_TickBroadcast = true;
+			GameServer()->SendBroadcast(KillerMsg, KillerID);
+
+		// Victim Broadcast
+		pVictim->GetPlayer()->m_NoBroadcast = Server()->TickSpeed() * 5;
+		pVictim->GetPlayer()->m_TickBroadcast = true;
+		GameServer()->SendBroadcast(VictimMsg, VictimID);
+
+		if(TeamOwner != -1) // If any; Team owner Broadcast
+		{
+			GameServer()->m_apPlayers[TeamOwner]->m_NoBroadcast = Server()->TickSpeed() * 3;
+			GameServer()->m_apPlayers[TeamOwner]->m_TickBroadcast = true;
+			GameServer()->SendBroadcast(OwnerMsg, TeamOwner);
+		}
+	
+		pVictim->ChangeTeam(VictimID, KillerID, pVictim->GetPlayer()->m_CatchingTeam, pKiller->m_CatchingTeam);
+	}
 	return 0;
 }
