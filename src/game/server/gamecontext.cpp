@@ -542,8 +542,6 @@ void CGameContext::OnClientConnected(int ClientId)
 {
 	// Check which team the player should be on
 	int StartTeam = g_Config.m_SvTournamentMode ? -1 : m_pController->GetAutoTeam(ClientId); // const int
-	if(m_pController->IsCatching())
-		StartTeam = 0;
 
 	m_apPlayers[ClientId] = new(ClientId) CPlayer(this, ClientId, StartTeam);
 	//players[client_id].init(client_id);
@@ -809,8 +807,6 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_IsJoined)
 							NumPlayers++;
 					}
-					if(m_pController->IsCatching() && NumPlayers < g_Config.m_SvCheatProtection)
-						p->m_IsJoined = true;
 				}
 				(void)m_pController->CheckTeamBalance();
 			}
