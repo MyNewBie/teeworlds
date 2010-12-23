@@ -1,4 +1,5 @@
-// copyright (c) 2007 magnus auvinen, see licence.txt for more info
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <math.h>
 
 #include <base/system.h>
@@ -112,12 +113,12 @@ vec4 CMenus::ButtonColorMul(const void *pID)
 	return vec4(1,1,1,1);
 }
 
-int CMenus::DoButton_BrowseIcon(int What, const CUIRect *pRect)
+int CMenus::DoButton_Icon(int ImageId, int SpriteId, const CUIRect *pRect)
 {
-	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BROWSEICONS].m_Id);
+	Graphics()->TextureSet(g_pData->m_aImages[ImageId].m_Id);
 	
 	Graphics()->QuadsBegin();
-	RenderTools()->SelectSprite(What);
+	RenderTools()->SelectSprite(SpriteId);
 	IGraphics::CQuadItem QuadItem(pRect->x, pRect->y, pRect->w, pRect->h);
 	Graphics()->QuadsDrawTL(&QuadItem, 1);
 	Graphics()->QuadsEnd();
@@ -736,7 +737,7 @@ void CMenus::OnInit()
 	// */
 	
 	if(g_Config.m_ClShowWelcome)
-		m_Popup = POPUP_FIRST_LAUNCH;
+		m_Popup = POPUP_LANGUAGE;
 	g_Config.m_ClShowWelcome = 0;
 
 	Console()->Chain("add_favorite", ConchainServerbrowserUpdate, this);
@@ -853,8 +854,7 @@ int CMenus::Render()
 			if(Client()->MapDownloadTotalsize() > 0)
 			{
 				pTitle = Localize("Downloading map");
-				str_format(aBuf, sizeof(aBuf), "%d/%d KiB", Client()->MapDownloadAmount()/1024, Client()->MapDownloadTotalsize()/1024);
-				pExtraText = aBuf;
+				pExtraText = "";
 			}
 		}
 		else if(m_Popup == POPUP_DISCONNECTED)
@@ -880,7 +880,7 @@ int CMenus::Render()
 		else if(m_Popup == POPUP_PASSWORD)
 		{
 			pTitle = Localize("Password incorrect");
-			pExtraText = Client()->ErrorString();
+			pExtraText = "";
 			pButtonText = Localize("Try again");
 		}
 		else if(m_Popup == POPUP_QUIT)
@@ -970,6 +970,86 @@ int CMenus::Render()
 			static float Offset = 0.0f;
 			DoEditBox(&g_Config.m_Password, &TextBox, g_Config.m_Password, sizeof(g_Config.m_Password), 12.0f, &Offset, true);
 		}
+		else if(m_Popup == POPUP_CONNECTING)
+		{
+			Box = Screen;
+			Box.VMargin(150.0f, &Box);
+			Box.HMargin(150.0f, &Box);
+			Box.HSplitBottom(20.f, &Box, &Part);
+			Box.HSplitBottom(24.f, &Box, &Part);
+			Part.VMargin(120.0f, &Part);
+
+			static int s_Button = 0;
+			if(DoButton_Menu(&s_Button, pButtonText, 0, &Part) || m_EscapePressed || m_EnterPressed)
+			{
+				Client()->Disconnect();
+				m_Popup = POPUP_NONE;
+			}
+
+			if(Client()->MapDownloadTotalsize() > 0)
+			{
+				int64 Now = time_get();
+				if(Now-m_DownloadLastCheckTime >= time_freq())
+				{
+					if(m_DownloadLastCheckSize > Client()->MapDownloadAmount())
+					{
+						// map downloaded restarted
+						m_DownloadLastCheckSize = 0;
+					}
+
+					// update download speed
+					float Diff = (Client()->MapDownloadAmount()-m_DownloadLastCheckSize)/1024.0f;
+					m_DownloadSpeed = (m_DownloadSpeed*(1.0f-(1.0f/m_DownloadSpeed))) + (Diff*(1.0f/m_DownloadSpeed));
+					m_DownloadLastCheckTime = Now;
+					m_DownloadLastCheckSize = Client()->MapDownloadAmount();
+				}
+
+				Box.HSplitTop(64.f, 0, &Box);
+				Box.HSplitTop(24.f, &Part, &Box);
+				str_format(aBuf, sizeof(aBuf), "%d/%d KiB (%.1f KiB/s)", Client()->MapDownloadAmount()/1024, Client()->MapDownloadTotalsize()/1024,	m_DownloadSpeed);
+				UI()->DoLabel(&Part, aBuf, 20.f, 0, -1);
+				
+				// time left
+				const char *pTimeLeftString;
+				int TimeLeft = (Client()->MapDownloadTotalsize()-Client()->MapDownloadAmount())/(m_DownloadSpeed*1024)+1;
+				if(TimeLeft >= 60)
+				{
+					TimeLeft /= 60;
+					pTimeLeftString = TimeLeft == 1 ? Localize("minute") : Localize("minutes");
+				}
+				else
+					pTimeLeftString = TimeLeft == 1 ? Localize("second") : Localize("seconds");
+				Box.HSplitTop(20.f, 0, &Box);
+				Box.HSplitTop(24.f, &Part, &Box);
+				str_format(aBuf, sizeof(aBuf), "%i %s %s", TimeLeft, pTimeLeftString, Localize("left"));
+				UI()->DoLabel(&Part, aBuf, 20.f, 0, -1);
+
+				// progress bar
+				Box.HSplitTop(20.f, 0, &Box);
+				Box.HSplitTop(24.f, &Part, &Box);
+				Part.VMargin(40.0f, &Part);
+				RenderTools()->DrawUIRect(&Part, vec4(1.0f, 1.0f, 1.0f, 0.25f), CUI::CORNER_ALL, 5.0f);
+				Part.w = max(10.0f, (Part.w*Client()->MapDownloadAmount())/Client()->MapDownloadTotalsize());
+				RenderTools()->DrawUIRect(&Part, vec4(1.0f, 1.0f, 1.0f, 0.5f), CUI::CORNER_ALL, 5.0f);
+			}
+		}
+		else if(m_Popup == POPUP_LANGUAGE)
+		{
+			Box = Screen;
+			Box.VMargin(150.0f, &Box);
+			Box.HMargin(150.0f, &Box);
+			Box.HSplitTop(20.f, &Part, &Box);
+			Box.HSplitBottom(20.f, &Box, &Part);
+			Box.HSplitBottom(24.f, &Box, &Part);
+			Box.HSplitBottom(20.f, &Box, 0);
+			Box.VMargin(20.0f, &Box);
+			RenderLanguageSelection(Box);
+			Part.VMargin(120.0f, &Part);
+
+			static int s_Button = 0;
+			if(DoButton_Menu(&s_Button, Localize("Ok"), 0, &Part) || m_EscapePressed || m_EnterPressed)
+				m_Popup = POPUP_FIRST_LAUNCH;
+		}
 		else if(m_Popup == POPUP_DELETE_DEMO)
 		{
 			CUIRect Yes, No;
@@ -1024,11 +1104,7 @@ int CMenus::Render()
 
 			static int s_Button = 0;
 			if(DoButton_Menu(&s_Button, pButtonText, 0, &Part) || m_EscapePressed || m_EnterPressed)
-			{
-				if(m_Popup == POPUP_CONNECTING)
-					Client()->Disconnect();
 				m_Popup = POPUP_NONE;
-			}
 		}
 	}
 	
@@ -1131,6 +1207,9 @@ void CMenus::OnStateChange(int NewState, int OldState)
 	else if(NewState == IClient::STATE_LOADING)
 	{
 		m_Popup = POPUP_CONNECTING;
+		m_DownloadLastCheckTime = time_get();
+		m_DownloadLastCheckSize = 0;
+		m_DownloadSpeed = 1.0f;
 		//client_serverinfo_request();
 	}
 	else if(NewState == IClient::STATE_CONNECTING)

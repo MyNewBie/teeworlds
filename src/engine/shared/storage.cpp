@@ -1,5 +1,5 @@
-// copyright (c) 2007 magnus auvinen, see licence.txt for more info
-#include <stdio.h> //remove()
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <base/system.h>
 #include <engine/storage.h>
 #include "engine.h"
@@ -21,6 +21,7 @@ public:
 	int m_NumPaths;
 	char m_aDatadir[MAX_PATH_LENGTH];
 	char m_aUserdir[MAX_PATH_LENGTH];
+	char m_aCurrentdir[MAX_PATH_LENGTH];
 	
 	CStorage()
 	{
@@ -35,17 +36,12 @@ public:
 		// get userdir
 		fs_storage_path(pApplicationName, m_aUserdir, sizeof(m_aUserdir));
 
-		// check for datadir override
-		for(int i = 1; i < NumArgs; i++)
-		{
-			if(ppArguments[i][0] == '-' && ppArguments[i][1] == 'd' && ppArguments[i][2] == 0 && NumArgs - i > 1)
-			{
-				str_copy(m_aDatadir, ppArguments[i+1], sizeof(m_aDatadir));
-				break;
-			}
-		}
 		// get datadir
 		FindDatadir(ppArguments[0]);
+
+		// get currentdir
+		if(!fs_getcwd(m_aCurrentdir, sizeof(m_aCurrentdir)))
+			m_aCurrentdir[0] = 0;
 
 		// load paths from storage.cfg
 		LoadPaths(ppArguments[0]);
@@ -61,10 +57,12 @@ public:
 		{
 			char aPath[MAX_PATH_LENGTH];
 			fs_makedir(GetPath(TYPE_SAVE, "screenshots", aPath, sizeof(aPath)));
+			fs_makedir(GetPath(TYPE_SAVE, "screenshots/auto", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "maps", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "dumps", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "downloadedmaps", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "demos", aPath, sizeof(aPath)));
+			fs_makedir(GetPath(TYPE_SAVE, "demos/auto", aPath, sizeof(aPath)));
 		}
 
 		return m_NumPaths ? 0 : 1;
@@ -124,63 +122,54 @@ public:
 		if(m_NumPaths >= MAX_PATHS || !pPath[0])
 			return;
 
-		int OldNum = m_NumPaths;
-
 		if(!str_comp(pPath, "$USERDIR"))
 		{
 			if(m_aUserdir[0])
+			{
 				str_copy(m_aaStoragePaths[m_NumPaths++], m_aUserdir, MAX_PATH_LENGTH);
+				dbg_msg("storage", "added path '$USERDIR' ('%s')", m_aUserdir);
+			}
 		}
 		else if(!str_comp(pPath, "$DATADIR"))
 		{
 			if(m_aDatadir[0])
+			{
 				str_copy(m_aaStoragePaths[m_NumPaths++], m_aDatadir, MAX_PATH_LENGTH);
+				dbg_msg("storage", "added path '$DATADIR' ('%s')", m_aDatadir);
+			}
 		}
 		else if(!str_comp(pPath, "$CURRENTDIR"))
 		{
 			m_aaStoragePaths[m_NumPaths++][0] = 0;
+			dbg_msg("storage", "added path '$CURRENTDIR' ('%s')", m_aCurrentdir);
 		}
 		else
 		{
 			if(fs_is_dir(pPath))
+			{
 				str_copy(m_aaStoragePaths[m_NumPaths++], pPath, MAX_PATH_LENGTH);
+				dbg_msg("storage", "added path '%s'", pPath);
+			}
 		}
-
-		if(OldNum != m_NumPaths)
-			dbg_msg("storage", "added path '%s'", pPath);
 	}
 		
 	void FindDatadir(const char *pArgv0)
 	{
-		// 1) use provided data-dir override
-		if(m_aDatadir[0])
-		{
-			char aBuffer[MAX_PATH_LENGTH];
-			str_format(aBuffer, sizeof(aBuffer), "%s/mapres", m_aDatadir);
-			if(!fs_is_dir(aBuffer))
-			{
-				dbg_msg("storage", "specified data directory '%s' does not exist", m_aDatadir);
-				m_aDatadir[0] = 0;
-			}
-			else
-				return;
-		}
-		
-		// 2) use data-dir in PWD if present
+		// 1) use data-dir in PWD if present
 		if(fs_is_dir("data/mapres"))
 		{
 			str_copy(m_aDatadir, "data", sizeof(m_aDatadir));
 			return;
 		}
 		
-		// 3) use compiled-in data-dir if present
+		// 2) use compiled-in data-dir if present
 		if(fs_is_dir(DATA_DIR "/mapres"))
 		{
 			str_copy(m_aDatadir, DATA_DIR, sizeof(m_aDatadir));
 			return;
 		}
 		
-		// 4) check for usable path in argv[0]
+		// 3) check for usable path in argv[0]
 		{
 			unsigned int Pos = ~0U;
 			for(unsigned i = 0; pArgv0[i]; i++)
@@ -202,21 +191,23 @@ public:
 		}
 		
 	#if defined(CONF_FAMILY_UNIX)
-		// 5) check for all default locations
+		// 4) check for all default locations
 		{
 			const char *aDirs[] = {
-				"/usr/share/teeworlds/data/mapres",
-				"/usr/share/games/teeworlds/data/mapres",
-				"/usr/local/share/teeworlds/data/mapres",
-				"/usr/local/share/games/teeworlds/data/mapres",
-				"/opt/teeworlds/data/mapres"
+				"/usr/share/teeworlds/data",
+				"/usr/share/games/teeworlds/data",
+				"/usr/local/share/teeworlds/data",
+				"/usr/local/share/games/teeworlds/data",
+				"/opt/teeworlds/data"
 			};
 			const int DirsCount = sizeof(aDirs) / sizeof(aDirs[0]);
 			
 			int i;
 			for (i = 0; i < DirsCount; i++)
 			{
-				if (fs_is_dir(aDirs[i]))
+				char aBuf[128];
+				str_format(aBuf, sizeof(aBuf), "%s/mapres", aDirs[i]);
+				if(fs_is_dir(aBuf))
 				{
 					str_copy(m_aDatadir, aDirs[i], sizeof(m_aDatadir));
 					return;
@@ -297,7 +288,16 @@ public:
 			return false;
 
 		char aBuffer[MAX_PATH_LENGTH];
-		return remove(GetPath(Type, pFilename, aBuffer, sizeof(aBuffer)));
+		return !fs_remove(GetPath(Type, pFilename, aBuffer, sizeof(aBuffer)));
+	}
+
+	virtual bool RenameFile(const char* pOldFilename, const char* pNewFilename, int Type)
+	{
+		if(Type < 0 || Type >= m_NumPaths)
+			return false;
+		char aOldBuffer[MAX_PATH_LENGTH];
+		char aNewBuffer[MAX_PATH_LENGTH];
+		return !fs_rename(GetPath(Type, pOldFilename, aOldBuffer, sizeof(aOldBuffer)), GetPath(Type, pNewFilename, aNewBuffer, sizeof (aNewBuffer)));
 	}
 
 	virtual bool CreateFolder(const char *pFoldername, int Type)
@@ -306,7 +306,7 @@ public:
 			return false;
 
 		char aBuffer[MAX_PATH_LENGTH];
-		return fs_makedir(GetPath(Type, pFoldername, aBuffer, sizeof(aBuffer)));
+		return !fs_makedir(GetPath(Type, pFoldername, aBuffer, sizeof(aBuffer)));
 	}
 
 	static IStorage *Create(const char *pApplicationName, int NumArgs, const char **ppArguments)

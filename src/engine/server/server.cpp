@@ -1,4 +1,5 @@
-// copyright (c) 2007 magnus auvinen, see licence.txt for more info
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
 #include <base/system.h>
 
@@ -114,6 +115,8 @@ int CSnapIDPool::NewID()
 	
 	int Id = m_FirstFree;
 	dbg_assert(Id != -1, "id error");
+	if(Id == -1)
+		return Id;
 	m_FirstFree = m_aIDs[m_FirstFree].m_Next;
 	m_aIDs[Id].m_State = 1;
 	m_Usage++;
@@ -130,6 +133,8 @@ void CSnapIDPool::TimeoutIDs()
 
 void CSnapIDPool::FreeID(int Id)
 {
+	if(Id < 0)
+		return;
 	dbg_assert(m_aIDs[Id].m_State == 1, "id is not alloced");
 
 	m_InUsage--;
@@ -1283,7 +1288,7 @@ void CServer::ConKick(IConsole::IResult *pResult, void *pUser)
 	if(pResult->NumArguments() > 1)
 	{
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "Kicked by console (%s)", pResult->GetString(1));
+		str_format(aBuf, sizeof(aBuf), "Kicked (%s)", pResult->GetString(1));
 		((CServer *)pUser)->Kick(pResult->GetInteger(0), aBuf);
 	}
 	else
@@ -1431,9 +1436,18 @@ void CServer::ConShutdown(IConsole::IResult *pResult, void *pUser)
 
 void CServer::ConRecord(IConsole::IResult *pResult, void *pUser)
 {
-	char aFilename[512];
-	str_format(aFilename, sizeof(aFilename), "demos/%s.demo", pResult->GetString(0));
-	((CServer *)pUser)->m_DemoRecorder.Start(((CServer *)pUser)->Storage(), ((CServer *)pUser)->Console(), aFilename, ((CServer *)pUser)->GameServer()->NetVersion(), ((CServer *)pUser)->m_aCurrentMap, ((CServer *)pUser)->m_CurrentMapCrc, "server");
+	CServer* pServer = (CServer *)pUser;
+	char aFilename[128];
+
+	if(pResult->NumArguments())
+		str_format(aFilename, sizeof(aFilename), "demos/%s.demo", pResult->GetString(0));
+	else
+	{
+		char aDate[20];
+		str_timestamp(aDate, sizeof(aDate));
+		str_format(aFilename, sizeof(aFilename), "demos/demo_%s.demo", aDate);
+	}
+	pServer->m_DemoRecorder.Start(pServer->Storage(), pServer->Console(), aFilename, pServer->GameServer()->NetVersion(), pServer->m_aCurrentMap, pServer->m_CurrentMapCrc, "server");
 }
 
 void CServer::ConStopRecord(IConsole::IResult *pResult, void *pUser)
@@ -1471,7 +1485,7 @@ void CServer::RegisterCommands()
 	Console()->Register("status", "", CFGFLAG_SERVER, ConStatus, this, "");
 	Console()->Register("shutdown", "", CFGFLAG_SERVER, ConShutdown, this, "");
 
-	Console()->Register("record", "s", CFGFLAG_SERVER|CFGFLAG_STORE, ConRecord, this, "");
+	Console()->Register("record", "?s", CFGFLAG_SERVER|CFGFLAG_STORE, ConRecord, this, "");
 	Console()->Register("stoprecord", "", CFGFLAG_SERVER, ConStopRecord, this, "");
 	
 	Console()->Register("reload", "", CFGFLAG_SERVER, ConMapReload, this, "");
@@ -1498,7 +1512,7 @@ void *CServer::SnapNewItem(int Type, int Id, int Size)
 {
 	dbg_assert(Type >= 0 && Type <=0xffff, "incorrect type");
 	dbg_assert(Id >= 0 && Id <=0xffff, "incorrect id");
-	return m_SnapshotBuilder.NewItem(Type, Id, Size);		
+	return Id < 0 ? 0 : m_SnapshotBuilder.NewItem(Type, Id, Size);		
 }
 
 void CServer::SnapSetStaticsize(int ItemType, int Size)

@@ -1,3 +1,5 @@
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef ENGINE_CLIENT_GRAPHICS_H
 #define ENGINE_CLIENT_GRAPHICS_H
 
@@ -39,6 +41,7 @@ protected:
 	float m_Rotation;
 	int m_Drawing;
 	bool m_DoScreenshot;
+	char m_aScreenshotName[128];
 
 	float m_ScreenX0;
 	float m_ScreenY0;
@@ -134,7 +137,7 @@ public:
 	virtual int WindowActive();
 	virtual int WindowOpen();
 
-	virtual void TakeScreenshot();
+	virtual void TakeScreenshot(const char *pFilename);
 	virtual void Swap();
 
 	virtual int GetVideoModes(CVideoMode *pModes, int MaxModes);

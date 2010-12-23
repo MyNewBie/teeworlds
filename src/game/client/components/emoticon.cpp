@@ -1,3 +1,5 @@
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <game/generated/protocol.h>
@@ -17,7 +19,7 @@ CEmoticon::CEmoticon()
 void CEmoticon::ConKeyEmoticon(IConsole::IResult *pResult, void *pUserData)
 {
 	CEmoticon *pSelf = (CEmoticon *)pUserData;
-	if(pSelf->Client()->State() != IClient::STATE_DEMOPLAYBACK)
+	if(!pSelf->m_pClient->m_Snap.m_Spectate && pSelf->Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		((CEmoticon *)pUserData)->m_Active = pResult->GetInteger(0) != 0;
 }
 

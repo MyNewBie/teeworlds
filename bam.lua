@@ -55,8 +55,13 @@ DuplicateDirectoryStructure("src", "src", "objs")
 
 function ResCompile(scriptfile)
 	scriptfile = Path(scriptfile)
-	output = PathBase(scriptfile) .. ".res"
-	AddJob(output, "rc " .. scriptfile, "rc /fo " .. output .. " " .. scriptfile)
+	if config.compiler.driver == "cl" then
+		output = PathBase(scriptfile) .. ".res"
+		AddJob(output, "rc " .. scriptfile, "rc /fo " .. output .. " " .. scriptfile)
+	elseif config.compiler.driver == "gcc" then
+		output = PathBase(scriptfile) .. ".coff"
+		AddJob(output, "windres " .. scriptfile, "windres -i " .. scriptfile .. " -o " .. output)
+	end
 	AddDependency(output, scriptfile)
 	return output
 end
@@ -68,7 +73,7 @@ function Dat2c(datafile, sourcefile, arrayname)
 	AddJob(
 		sourcefile,
 		"dat2c " .. PathFilename(sourcefile) .. " = " .. PathFilename(datafile),
-		Script("scripts/safewrapper.py") .. " \"" .. Script("scripts/dat2c.py")..  "\" " .. sourcefile .. " " .. datafile .. " " .. arrayname
+		Script("scripts/dat2c.py")..  "\" " .. sourcefile .. " " .. datafile .. " " .. arrayname
 	)
 	AddDependency(sourcefile, datafile)
 	return sourcefile
@@ -79,7 +84,7 @@ function ContentCompile(action, output)
 	AddJob(
 		output,
 		action .. " > " .. output,
-		--Script("scripts/safewrapper.py") .. " \"" .. Script("datasrc/compile.py") .. "\" ".. Path(output) .. " " .. action
+		--Script("datasrc/compile.py") .. "\" ".. Path(output) .. " " .. action
 		Script("datasrc/compile.py") .. " " .. action ..  " > " .. Path(output)
 	)
 	AddDependency(output, Path("datasrc/content.py")) -- do this more proper
@@ -108,11 +113,12 @@ client_depends = {}
 
 if family == "windows" then
 	table.insert(client_depends, CopyToDirectory(".", "other\\sdl\\vc2005libs\\SDL.dll"))
-end
-	
 
-if config.compiler.driver == "cl" then
-	client_link_other = {ResCompile("other/icons/teeworlds.rc")}
+	if config.compiler.driver == "cl" then
+		client_link_other = {ResCompile("other/icons/teeworlds_cl.rc")}
+	elseif config.compiler.driver == "gcc" then
+		client_link_other = {ResCompile("other/icons/teeworlds_gcc.rc")}
+	end
 end
 
 function Intermediate_Output(settings, input)
@@ -128,8 +134,8 @@ function build(settings)
 	else
 		settings.cc.flags:Add("-Wall", "-fno-exceptions")
 		if platform == "macosx" then
-			settings.cc.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
-			settings.link.flags:Add("-mmacosx-version-min=10.4", "-isysroot /Developer/SDKs/MacOSX10.4u.sdk")
+			settings.cc.flags:Add("-mmacosx-version-min=10.5", "-isysroot /Developer/SDKs/MacOSX10.5.sdk")
+			settings.link.flags:Add("-mmacosx-version-min=10.5", "-isysroot /Developer/SDKs/MacOSX10.5.sdk")
 		elseif config.stackprotector.value == 1 then
 			settings.cc.flags:Add("-fstack-protector", "-fstack-protector-all")
 			settings.link.flags:Add("-fstack-protector", "-fstack-protector-all")
@@ -292,11 +298,15 @@ if platform == "macosx"  and arch == "ia32" then
 	debug_settings_x86 = debug_settings:Copy()
 	debug_settings_x86.config_name = "debug_x86"
 	debug_settings_x86.config_ext = "_x86_d"
+	debug_settings_x86.cc.flags:Add("-arch i386")
+	debug_settings_x86.link.flags:Add("-arch i386")
 	debug_settings_x86.cc.defines:Add("CONF_DEBUG")
 
 	release_settings_x86 = release_settings:Copy()
 	release_settings_x86.config_name = "release_x86"
 	release_settings_x86.config_ext = "_x86"
+	release_settings_x86.cc.flags:Add("-arch i386")
+	release_settings_x86.link.flags:Add("-arch i386")
 	release_settings_x86.cc.defines:Add("CONF_RELEASE")
 
 	ppc_d = build(debug_settings_ppc)

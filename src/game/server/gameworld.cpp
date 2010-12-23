@@ -1,3 +1,5 @@
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
 #include "gameworld.h"
 #include "entity.h"
@@ -186,6 +188,7 @@ CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, v
 		float Len = distance(p->m_Pos, IntersectPos);
 		if(Len < p->m_ProximityRadius+Radius)
 		{
+			Len = distance(Pos0, IntersectPos);
 			if(Len < ClosestLen)
 			{
 				NewPos = IntersectPos;

@@ -1,4 +1,5 @@
-// copyright (c) 2007 magnus auvinen, see licence.txt for more info
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <engine/shared/config.h>
 #include <game/mapitems.h>
 
@@ -465,7 +466,7 @@ void IGameController::Tick()
 	{
 		for(int i = 0; i < MAX_CLIENTS; ++i)
 		{
-			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1)
+			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && !Server()->IsAuthed(i))
 			{
 				if(Server()->Tick() > GameServer()->m_apPlayers[i]->m_LastActionTick+g_Config.m_SvInactiveKickTime*Server()->TickSpeed()*60)
 				{
@@ -485,7 +486,7 @@ void IGameController::Tick()
 								if(GameServer()->m_apPlayers[j] && GameServer()->m_apPlayers[j]->GetTeam() == -1)
 									++Spectators;
 							if(Spectators >= g_Config.m_SvSpectatorSlots)
-								Server()->Kick(i, "kicked for inactivity");
+								Server()->Kick(i, "Kicked for inactivity");
 							else
 								GameServer()->m_apPlayers[i]->SetTeam(-1);
 						}
@@ -538,6 +539,9 @@ bool IGameController::IsTeamplay() const
 void IGameController::Snap(int SnappingClient)
 {
 	CNetObj_Game *pGameObj = (CNetObj_Game *)Server()->SnapNewItem(NETOBJTYPE_GAME, 0, sizeof(CNetObj_Game));
+	if(!pGameObj)
+		return;
+
 	pGameObj->m_Paused = GameServer()->m_World.m_Paused;
 	pGameObj->m_GameOver = m_GameOverTick==-1?0:1;
 	pGameObj->m_SuddenDeath = m_SuddenDeath;

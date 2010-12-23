@@ -1,3 +1,5 @@
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef GAME_CLIENT_COMPONENTS_MENUS_H
 #define GAME_CLIENT_COMPONENTS_MENUS_H
 
@@ -47,7 +49,7 @@ class CMenus : public CComponent
 	static void ui_draw_settings_tab_button(const void *id, const char *text, int checked, const CUIRect *r, const void *extra);
 	*/
 
-	int DoButton_BrowseIcon(int Checked, const CUIRect *pRect);
+	int DoButton_Icon(int ImageId, int SpriteId, const CUIRect *pRect);
 	int DoButton_GridHeader(const void *pID, const char *pText, int Checked, const CUIRect *pRect);
 
 	//static void ui_draw_browse_icon(int what, const CUIRect *r);
@@ -93,6 +95,7 @@ class CMenus : public CComponent
 		POPUP_MESSAGE,
 		POPUP_DISCONNECTED,
 		POPUP_PURE,
+		POPUP_LANGUAGE,
 		POPUP_DELETE_DEMO,
 		POPUP_PASSWORD,
 		POPUP_QUIT, 
@@ -147,6 +150,11 @@ class CMenus : public CComponent
 	bool m_EscapePressed;
 	bool m_EnterPressed;
 	bool m_DeletePressed;
+
+	// for map download popup
+	int64 m_DownloadLastCheckTime;
+	int m_DownloadLastCheckSize;
+	float m_DownloadSpeed;
 	
 	// for call vote
 	int m_CallvoteSelectedOption;
@@ -160,6 +168,8 @@ class CMenus : public CComponent
 		char m_aName[128];
 		bool m_IsDir;
 		int m_StorageType;
+		
+		bool m_InfosLoaded;
 		bool m_Valid;
 		char m_aMap[64];
 		
@@ -206,6 +216,7 @@ class CMenus : public CComponent
 	static void ConchainServerbrowserUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	
 	// found in menus_settings.cpp
+	void RenderLanguageSelection(CUIRect MainView);
 	void RenderSettingsGeneral(CUIRect MainView);
 	void RenderSettingsPlayer(CUIRect MainView);
 	void RenderSettingsControls(CUIRect MainView);

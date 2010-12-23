@@ -22,11 +22,20 @@ german
 italian
 == Italiano
 
+polish
+== Polski
+
 portuguese
 == Português
+
+russian
+== Русский
 
 serbian
 == Srpski
 
 swedish
 == Svenska
+
+ukrainian
+== Українська

@@ -1,3 +1,5 @@
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef ENGINE_CLIENT_INPUT_H
 #define ENGINE_CLIENT_INPUT_H
 
@@ -29,7 +31,7 @@ public:
 
 	int ButtonPressed(int Button) { return m_aInputState[m_InputCurrent][Button]; }
 
-	virtual void Update();
+	virtual int Update();
 };
 
 #endif

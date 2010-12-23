@@ -1,4 +1,5 @@
-/* copyright (c) 2007 magnus auvinen, see licence.txt for more info */
+/* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
+/* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -37,7 +38,6 @@
 	#include <windows.h>
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
-	#include <wspiapi.h>
 	#include <fcntl.h>
 	#include <direct.h>
 	#include <errno.h>
@@ -988,13 +988,26 @@ int fs_is_dir(const char *path)
 
 int fs_chdir(const char *path)
 {
-	if (fs_is_dir(path))
+	if(fs_is_dir(path))
 	{
-		chdir(path);
-		return 0;
+		if(chdir(path))
+			return 1;
+		else
+			return 0;
 	}
 	else
 		return 1;
+}
+
+char *fs_getcwd(char *buffer, int buffer_size)
+{
+	if(buffer == 0)
+		return 0;
+#if defined(CONF_FAMILY_WINDOWS)
+	return _getcwd(buffer, buffer_size);
+#else
+	return getcwd(buffer, buffer_size);
+#endif
 }
 
 int fs_parent_dir(char *path)
@@ -1012,6 +1025,20 @@ int fs_parent_dir(char *path)
 		return 0;
 	}
 	return 1;
+}
+
+int fs_remove(const char *filename)
+{
+	if(remove(filename) != 0)
+		return 1;
+	return 0;
+}
+
+int fs_rename(const char *oldname, const char *newname)
+{
+	if(rename(oldname, newname) != 0)
+		return 1;
+	return 0;
 }
 
 void swap_endian(void *data, unsigned elem_size, unsigned num)
@@ -1264,6 +1291,17 @@ void str_hex(char *dst, int dst_size, const void *data, int data_size)
 	}
 }
 
+void str_timestamp(char *buffer, int buffer_size)
+{
+	time_t time_data;
+	struct tm *time_info;
+	
+	time(&time_data);
+	time_info = localtime(&time_data);
+	strftime(buffer, buffer_size, "%Y-%m-%d_%H-%M-%S", time_info);
+	buffer[buffer_size-1] = 0;	/* assure null termination */
+}
+
 int mem_comp(const void *a, const void *b, int size)
 {
 	return memcmp(a,b,size);
@@ -1307,7 +1345,7 @@ void gui_messagebox(const char *title, const char *message)
 		title,
 		message);
 
-	system(cmd);
+	(void)system(cmd);
 #elif defined(CONF_FAMILY_WINDOWS)
 	MessageBox(NULL,
 		message,
