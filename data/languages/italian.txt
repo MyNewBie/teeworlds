@@ -4,6 +4,24 @@
 %d of %d servers, %d players
 == %d di %d server, %d giocatori
 
+%d%% loaded
+== %d%% caricati
+
+%ds left
+== %ds ancora
+
+%i minute left
+== %i minuto ancora
+
+%i minutes left
+== %i minuti ancora
+
+%i second left
+== %i secondo ancora
+
+%i seconds left
+== %i secondi ancora
+
 Abort
 == Annulla
 
@@ -19,11 +37,20 @@ Alpha
 Always show name plates
 == Mostra sempre etichette dei nomi
 
+Are you sure that you want to delete the demo?
+== Sicuro di voler cancellare questa registrazione?
+
 Are you sure that you want to quit?
 == Sicuro di voler uscire?
 
 As this is the first time you launch the game, please enter your nick name below. It's recommended that you check the settings to adjust them to your liking before joining a server.
-== E' la prima volta che avvii il gioco, ti preghiamo di inserire il tuo nickname. E' consigliabile che tu controlli le impostazioni per aggiustarle in base alle tue preferenze prima di entrare in un server.
+== E' la prima volta che avvii il gioco, ti preghiamo di inserire il tuo nickname. E' consigliato aggiustare le impostazioni in base alle proprie preferenze prima di entrare in un server.
+
+Automatically record demos
+== Registra demo automaticamente
+
+Automatically take game over screenshot
+== Foto automatica a fine partita
 
 Blue team
 == Squadra Blu
@@ -52,6 +79,9 @@ Connect
 Connecting to
 == Connessione a
 
+Connection Problems...
+== Connessione Persa...
+
 Console
 == Console
 
@@ -66,6 +96,12 @@ Current version: %s
 
 Custom colors
 == Colori personalizzati
+
+Delete
+== Cancella
+
+Delete demo
+== Cancella demo
 
 Demos
 == Demo
@@ -89,10 +125,16 @@ Dynamic Camera
 == Visuale dinamica
 
 Emoticon
-== Emoticon
+== Emozioni
 
 Enter
 == Entra
+
+Error
+== Errore
+
+Error loading demo
+== Impossibile caricare la demo
 
 FSAA samples
 == Esempi FSAA
@@ -111,6 +153,12 @@ Filter
 
 Fire
 == Fuoco
+
+Folder
+== Cartella
+
+Force vote
+== Forza voto
 
 Fullscreen
 == Schermo intero
@@ -134,7 +182,7 @@ General
 == Generale
 
 Graphics
-== Grafiche
+== Grafica
 
 Grenade
 == Granata
@@ -163,6 +211,9 @@ Info
 Internet
 == Internet
 
+Invalid Demo
+== Demo non valida
+
 Join blue
 == Entra blu
 
@@ -174,9 +225,6 @@ Join red
 
 Jump
 == Salta
-
-Kick
-== Kick
 
 LAN
 == LAN
@@ -220,11 +268,14 @@ Mute when not active
 Name
 == Nome
 
+Name plates size
+== Dimensione etichetta
+
 News
 == Notizie
 
 Next weapon
-== Prossima arma
+== Successiva
 
 Nickname
 == Nickname
@@ -244,6 +295,12 @@ No servers match your filter criteria
 Ok
 == Ok
 
+Open
+== Apri
+
+Parent Folder
+== Indietro
+
 Password
 == Password
 
@@ -257,7 +314,7 @@ Pistol
 == Pistola
 
 Play
-== Gioca
+== Guarda
 
 Player
 == Giocatore
@@ -265,8 +322,11 @@ Player
 Players
 == Giocatori
 
+Please balance teams!
+== Squadre sbilanciate!
+
 Prev. weapon
-== Arma precedente
+== Precedente
 
 Quality Textures
 == Textures di qualità
@@ -276,6 +336,12 @@ Quick search:
 
 Quit
 == Esci
+
+Reason:
+== Motivo:
+
+Record demo
+== Registra demo
 
 Red team
 == Squadra rossa
@@ -338,7 +404,10 @@ Settings
 == Impostazioni
 
 Shotgun
-== Shotgun
+== Fucile
+
+Show chat
+== Mostra Chat
 
 Show name plates
 == Mostra etichetta nomi
@@ -367,6 +436,9 @@ Standard gametype
 Standard map
 == Mappa classica
 
+Stop record
+== Termina reg.
+
 Switch weapon on pickup
 == Cambia arma alla raccolta
 
@@ -382,11 +454,17 @@ Teeworlds %s is out! Download it at www.teeworlds.com!
 Texture Compression
 == Compressione Texture
 
+The audio device couldn't be initialised.
+== Il dispositivo audio non può essere inizializzato.
+
 The server is running a non-standard tuning on a pure game type.
 == Il server sta eseguendo un tuning non-standard su un tipo di gioco classico.
 
 Time limit
 == Limite di tempo
+
+Time limit: %d min
+== Tempo limite %d min
 
 Try again
 == Ritenta
@@ -396,6 +474,9 @@ Type
 
 UI Color
 == Colore del menu
+
+Unable to delete the demo
+== Impossibile eliminare la registrazione
 
 Use sounds
 == Usa suoni
@@ -416,10 +497,10 @@ Voting
 == Votazione
 
 Weapon
-== Arma
+== Attiva arma
 
 Welcome to Teeworlds
-==  Benvenuto su Teeworlds!
+== Benvenuto su Teeworlds!
 
 Yes
 == Si
@@ -427,264 +508,66 @@ Yes
 You must restart the game for all settings to take effect.
 == E' necessario riavviare il gioco per rendere effettive le modifiche.
 
+Your skin
+== La tua Skin
+
+no limit
+== senza limite
+
 ##### needs translation #####
 
-%d%% loaded
+%d Bytes
 == 
 
-%ds left
-== 
-
-%s Right click for context menu.
+-Page %d-
 == 
 
 Add
 == 
 
-Add Image
+Add Friend
 == 
 
-Add Quad
+Are you sure that you want to remove the player from your friends list?
 == 
 
-Add group
+Change settings
 == 
 
-Add quads layer
+Clan
 == 
 
-Add tile layer
+Client
 == 
 
-Adds a new group
+Count players only
 == 
 
-Adds a new quad
+Country
 == 
 
-Alpha value of the envelope
+Crc:
 == 
 
-Anim
+Created:
 == 
 
-Append
+Demo details
 == 
 
-Append map
+Free-View
 == 
 
-Are you sure that you want to delete the demo?
+Friends
 == 
 
-Aspect ratio
+Kick player
 == 
 
-Automatically record demos
+Length:
 == 
 
-Automatically take game over screenshot
-== 
-
-Blue value of the envelope
-== 
-
-Border
-== 
-
-CCW
-== 
-
-CW
-== 
-
-Cancel
-== 
-
-Clear collision
-== 
-
-Clip H
-== 
-
-Clip W
-== 
-
-Clip X
-== 
-
-Clip Y
-== 
-
-Color
-== 
-
-Color Env
-== 
-
-Color TO
-== 
-
-Color+
-== 
-
-Connection Problems...
-== 
-
-Constructs collision from this layer
-== 
-
-Creates a new color envelope
-== 
-
-Creates a new map
-== 
-
-Creates a new pos envelope
-== 
-
-Creates a new quad layer
-== 
-
-Creates a new tile layer
-== 
-
-Decrease
-== 
-
-Decrease animation speed
-== 
-
-Delete
-== 
-
-Delete demo
-== 
-
-Delete group
-== 
-
-Delete layer
-== 
-
-Delete this envelope
-== 
-
-Deletes the current quad
-== 
-
-Deletes the layer
-== 
-
-Detail
-== 
-
-Down
-== 
-
-Embed
-== 
-
-Embedded
-== 
-
-Embeds the image into the map file.
-== 
-
-Enable/disable group for saving
-== 
-
-Enable/disable layer for saving
-== 
-
-Envelopes
-== 
-
-Error
-== 
-
-Error loading demo
-== 
-
-Exit
-== 
-
-Exits from the editor
-== 
-
-External
-== 
-
-File
-== 
-
-File: %s
-== 
-
-Filename:
-== 
-
-Folder
-== 
-
-Force vote
-== 
-
-Green value of the envelope
-== 
-
-Group
-== 
-
-HD
-== 
-
-Height
-== 
-
-Image
-== 
-
-Images
-== 
-
-Increase
-== 
-
-Increase animation speed
-== 
-
-Invalid Demo
-== 
-
-Layers
-== 
-
-Left
-== 
-
-Left mouse button to move. Hold shift to move pivot. Hold ctrl to rotate.
-== 
-
-Left mouse button to move. Hold shift to move the texture.
-== 
-
-Left mouse to drag. Hold ctrl to be more precise. Hold shift to alter time point aswell. Right click to delete.
-== 
-
-Load
-== 
-
-Load a new image to use in the map
-== 
-
-Load map
-== 
-
-Make collision
-== 
-
-Make external
+Map:
 == 
 
 Max Screenshots
@@ -693,274 +576,88 @@ Max Screenshots
 Max demos
 == 
 
-Name:
+Move player to spectators
 == 
 
-New
+Netversion:
 == 
 
-New folder
+New name:
 == 
 
-Next Envelope
+Next
 == 
 
-None
+Page %d of %d
 == 
 
-Normal animation speed
+Player options
 == 
 
-Open
+Prev
 == 
 
-Opens a map and adds everything from that map to the current one
-== 
-
-Opens a map for editing
-== 
-
-Order
-== 
-
-Para X
-== 
-
-Para Y
-== 
-
-Parent Folder
-== 
-
-Please balance teams!
-== 
-
-Pos X
-== 
-
-Pos Y
-== 
-
-Pos. Env
-== 
-
-Pos. TO
-== 
-
-Pos.+
-== 
-
-Press right mouse button to create a new point
-== 
-
-Previous Envelope
-== 
-
-Proof
-== 
-
-Quads
-== 
-
-REC
-== 
-
-Reason:
-== 
-
-Record demo
-== 
-
-Red value of the envelope
-== 
-
-Refocus
+REC %3d:%02d
 == 
 
 Remove
 == 
 
-Removes collision from this layer
+Remove friend
 == 
 
-Removes the image from the map
+Rename
 == 
 
-Removes the image from the map file.
+Rename demo
 == 
 
-Replace
+Server address:
 == 
 
-Replace Image
+Server filter
 == 
 
-Replaces the image with a new one
+Show friends
 == 
 
-Resizes the current Quad based on the aspect ratio of the image
+Show ingame HUD
 == 
 
-Right
+Size:
 == 
 
-Rotation of the brush in degrees. Use left mouse button to drag and change the value. Hold shift to be more precise.
+Sound error
 == 
 
-Rotation of the envelope
-== 
-
-Save
-== 
-
-Save As
-== 
-
-Save map
-== 
-
-Saves the current map
-== 
-
-Saves the current map under a new name
-== 
-
-Select group. Right click for properties.
-== 
-
-Select image
-== 
-
-Select layer. Right click for properties.
-== 
-
-Shift
-== 
-
-Show chat
-== 
-
-Square
-== 
-
-Squares the current quad
-== 
-
-Stop record
+Spectator mode
 == 
 
 Sudden Death
 == 
 
-Switch between images and layers managment.
+There's an unsaved map in the editor, you might want to save it before you quit the game.\nQuit anyway?
 == 
 
-Switch curve type
+Type:
 == 
 
-Tiles
+Unable to rename the demo
 == 
 
-Time limit: %d min
+Use team colors for name plates
 == 
 
-Toggle group visibility
+Version:
 == 
 
-Toggle layer visibility
+Vote command:
 == 
 
-Toggles the envelope editor.
-== 
-
-Up
-== 
-
-Use Clipping
-== 
-
-Use left mouse button to drag and change the color value. Hold shift to be more precise.
-== 
-
-Use left mouse button to drag and change the value. Hold shift to be more precise.
-== 
-
-Use left mouse button to drag and create a brush.
-== 
-
-Use left mouse button to paint with the brush. Right button clears the brush.
+Vote description:
 == 
 
 Warmup
-== 
-
-Width
-== 
-
-X-axis of the envelope
-== 
-
-Y-axis of the envelope
-== 
-
-Your skin
-== 
-
-ZI
-== 
-
-ZO
-== 
-
-[HOME] Restore map focus
-== 
-
-[M] Flip brush vertical
-== 
-
-[N] Flip brush horizontal
-== 
-
-[NumPad*] Zoom to normal and remove editor offset
-== 
-
-[NumPad+] Zoom in
-== 
-
-[NumPad-] Zoom out
-== 
-
-[R] Rotates the brush counter clockwise
-== 
-
-[T] Rotates the brush clockwise
-== 
-
-[ctrl+h] Toggle High Detail
-== 
-
-[ctrl+m] Toggle animation
-== 
-
-[ctrl+p] Toggles proof borders. These borders represent what a player maximum can see.
-== 
-
-left
-== 
-
-minute
-== 
-
-minutes
-== 
-
-no limit
-== 
-
-second
-== 
-
-seconds
 == 
 
 ##### old translations #####

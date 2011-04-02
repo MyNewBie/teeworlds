@@ -6,10 +6,11 @@
 class CUIRect
 {
 	// TODO: Refactor: Redo UI scaling
-	float Scale() const { return 1.0f; }
+	float Scale() const;
 public:
     float x, y, w, h;
 	
+	void HSplitMid(CUIRect *pTop, CUIRect *pBottom) const;
 	void HSplitTop(float Cut, CUIRect *pTop, CUIRect *pBottom) const;
 	void HSplitBottom(float Cut, CUIRect *pTop, CUIRect *pBottom) const;
 	void VSplitMid(CUIRect *pLeft, CUIRect *pRight) const;
@@ -85,12 +86,13 @@ public:
 	
 	// TODO: Refactor: Redo UI scaling
 	void SetScale(float s);
-	float Scale() const { return 1.0f; }
+	float Scale();
 
 	int DoButtonLogic(const void *pID, const char *pText /* TODO: Refactor: Remove */, int Checked, const CUIRect *pRect);
 	
 	// TODO: Refactor: Remove this?
 	void DoLabel(const CUIRect *pRect, const char *pText, float Size, int Align, int MaxWidth = -1);
+	void DoLabelScaled(const CUIRect *pRect, const char *pText, float Size, int Align, int MaxWidth = -1);
 };
 
 

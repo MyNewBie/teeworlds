@@ -69,13 +69,18 @@ CUIRect *CUI::Screen()
 
 void CUI::SetScale(float s)
 {
-    //config.UI()->Scale = (int)(s*100.0f);
+    g_Config.m_UiScale = (int)(s*100.0f);
 }
 
-/*float CUI::Scale()
+float CUI::Scale()
 {
-    return config.UI()->Scale/100.0f;
-}*/
+	return g_Config.m_UiScale/100.0f; 
+}
+
+float CUIRect::Scale() const
+{
+	return g_Config.m_UiScale/100.0f; 
+}
 
 void CUI::ClipEnable(const CUIRect *r)
 {
@@ -87,6 +92,28 @@ void CUI::ClipEnable(const CUIRect *r)
 void CUI::ClipDisable()
 {
 	Graphics()->ClipDisable();
+}
+
+void CUIRect::HSplitMid(CUIRect *pTop, CUIRect *pBottom) const
+{
+	CUIRect r = *this;
+    float Cut = r.h/2;
+
+    if(pTop)
+    {
+        pTop->x = r.x;
+        pTop->y = r.y;
+        pTop->w = r.w;
+        pTop->h = Cut;
+    }
+
+    if(pBottom)
+    {
+        pBottom->x = r.x;
+        pBottom->y = r.y + Cut;
+        pBottom->w = r.w;
+        pBottom->h = r.h - Cut;
+    }
 }
 
 void CUIRect::HSplitTop(float Cut, CUIRect *pTop, CUIRect *pBottom) const
@@ -138,6 +165,7 @@ void CUIRect::VSplitMid(CUIRect *pLeft, CUIRect *pRight) const
 {
     CUIRect r = *this;
     float Cut = r.w/2;
+//    Cut *= Scale();
 
     if (pLeft)
     {
@@ -313,7 +341,6 @@ void CUI::DoLabel(const CUIRect *r, const char *pText, float Size, int Align, in
 {
 	// TODO: FIX ME!!!!
     //Graphics()->BlendNormal();
-    Size *= Scale();
     if(Align == 0)
     {
     	float tw = TextRender()->TextWidth(0, Size, pText, MaxWidth);
@@ -326,4 +353,9 @@ void CUI::DoLabel(const CUIRect *r, const char *pText, float Size, int Align, in
     	float tw = TextRender()->TextWidth(0, Size, pText, MaxWidth);
     	TextRender()->Text(0, r->x + r->w-tw, r->y - Size/10, Size, pText, MaxWidth);
 	}
+}
+
+void CUI::DoLabelScaled(const CUIRect *r, const char *pText, float Size, int Align, int MaxWidth)
+{
+  DoLabel(r, pText, Size*Scale(), Align, MaxWidth);
 }

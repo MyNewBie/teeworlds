@@ -31,6 +31,7 @@ class CGameClient : public IGameClient
 	CStack m_Input;
 	CNetObjHandler m_NetObjHandler;
 	
+	class IEngine *m_pEngine;
 	class IInput *m_pInput;
 	class IGraphics *m_pGraphics;
 	class ITextRender *m_pTextRender;
@@ -41,6 +42,8 @@ class CGameClient : public IGameClient
 	class IDemoPlayer *m_pDemoPlayer;
 	class IDemoRecorder *m_pDemoRecorder;
 	class IServerBrowser *m_pServerBrowser;
+	class IEditor *m_pEditor;
+	class IFriends *m_pFriends;
 	
 	CLayers m_Layers;
 	class CCollision m_Collision;
@@ -48,7 +51,7 @@ class CGameClient : public IGameClient
 	
 	void DispatchInput();
 	void ProcessEvents();
-	void UpdateLocalCharacterPos();
+	void UpdatePositions();
 
 	int m_PredictedTick;
 	int m_LastNewPredictedTick;
@@ -62,6 +65,7 @@ class CGameClient : public IGameClient
 	
 public:
 	IKernel *Kernel() { return IInterface::Kernel(); }
+	IEngine *Engine() const { return m_pEngine; }
 	class IGraphics *Graphics() const { return m_pGraphics; }
 	class IClient *Client() const { return m_pClient; }
 	class CUI *UI() { return &m_UI; }
@@ -76,6 +80,8 @@ public:
 	class CRenderTools *RenderTools() { return &m_RenderTools; }
 	class CLayers *Layers() { return &m_Layers; };
 	class CCollision *Collision() { return &m_Collision; };
+	class IEditor *Editor() { return m_pEditor; }
+	class IFriends *Friends() { return m_pFriends; }
 	
 	int NetobjNumCorrections() { return m_NetObjHandler.NumObjCorrections(); }
 	const char *NetobjCorrectedOn() { return m_NetObjHandler.CorrectedObjOn(); }
@@ -95,6 +101,8 @@ public:
 	};
 	int m_ServerMode;
 
+	int m_DemoSpecID;
+
 	vec2 m_LocalCharacterPos;
 
 	// predicted players
@@ -107,16 +115,28 @@ public:
 		const CNetObj_Character *m_pLocalCharacter;
 		const CNetObj_Character *m_pLocalPrevCharacter;
 		const CNetObj_PlayerInfo *m_pLocalInfo;
+		const CNetObj_SpectatorInfo *m_pSpectatorInfo;
+		const CNetObj_SpectatorInfo *m_pPrevSpectatorInfo;
 		const CNetObj_Flag *m_paFlags[2];
-		const CNetObj_Game *m_pGameobj;
+		const CNetObj_GameInfo *m_pGameInfoObj;
+		const CNetObj_GameData *m_pGameDataObj;
+		int m_GameDataSnapID;
 
 		const CNetObj_PlayerInfo *m_paPlayerInfos[MAX_CLIENTS];
 		const CNetObj_PlayerInfo *m_paInfoByScore[MAX_CLIENTS];
 		
-		int m_LocalCid;
+		int m_LocalClientID;
 		int m_NumPlayers;
 		int m_aTeamSize[2];
-		bool m_Spectate;
+		
+		// spectate data
+		struct CSpectateInfo
+		{
+			bool m_Active;
+			int m_SpectatorID;
+			bool m_UsePosition;
+			vec2 m_Position;
+		} m_SpecInfo;
 		
 		//
 		struct CCharacterInfo
@@ -143,9 +163,11 @@ public:
 		int m_ColorBody;
 		int m_ColorFeet;
 		
-		char m_aName[64];
+		char m_aName[MAX_NAME_LENGTH];
+		char m_aClan[MAX_CLAN_LENGTH];
+		int m_Country;
 		char m_aSkinName[64];
-		int m_SkinId;
+		int m_SkinID;
 		int m_SkinColor;
 		int m_Team;
 		int m_Emoticon;
@@ -156,8 +178,12 @@ public:
 		CTeeRenderInfo m_RenderInfo; // this is what we use
 		
 		float m_Angle;
+		bool m_Active;
+		bool m_ChatIgnore;
+		bool m_Friend;
 		
 		void UpdateRenderInfo();
+		void Reset();
 	};
 
 	CClientData m_aClients[MAX_CLIENTS];
@@ -176,13 +202,16 @@ public:
 	virtual void OnMessage(int MsgId, CUnpacker *pUnpacker);
 	virtual void OnNewSnapshot();
 	virtual void OnPredict();
+	virtual void OnActivateEditor();
 	virtual int OnSnapInput(int *pData);
 	virtual void OnShutdown();
 	virtual void OnEnterGame();
 	virtual void OnRconLine(const char *pLine);
 	virtual void OnGameOver();
+	virtual void OnStartGame();
 	
 	virtual const char *GetItemName(int Type);
+	virtual int GetCountryIndex(int Code);
 	virtual const char *Version();
 	virtual const char *NetVersion();
 	
@@ -191,7 +220,7 @@ public:
 	// TODO: move these
 	void SendSwitchTeam(int Team);
 	void SendInfo(bool Start);
-	void SendKill(int ClientId);
+	void SendKill(int ClientID);
 	
 	// pointers to all systems
 	class CGameConsole *m_pGameConsole;
@@ -199,6 +228,7 @@ public:
 	class CParticles *m_pParticles;
 	class CMenus *m_pMenus;
 	class CSkins *m_pSkins;
+	class CCountryFlags *m_pCountryFlags;
 	class CFlow *m_pFlow;
 	class CChat *m_pChat;
 	class CDamageInd *m_pDamageind;
@@ -210,6 +240,31 @@ public:
 	class CMapImages *m_pMapimages;
 	class CVoting *m_pVoting;
 	class CScoreboard *m_pScoreboard;	class CColorboard *m_pColorboard;	bool m_IsCatch;	bool m_CatchMsgSent;};
+
+
+inline float HueToRgb(float v1, float v2, float h)
+{
+   if(h < 0.0f) h += 1;
+   if(h > 1.0f) h -= 1;
+   if((6.0f * h) < 1.0f) return v1 + (v2 - v1) * 6.0f * h;
+   if((2.0f * h) < 1.0f) return v2;
+   if((3.0f * h) < 2.0f) return v1 + (v2 - v1) * ((2.0f/3.0f) - h) * 6.0f;
+   return v1;
+}
+
+inline vec3 HslToRgb(vec3 HSL)
+{
+	if(HSL.s == 0.0f)
+		return vec3(HSL.l, HSL.l, HSL.l);
+	else
+	{
+		float v2 = HSL.l < 0.5f ? HSL.l * (1.0f + HSL.s) : (HSL.l+HSL.s) - (HSL.s*HSL.l);
+		float v1 = 2.0f * HSL.l - v2;
+
+		return vec3(HueToRgb(v1, v2, HSL.h + (1.0f/3.0f)), HueToRgb(v1, v2, HSL.h), HueToRgb(v1, v2, HSL.h - (1.0f/3.0f)));
+	}
+}
+
 
 extern const char *Localize(const char *Str);
 

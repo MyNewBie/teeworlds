@@ -9,7 +9,7 @@
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon)
-: CEntity(pGameWorld, NETOBJTYPE_PROJECTILE)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE)
 {
 	m_Type = Type;
 	m_Pos = Pos;
@@ -74,7 +74,7 @@ void CProjectile::Tick()
 
 	m_LifeSpan--;
 	
-	if(TargetChr || Collide || m_LifeSpan < 0)
+	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
 	{
 		
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
@@ -137,7 +137,7 @@ void CProjectile::Snap(int SnappingClient)
 	if(GameServer()->m_pController->JoiningSystem() && !GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 		return;
 
-	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_Id, sizeof(CNetObj_Projectile)));
+	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_ID, sizeof(CNetObj_Projectile)));
 	if(pProj)
 		FillInfo(pProj);
 }

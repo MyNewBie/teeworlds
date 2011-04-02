@@ -70,8 +70,6 @@ void CCharacterCore::Reset()
 	m_HookTick = 0;
 	m_HookState = HOOK_IDLE;
 	m_HookedPlayer = -1;
-	m_HookedPowerup = false;
-	m_Joined = false;
 	m_Jumped = 0;
 	m_TriggeredEvents = 0;
 }
@@ -211,24 +209,22 @@ void CCharacterCore::Tick(bool UseInput)
 		// Check against other players first
 		if(m_pWorld && m_pWorld->m_Tuning.m_PlayerHooking)
 		{
-			float Dist = 0.0f;
+			float Distance = 0.0f;
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
-				CCharacterCore *p = m_pWorld->m_apCharacters[i];
-				if(!p || p == this)
-					continue;
-				if((!p->m_Joined && m_Joined) || (p->m_Joined && !m_Joined))
+				CCharacterCore *pCharCore = m_pWorld->m_apCharacters[i];
+				if(!pCharCore || pCharCore == this)
 					continue;
 
-				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, p->m_Pos);
-				if(distance(p->m_Pos, ClosestPoint) < PhysSize+2.0f)
+				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, pCharCore->m_Pos);
+				if(distance(pCharCore->m_Pos, ClosestPoint) < PhysSize+2.0f)
 				{
-					if (m_HookedPlayer == -1 || distance(m_HookPos, p->m_Pos) < Dist)
+					if (m_HookedPlayer == -1 || distance(m_HookPos, pCharCore->m_Pos) < Distance)
 					{
 						m_TriggeredEvents |= COREEVENT_HOOK_ATTACH_PLAYER;
 						m_HookState = HOOK_GRABBED;
 						m_HookedPlayer = i;
-						Dist = distance(m_HookPos, p->m_Pos);
+						Distance = distance(m_HookPos, pCharCore->m_Pos);
 					}
 				}
 			}
@@ -256,9 +252,9 @@ void CCharacterCore::Tick(bool UseInput)
 	{
 		if(m_HookedPlayer != -1)
 		{
-			CCharacterCore *p = m_pWorld->m_apCharacters[m_HookedPlayer];
-			if(p)
-				m_HookPos = p->m_Pos;
+			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[m_HookedPlayer];
+			if(pCharCore)
+				m_HookPos = pCharCore->m_Pos;
 			else
 			{
 				// release hook
@@ -273,7 +269,7 @@ void CCharacterCore::Tick(bool UseInput)
 		}
 		
 		// don't do this hook rutine when we are hook to a player
-		if(m_HookedPlayer == -1 && !m_HookedPowerup && distance(m_HookPos, m_Pos) > 46.0f)
+		if(m_HookedPlayer == -1 && distance(m_HookPos, m_Pos) > 46.0f)
 		{
 			vec2 HookVel = normalize(m_HookPos-m_Pos)*m_pWorld->m_Tuning.m_HookDragAccel;
 			// the hook as more power to drag you up then down.
@@ -310,42 +306,42 @@ void CCharacterCore::Tick(bool UseInput)
 	{
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			CCharacterCore *p = m_pWorld->m_apCharacters[i];
-			if(!p)
-				continue;
-			if((!p->m_Joined && m_Joined) || (p->m_Joined && !m_Joined))
+			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[i];
+			if(!pCharCore)
 				continue;
 			
 			//player *p = (player*)ent;
-			if(p == this) // || !(p->flags&FLAG_ALIVE)
+			if(pCharCore == this) // || !(p->flags&FLAG_ALIVE)
 				continue; // make sure that we don't nudge our self
 			
 			// handle player <-> player collision
-			float d = distance(m_Pos, p->m_Pos);
-			vec2 Dir = normalize(m_Pos - p->m_Pos);
-			if(d < PhysSize*1.25f && d > 1.0f)
+			float Distance = distance(m_Pos, pCharCore->m_Pos);
+			vec2 Dir = normalize(m_Pos - pCharCore->m_Pos);
+			if(Distance < PhysSize*1.25f && Distance > 0.0f)
 			{
-				float a = (PhysSize*1.45f - d);
-				
+				float a = (PhysSize*1.45f - Distance);
+				float Velocity = 0.5f;
+
 				// make sure that we don't add excess force by checking the
-				// direction against the current velocity
-				vec2 VelDir = normalize(m_Vel);
-				float v = 1-(dot(VelDir, Dir)+1)/2;
-				m_Vel = m_Vel + Dir*a*(v*0.75f);
-				m_Vel = m_Vel * 0.85f;
+				// direction against the current velocity. if not zero.
+				if (length(m_Vel) > 0.0001)
+					Velocity = 1-(dot(normalize(m_Vel), Dir)+1)/2;
+
+				m_Vel += Dir*a*(Velocity*0.75f);
+				m_Vel *= 0.85f;
 			}
 			
 			// handle hook influence
 			if(m_HookedPlayer == i)
 			{
-				if(d > PhysSize*1.50f) // TODO: fix tweakable variable
+				if(Distance > PhysSize*1.50f) // TODO: fix tweakable variable
 				{
-					float Accel = m_pWorld->m_Tuning.m_HookDragAccel * (d/m_pWorld->m_Tuning.m_HookLength);
+					float Accel = m_pWorld->m_Tuning.m_HookDragAccel * (Distance/m_pWorld->m_Tuning.m_HookLength);
 					float DragSpeed = m_pWorld->m_Tuning.m_HookDragSpeed;
 					
 					// add force to the hooked player
-					p->m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, p->m_Vel.x, Accel*Dir.x*1.5f);
-					p->m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, p->m_Vel.y, Accel*Dir.y*1.5f);
+					pCharCore->m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, pCharCore->m_Vel.x, Accel*Dir.x*1.5f);
+					pCharCore->m_Vel.y = SaturatedAdd(-DragSpeed, DragSpeed, pCharCore->m_Vel.y, Accel*Dir.y*1.5f);
 
 					// add a little bit force to the guy who has the grip
 					m_Vel.x = SaturatedAdd(-DragSpeed, DragSpeed, m_Vel.x, -Accel*Dir.x*0.25f);
@@ -356,8 +352,8 @@ void CCharacterCore::Tick(bool UseInput)
 	}	
 
 	// clamp the velocity to something sane
-	if(length(m_Vel) > 200)
-		m_Vel = normalize(m_Vel) * 200;
+	if(length(m_Vel) > 6000)
+		m_Vel = normalize(m_Vel) * 6000;
 }
 
 void CCharacterCore::Move()
@@ -365,8 +361,40 @@ void CCharacterCore::Move()
 	float RampValue = VelocityRamp(length(m_Vel)*50, m_pWorld->m_Tuning.m_VelrampStart, m_pWorld->m_Tuning.m_VelrampRange, m_pWorld->m_Tuning.m_VelrampCurvature);
 	
 	m_Vel.x = m_Vel.x*RampValue;
-	m_pCollision->MoveBox(&m_Pos, &m_Vel, vec2(28.0f, 28.0f), 0);
+	
+	vec2 NewPos = m_Pos;
+	m_pCollision->MoveBox(&NewPos, &m_Vel, vec2(28.0f, 28.0f), 0);
+
 	m_Vel.x = m_Vel.x*(1.0f/RampValue);
+
+	if(m_pWorld && m_pWorld->m_Tuning.m_PlayerCollision)
+	{
+		// check player collision
+		float Distance = distance(m_Pos, NewPos);
+		int End = Distance+1;
+		for(int i = 0; i < End; i++)
+		{
+			float a = i/Distance;
+			vec2 Pos = mix(m_Pos, NewPos, a);
+			for(int p = 0; p < MAX_CLIENTS; p++)
+			{
+				CCharacterCore *pCharCore = m_pWorld->m_apCharacters[p];
+				if(!pCharCore || pCharCore == this)
+					continue;
+				float D = distance(Pos, pCharCore->m_Pos);
+				if(D < 28.0f*1.25f && D > 0.0f)
+				{
+					if(a > 0.0f)
+						m_Pos = Pos;
+					else
+						m_Pos = NewPos;
+					return;
+				}
+			}
+		}
+	}
+	
+	m_Pos = NewPos;
 }
 
 void CCharacterCore::Write(CNetObj_CharacterCore *pObjCore)

@@ -3,9 +3,7 @@
 #ifndef GAME_VERSION_H
 #define GAME_VERSION_H
 #include "generated/nethash.c"
-#define GAME_VERSION "trunk"
-//#define GAME_NETVERSION "0.5 " GAME_NETVERSION_HASH 
-// TODO: hash forced during refactoring. Remove later on 
-#define GAME_NETVERSION "0.5 b67d1f1a1eea234e"
+#define GAME_VERSION "0.6 trunk"
+#define GAME_NETVERSION "0.6 " GAME_NETVERSION_HASH
 #define CATCHING_VERSION "2.0 trunk"
 #endif

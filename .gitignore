@@ -1,9 +1,12 @@
+bam
 .bam
-/src/game/generated
-/objs
-/datasrc/*
-.pycconfig
-.lua
+config.lua
+datasrc/__pycache__
+datasrc/*.pyc
+freetype*.dll
+objssrc/game/generated
+SDL.dll
+autoexec.cfg
 /teeworlds_catching_d
 /teeworlds_catching_srv_d
 /client_release.bat
@@ -17,10 +20,13 @@
 /Catching/Catching.suo
 /data/editor/stuff
 
-/SDL.dll
-/bam -call.bat
-/client_releasex64.bat
-/config.lua
-/other/icons/teeworlds.res
-/server_releasex64.bat
-/teeworlds_catching_srv.exe
+crapnet*
+dilate*
+fake_server*
+map_resave*
+mastersrv*
+packetgen*
+teeworlds*
+teeworlds_catching_srv*
+tileset_borderfix*
+versionsrv*

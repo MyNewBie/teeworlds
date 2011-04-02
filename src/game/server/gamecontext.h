@@ -8,6 +8,7 @@
 #include <engine/shared/memheap.h>
 
 #include <game/layers.h>
+#include <game/voting.h>
 
 #include "eventhandler.h"
 #include "gamecontroller.h"
@@ -52,7 +53,11 @@ class CGameContext : public IGameServer
 	static void ConBroadcast(IConsole::IResult *pResult, void *pUserData);
 	static void ConSay(IConsole::IResult *pResult, void *pUserData);
 	static void ConSetTeam(IConsole::IResult *pResult, void *pUserData);
+	static void ConSetTeamAll(IConsole::IResult *pResult, void *pUserData);
 	static void ConAddVote(IConsole::IResult *pResult, void *pUserData);
+	static void ConRemoveVote(IConsole::IResult *pResult, void *pUserData);
+	static void ConForceVote(IConsole::IResult *pResult, void *pUserData);
+	static void ConClearVotes(IConsole::IResult *pResult, void *pUserData);
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	
@@ -85,21 +90,23 @@ public:
 	CGameWorld m_World;
 	
 	// helper functions
-	class CCharacter *GetPlayerChar(int ClientId);
+	class CCharacter *GetPlayerChar(int ClientID);
 	
 	// voting
-	void StartVote(const char *pDesc, const char *pCommand);
+	void StartVote(const char *pDesc, const char *pCommand, const char *pReason);
 	void EndVote();
-	void SendVoteSet(int ClientId);
-	void SendVoteStatus(int ClientId, int Total, int Yes, int No);
-	void AbortVoteKickOnDisconnect(int ClientId);
+	void SendVoteSet(int ClientID);
+	void SendVoteStatus(int ClientID, int Total, int Yes, int No);
+	void AbortVoteKickOnDisconnect(int ClientID);
 	
 	int m_VoteCreator;
 	int64 m_VoteCloseTime;
 	bool m_VoteUpdate;
 	int m_VotePos;
-	char m_aVoteDescription[512];
-	char m_aVoteCommand[512];
+	char m_aVoteDescription[VOTE_DESC_LENGTH];
+	char m_aVoteCommand[VOTE_CMD_LENGTH];
+	char m_aVoteReason[VOTE_REASON_LENGTH];
+	int m_NumVoteOptions;
 	int m_VoteEnforce;
 	enum
 	{
@@ -107,15 +114,9 @@ public:
 		VOTE_ENFORCE_NO,
 		VOTE_ENFORCE_YES,
 	};
-	struct CVoteOption
-	{
-		CVoteOption *m_pNext;
-		CVoteOption *m_pPrev;
-		char m_aCommand[1];
-	};
 	CHeap *m_pVoteOptionHeap;
-	CVoteOption *m_pVoteOptionFirst;
-	CVoteOption *m_pVoteOptionLast;
+	CVoteOptionServer *m_pVoteOptionFirst;
+	CVoteOptionServer *m_pVoteOptionLast;
 
 	// helper functions
 	void CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner);
@@ -138,15 +139,15 @@ public:
 
 	// network
 	void SendChatTarget(int To, const char *pText, int From = -1, int Team = 0);
-	void SendChat(int ClientId, int Team, const char *pText);
-	void SendEmoticon(int ClientId, int Emoticon);
-	void SendWeaponPickup(int ClientId, int Weapon);
-	void SendBroadcast(const char *pText, int ClientId);
+	void SendChat(int ClientID, int Team, const char *pText);
+	void SendEmoticon(int ClientID, int Emoticon);
+	void SendWeaponPickup(int ClientID, int Weapon);
+	void SendBroadcast(const char *pText, int ClientID);
 	
 	
 	//
 	void CheckPureTuning();
-	void SendTuningParams(int ClientId);
+	void SendTuningParams(int ClientID);
 	
 	// engine events
 	virtual void OnInit();
@@ -155,28 +156,32 @@ public:
 	
 	virtual void OnTick();
 	virtual void OnPreSnap();
-	virtual void OnSnap(int ClientId);
+	virtual void OnSnap(int ClientID);
 	virtual void OnPostSnap();
 	
-	virtual void OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId);
+	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID);
 	virtual bool ChatCommands(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
 	virtual bool ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
 	virtual void ChatCommandsZCatch(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
 
-	virtual void OnClientConnected(int ClientId);
-	virtual void OnClientEnter(int ClientId);
-	virtual void OnClientDrop(int ClientId);
-	virtual void OnClientDirectInput(int ClientId, void *pInput);
-	virtual void OnClientPredictedInput(int ClientId, void *pInput);
+	virtual void OnClientConnected(int ClientID);
+	virtual void OnClientEnter(int ClientID);
+	virtual void OnClientDrop(int ClientID, const char *pReason);
+	virtual void OnClientDirectInput(int ClientID, void *pInput);
+	virtual void OnClientPredictedInput(int ClientID, void *pInput);
 
+	virtual bool IsClientReady(int ClientID);
+	virtual bool IsClientPlayer(int ClientID);
+
+	virtual const char *GameType();
 	virtual const char *Version();
 	virtual const char *NetVersion();
 };
 
 inline int CmaskAll() { return -1; }
-inline int CmaskOne(int ClientId) { return 1<<ClientId; }
-inline int CmaskAllExceptOne(int ClientId) { return 0x7fffffff^CmaskOne(ClientId); }
-inline bool CmaskIsSet(int Mask, int ClientId) { return (Mask&CmaskOne(ClientId)) != 0; }
+inline int CmaskOne(int ClientID) { return 1<<ClientID; }
+inline int CmaskAllExceptOne(int ClientID) { return 0x7fffffff^CmaskOne(ClientID); }
+inline bool CmaskIsSet(int Mask, int ClientID) { return (Mask&CmaskOne(ClientID)) != 0; }
 int CmaskCatch(CGameContext *pGameServer, int Owner);
 int CmaskPickup(CGameContext *pGameServer, int Team);
 #endif

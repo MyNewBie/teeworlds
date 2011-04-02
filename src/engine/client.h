@@ -32,7 +32,7 @@ public:
 	{
 	public:
 		int m_Type;
-		int m_Id;
+		int m_ID;
 		int m_DataSize;
 	};
 
@@ -77,8 +77,10 @@ public:
 	virtual void Quit() = 0;
 	virtual const char *DemoPlayer_Play(const char *pFilename, int StorageType) = 0;
 	virtual void DemoRecorder_Start(const char *pFilename, bool WithTimestamp) = 0;
+	virtual void DemoRecorder_HandleAutoStart() = 0;
 	virtual void DemoRecorder_Stop() = 0;
 	virtual void AutoScreenshot_Start() = 0;
+	virtual void ServerBrowserUpdate() = 0;
 
 	// networking
 	virtual void EnterGame() = 0;
@@ -107,10 +109,10 @@ public:
 	};
 		
 	// TODO: Refactor: should redo this a bit i think, too many virtual calls
-	virtual int SnapNumItems(int SnapId) = 0;
-	virtual void *SnapFindItem(int SnapId, int Type, int Id) = 0;
-	virtual void *SnapGetItem(int SnapId, int Index, CSnapItem *pItem) = 0;
-	virtual void SnapInvalidateItem(int SnapId, int Index) = 0;
+	virtual int SnapNumItems(int SnapID) = 0;
+	virtual void *SnapFindItem(int SnapID, int Type, int ID) = 0;
+	virtual void *SnapGetItem(int SnapID, int Index, CSnapItem *pItem) = 0;
+	virtual void SnapInvalidateItem(int SnapID, int Index) = 0;
 
 	virtual void SnapSetStaticsize(int ItemType, int Size) = 0;
 
@@ -129,6 +131,10 @@ public:
 	virtual const char *ErrorString() = 0;
 	virtual const char *LatestVersion() = 0;
 	virtual bool ConnectionProblems() = 0;
+
+	virtual bool SoundInitFailed() = 0;
+
+	virtual int GetDebugFont() = 0;
 };
 
 class IGameClient : public IInterface
@@ -146,12 +152,14 @@ public:
 	virtual void OnRender() = 0;
 	virtual void OnStateChange(int NewState, int OldState) = 0;
 	virtual void OnConnected() = 0;
-	virtual void OnMessage(int MsgId, CUnpacker *pUnpacker) = 0;
+	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker) = 0;
 	virtual void OnPredict() = 0;
+	virtual void OnActivateEditor() = 0;
 	
 	virtual int OnSnapInput(int *pData) = 0;
 	
 	virtual const char *GetItemName(int Type) = 0;
+	virtual int GetCountryIndex(int Code) = 0;
 	virtual const char *Version() = 0;
 	virtual const char *NetVersion() = 0;
 

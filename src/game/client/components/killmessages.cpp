@@ -51,10 +51,9 @@ void CKillMessages::OnRender()
 	float StartX = Width*1.5f-10.0f;
 	float y = 20.0f;
 
-	for(int i = 0; i < MAX_KILLMSGS; i++)
+	for(int i = 1; i <= MAX_KILLMSGS; i++)
 	{
-
-		int r = (m_KillmsgCurrent+i+1)%MAX_KILLMSGS;
+		int r = (m_KillmsgCurrent+i)%MAX_KILLMSGS;
 		if(Client()->GameTick() > m_aKillmsgs[r].m_Tick+50*10)
 			continue;
 
@@ -71,7 +70,7 @@ void CKillMessages::OnRender()
 		// render victim tee
 		x -= 24.0f;
 		
-		if(m_pClient->m_Snap.m_pGameobj && m_pClient->m_Snap.m_pGameobj->m_Flags&GAMEFLAG_FLAGS)
+		if(m_pClient->m_Snap.m_pGameInfoObj && m_pClient->m_Snap.m_pGameInfoObj->m_GameFlags&GAMEFLAG_FLAGS)
 		{
 			if(m_aKillmsgs[r].m_ModeSpecial&1)
 			{
@@ -79,7 +78,7 @@ void CKillMessages::OnRender()
 				Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 				Graphics()->QuadsBegin();
 
-				if(m_aKillmsgs[r].m_VictimTeam == 0)
+				if(m_aKillmsgs[r].m_VictimTeam == TEAM_RED)
 					RenderTools()->SelectSprite(SPRITE_FLAG_BLUE);
 				else
 					RenderTools()->SelectSprite(SPRITE_FLAG_RED);
@@ -108,7 +107,7 @@ void CKillMessages::OnRender()
 
 		if(m_aKillmsgs[r].m_VictimID != m_aKillmsgs[r].m_KillerID)
 		{
-			if(m_pClient->m_Snap.m_pGameobj && m_pClient->m_Snap.m_pGameobj->m_Flags&GAMEFLAG_FLAGS)
+			if(m_pClient->m_Snap.m_pGameInfoObj && m_pClient->m_Snap.m_pGameInfoObj->m_GameFlags&GAMEFLAG_FLAGS)
 			{
 				if(m_aKillmsgs[r].m_ModeSpecial&2)
 				{
@@ -116,7 +115,7 @@ void CKillMessages::OnRender()
 					Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GAME].m_Id);
 					Graphics()->QuadsBegin();
 
-					if(m_aKillmsgs[r].m_KillerTeam == 0)
+					if(m_aKillmsgs[r].m_KillerTeam == TEAM_RED)
 						RenderTools()->SelectSprite(SPRITE_FLAG_BLUE, SPRITE_FLAG_FLIP_X);
 					else
 						RenderTools()->SelectSprite(SPRITE_FLAG_RED, SPRITE_FLAG_FLIP_X);

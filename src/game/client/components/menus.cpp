@@ -6,14 +6,14 @@
 #include <base/math.h>
 #include <base/vmath.h>
 
-#include "menus.h"
-#include "skins.h"
-
+#include <engine/config.h>
+#include <engine/editor.h>
+#include <engine/friends.h>
 #include <engine/graphics.h>
-#include <engine/textrender.h>
-#include <engine/serverbrowser.h>
 #include <engine/keys.h>
+#include <engine/serverbrowser.h>
 #include <engine/storage.h>
+#include <engine/textrender.h>
 #include <engine/shared/config.h>
 
 #include <game/version.h>
@@ -24,6 +24,9 @@
 #include <game/client/lineinput.h>
 #include <game/localization.h>
 #include <mastersrv/mastersrv.h>
+
+#include "menus.h"
+#include "skins.h"
 
 vec4 CMenus::ms_GuiColor;
 vec4 CMenus::ms_ColorTabbarInactiveOutgame;
@@ -41,44 +44,6 @@ float CMenus::ms_FontmodHeight = 0.8f;
 IInput::CEvent CMenus::m_aInputEvents[MAX_INPUTEVENTS];
 int CMenus::m_NumInputEvents;
 
-inline float HueToRgb(float v1, float v2, float h)
-{
-   if(h < 0) h += 1;
-   if(h > 1) h -= 1;
-   if((6 * h) < 1) return v1 + ( v2 - v1 ) * 6 * h;
-   if((2 * h) < 1) return v2;
-   if((3 * h) < 2) return v1 + ( v2 - v1 ) * ((2.0f/3.0f) - h) * 6;
-   return v1;
-}
-
-inline vec3 HslToRgb(vec3 In)
-{
-	float v1, v2;
-	vec3 Out;
-
-	if(In.s == 0)
-	{
-		Out.r = In.l;
-		Out.g = In.l;
-		Out.b = In.l;
-	}
-	else
-	{
-		if(In.l < 0.5f) 
-			v2 = In.l * (1 + In.s);
-		else           
-			v2 = (In.l+In.s) - (In.s*In.l);
-
-		v1 = 2 * In.l - v2;
-
-		Out.r = HueToRgb(v1, v2, In.h + (1.0f/3.0f));
-		Out.g = HueToRgb(v1, v2, In.h);
-		Out.b = HueToRgb(v1, v2, In.h - (1.0f/3.0f));
-	} 
-
-	return Out;
-}
-
 
 CMenus::CMenus()
 {
@@ -91,7 +56,6 @@ CMenus::CMenus()
 	m_NeedSendinfo = false;
 	m_MenuActive = true;
 	m_UseMouseButtons = true;
-	m_DemolistDelEntry = false;
 	
 	m_EscapePressed = false;
 	m_EnterPressed = false;
@@ -102,6 +66,8 @@ CMenus::CMenus()
 	
 	str_copy(m_aCurrentDemoFolder, "demos", sizeof(m_aCurrentDemoFolder));
 	m_aCallvoteReason[0] = 0;
+
+	m_FriendlistSelectedIndex = -1;
 }
 
 vec4 CMenus::ButtonColorMul(const void *pID)
@@ -130,14 +96,18 @@ int CMenus::DoButton_Icon(int ImageId, int SpriteId, const CUIRect *pRect)
 int CMenus::DoButton_Menu(const void *pID, const char *pText, int Checked, const CUIRect *pRect)
 {
 	RenderTools()->DrawUIRect(pRect, vec4(1,1,1,0.5f)*ButtonColorMul(pID), CUI::CORNER_ALL, 5.0f);
-	UI()->DoLabel(pRect, pText, pRect->h*ms_FontmodHeight, 0);
+	CUIRect Temp;
+	pRect->HMargin(pRect->h>=20.0f?2.0f:1.0f, &Temp);
+	UI()->DoLabel(&Temp, pText, Temp.h*ms_FontmodHeight, 0);
 	return UI()->DoButtonLogic(pID, pText, Checked, pRect);
 }
 
 void CMenus::DoButton_KeySelect(const void *pID, const char *pText, int Checked, const CUIRect *pRect)
 {
 	RenderTools()->DrawUIRect(pRect, vec4(1,1,1,0.5f)*ButtonColorMul(pID), CUI::CORNER_ALL, 5.0f);
-	UI()->DoLabel(pRect, pText, pRect->h*ms_FontmodHeight, 0);
+	CUIRect Temp;
+	pRect->HMargin(1.0f, &Temp);
+	UI()->DoLabel(&Temp, pText, Temp.h*ms_FontmodHeight, 0);
 }
 
 int CMenus::DoButton_MenuTab(const void *pID, const char *pText, int Checked, const CUIRect *pRect, int Corners)
@@ -146,6 +116,19 @@ int CMenus::DoButton_MenuTab(const void *pID, const char *pText, int Checked, co
 		RenderTools()->DrawUIRect(pRect, ms_ColorTabbarActive, Corners, 10.0f);
 	else
 		RenderTools()->DrawUIRect(pRect, ms_ColorTabbarInactive, Corners, 10.0f);
+	CUIRect Temp;
+	pRect->HMargin(2.0f, &Temp);
+	UI()->DoLabel(&Temp, pText, Temp.h*ms_FontmodHeight, 0);
+	
+	return UI()->DoButtonLogic(pID, pText, Checked, pRect);
+}
+
+int CMenus::DoButton_PageMenu(const void *pID, const char *pText, int Checked, bool Active, const CUIRect *pRect, int Corners)
+{
+	if(Active)
+		RenderTools()->DrawUIRect(pRect, vec4(1,1,1,0.5f)*ButtonColorMul(pID), Corners, 10.0f);
+	else
+		RenderTools()->DrawUIRect(pRect, vec4(0.0f, 0.0f, 0.0f, 0.25f), Corners, 10.0f);
 	UI()->DoLabel(pRect, pText, pRect->h*ms_FontmodHeight, 0);
 	
 	return UI()->DoButtonLogic(pID, pText, Checked, pRect);
@@ -201,6 +184,8 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 	static int s_AtIndex = 0;
 	static bool s_DoScroll = false;
 	static float s_ScrollStart = 0.0f;
+
+	FontSize *= UI()->Scale();
 
 	if(UI()->LastActiveItem() == pID)
 	{
@@ -297,11 +282,11 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 	// check if the text has to be moved
 	if(UI()->LastActiveItem() == pID && !JustGotActive && (UpdateOffset || m_NumInputEvents))
 	{
-		float w = TextRender()->TextWidth(0, FontSize, pDisplayStr, s_AtIndex)*UI()->Scale();
+		float w = TextRender()->TextWidth(0, FontSize, pDisplayStr, s_AtIndex);
 		if(w-*Offset > Textbox.w)
 		{
 			// move to the left
-			float wt = TextRender()->TextWidth(0, FontSize, pDisplayStr, -1)*UI()->Scale();
+			float wt = TextRender()->TextWidth(0, FontSize, pDisplayStr, -1);
 			do
 			{
 				*Offset += min(wt-*Offset-Textbox.w, Textbox.w/3);
@@ -319,7 +304,7 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 		}
 	}
 	UI()->ClipEnable(pRect);
-	Textbox.x -= *Offset*UI()->Scale();
+	Textbox.x -= *Offset;
 
 	UI()->DoLabel(&Textbox, pDisplayStr, FontSize, -1);
 	
@@ -329,7 +314,7 @@ int CMenus::DoEditBox(void *pID, const CUIRect *pRect, char *pStr, unsigned StrS
 		float w = TextRender()->TextWidth(0, FontSize, pDisplayStr, s_AtIndex);
 		Textbox = *pRect;
 		Textbox.VSplitLeft(2.0f, 0, &Textbox);
-		Textbox.x += (w-*Offset-TextRender()->TextWidth(0, FontSize, "|", -1)/2)*UI()->Scale();
+		Textbox.x += (w-*Offset-TextRender()->TextWidth(0, FontSize, "|", -1)/2);
 
 		if((2*time_get()/time_freq()) % 2)	// make it blink
 			UI()->DoLabel(&Textbox, "|", FontSize, -1);
@@ -630,9 +615,10 @@ int CMenus::RenderMenubar(CUIRect r)
 	return 0;
 }
 
-void CMenus::RenderLoading(float Percent)
+void CMenus::RenderLoading()
 {
 	static int64 LastLoadRender = 0;
+	float Percent = m_LoadCurrent++/(float)m_LoadTotal;
 
 	// make sure that we don't render for each little thing we load
 	// because that will slow down loading if we have vsync
@@ -647,7 +633,7 @@ void CMenus::RenderLoading(float Percent)
 	
     CUIRect Screen = *UI()->Screen();
 	Graphics()->MapScreen(Screen.x, Screen.y, Screen.w, Screen.h);
-	
+
 	RenderBackground();
 
 	float tw;
@@ -741,6 +727,13 @@ void CMenus::OnInit()
 	g_Config.m_ClShowWelcome = 0;
 
 	Console()->Chain("add_favorite", ConchainServerbrowserUpdate, this);
+	Console()->Chain("remove_favorite", ConchainServerbrowserUpdate, this);
+
+	// setup load amount
+	m_LoadCurrent = 0;
+	m_LoadTotal = g_pData->m_NumImages;
+	if(!g_Config.m_ClThreadsoundloading)
+		m_LoadTotal += g_pData->m_NumSounds;
 }
 
 void CMenus::PopupMessage(const char *pTopic, const char *pBody, const char *pButton)
@@ -790,6 +783,14 @@ int CMenus::Render()
 	// some margin around the screen
 	Screen.Margin(10.0f, &Screen);
 	
+	static bool s_SoundCheck = false;
+	if(!s_SoundCheck && m_Popup == POPUP_NONE)
+	{
+		if(Client()->SoundInitFailed())
+			m_Popup = POPUP_SOUNDERROR;
+		s_SoundCheck = true;
+	}
+
 	if(m_Popup == POPUP_NONE)
 	{
 		// do tab bar
@@ -877,6 +878,25 @@ int CMenus::Render()
 			pExtraText = Localize("Are you sure that you want to delete the demo?");
 			ExtraAlign = -1;
 		}
+		else if(m_Popup == POPUP_RENAME_DEMO)
+		{
+			pTitle = Localize("Rename demo");
+			pExtraText = "";
+			ExtraAlign = -1;
+		}
+		else if(m_Popup == POPUP_REMOVE_FRIEND)
+		{
+			pTitle = Localize("Remove friend");
+			pExtraText = Localize("Are you sure that you want to remove the player from your friends list?");
+			ExtraAlign = -1;
+		}
+		else if(m_Popup == POPUP_SOUNDERROR)
+		{
+			pTitle = Localize("Sound error");
+			pExtraText = Localize("The audio device couldn't be initialised.");
+			pButtonText = Localize("Ok");
+			ExtraAlign = -1;
+		}
 		else if(m_Popup == POPUP_PASSWORD)
 		{
 			pTitle = Localize("Password incorrect");
@@ -887,6 +907,7 @@ int CMenus::Render()
 		{
 			pTitle = Localize("Quit");
 			pExtraText = Localize("Are you sure that you want to quit?");
+			ExtraAlign = -1;
 		}
 		else if(m_Popup == POPUP_FIRST_LAUNCH)
 		{
@@ -898,33 +919,40 @@ int CMenus::Render()
 		
 		CUIRect Box, Part;
 		Box = Screen;
-		Box.VMargin(150.0f, &Box);
-		Box.HMargin(150.0f, &Box);
+		Box.VMargin(150.0f/UI()->Scale(), &Box);
+		Box.HMargin(150.0f/UI()->Scale(), &Box);
 		
 		// render the box
 		RenderTools()->DrawUIRect(&Box, vec4(0,0,0,0.5f), CUI::CORNER_ALL, 15.0f);
 		 
-		Box.HSplitTop(20.f, &Part, &Box);
-		Box.HSplitTop(24.f, &Part, &Box);
-		UI()->DoLabel(&Part, pTitle, 24.f, 0);
-		Box.HSplitTop(20.f, &Part, &Box);
-		Box.HSplitTop(24.f, &Part, &Box);
-		Part.VMargin(20.f, &Part);
+		Box.HSplitTop(20.f/UI()->Scale(), &Part, &Box);
+		Box.HSplitTop(24.f/UI()->Scale(), &Part, &Box);
+		UI()->DoLabelScaled(&Part, pTitle, 24.f, 0);
+		Box.HSplitTop(20.f/UI()->Scale(), &Part, &Box);
+		Box.HSplitTop(24.f/UI()->Scale(), &Part, &Box);
+		Part.VMargin(20.f/UI()->Scale(), &Part);
 		
 		if(ExtraAlign == -1)
-			UI()->DoLabel(&Part, pExtraText, 20.f, -1, (int)Part.w);
+			UI()->DoLabelScaled(&Part, pExtraText, 20.f, -1, (int)Part.w);
 		else
-			UI()->DoLabel(&Part, pExtraText, 20.f, 0, -1);
+			UI()->DoLabelScaled(&Part, pExtraText, 20.f, 0, -1);
 
 		if(m_Popup == POPUP_QUIT)
 		{
 			CUIRect Yes, No;
 			Box.HSplitBottom(20.f, &Box, &Part);
 			Box.HSplitBottom(24.f, &Box, &Part);
+
+			// additional info
+			Box.HSplitTop(10.0f, 0, &Box);
+			Box.VMargin(20.f/UI()->Scale(), &Box);
+			if(m_pClient->Editor()->HasUnsavedData())
+				UI()->DoLabelScaled(&Box, Localize("There's an unsaved map in the editor, you might want to save it before you quit the game.\nQuit anyway?"),
+									20.f, -1, Part.w);
+
+			// buttons
 			Part.VMargin(80.0f, &Part);
-			
 			Part.VSplitMid(&No, &Yes);
-			
 			Yes.VMargin(20.0f, &Yes);
 			No.VMargin(20.0f, &No);
 
@@ -999,7 +1027,7 @@ int CMenus::Render()
 
 					// update download speed
 					float Diff = (Client()->MapDownloadAmount()-m_DownloadLastCheckSize)/1024.0f;
-					m_DownloadSpeed = (m_DownloadSpeed*(1.0f-(1.0f/m_DownloadSpeed))) + (Diff*(1.0f/m_DownloadSpeed));
+					m_DownloadSpeed = absolute((m_DownloadSpeed*(1.0f-(1.0f/m_DownloadSpeed))) + (Diff*(1.0f/m_DownloadSpeed)));
 					m_DownloadLastCheckTime = Now;
 					m_DownloadLastCheckSize = Client()->MapDownloadAmount();
 				}
@@ -1015,13 +1043,13 @@ int CMenus::Render()
 				if(TimeLeft >= 60)
 				{
 					TimeLeft /= 60;
-					pTimeLeftString = TimeLeft == 1 ? Localize("minute") : Localize("minutes");
+					pTimeLeftString = TimeLeft == 1 ? Localize("%i minute left") : Localize("%i minutes left");
 				}
 				else
-					pTimeLeftString = TimeLeft == 1 ? Localize("second") : Localize("seconds");
+					pTimeLeftString = TimeLeft == 1 ? Localize("%i second left") : Localize("%i seconds left");
 				Box.HSplitTop(20.f, 0, &Box);
 				Box.HSplitTop(24.f, &Part, &Box);
-				str_format(aBuf, sizeof(aBuf), "%i %s %s", TimeLeft, pTimeLeftString, Localize("left"));
+				str_format(aBuf, sizeof(aBuf), pTimeLeftString, TimeLeft);
 				UI()->DoLabel(&Part, aBuf, 20.f, 0, -1);
 
 				// progress bar
@@ -1070,7 +1098,100 @@ int CMenus::Render()
 			if(DoButton_Menu(&s_ButtonTryAgain, Localize("Yes"), 0, &Yes) || m_EnterPressed)
 			{
 				m_Popup = POPUP_NONE;
-				m_DemolistDelEntry = true;
+				// delete demo
+				if(m_DemolistSelectedIndex >= 0 && !m_DemolistSelectedIsDir)
+				{
+					char aBuf[512];
+					str_format(aBuf, sizeof(aBuf), "%s/%s", m_aCurrentDemoFolder, m_lDemos[m_DemolistSelectedIndex].m_aFilename);
+					if(Storage()->RemoveFile(aBuf, m_lDemos[m_DemolistSelectedIndex].m_StorageType))
+					{
+						DemolistPopulate();
+						DemolistOnUpdate(false);
+					}
+					else
+						PopupMessage(Localize("Error"), Localize("Unable to delete the demo"), Localize("Ok"));
+				}
+			}
+		}
+		else if(m_Popup == POPUP_RENAME_DEMO)
+		{
+			CUIRect Label, TextBox, Ok, Abort;
+			
+			Box.HSplitBottom(20.f, &Box, &Part);
+			Box.HSplitBottom(24.f, &Box, &Part);
+			Part.VMargin(80.0f, &Part);
+			
+			Part.VSplitMid(&Abort, &Ok);
+			
+			Ok.VMargin(20.0f, &Ok);
+			Abort.VMargin(20.0f, &Abort);
+			
+			static int s_ButtonAbort = 0;
+			if(DoButton_Menu(&s_ButtonAbort, Localize("Abort"), 0, &Abort) || m_EscapePressed)
+				m_Popup = POPUP_NONE;
+
+			static int s_ButtonOk = 0;
+			if(DoButton_Menu(&s_ButtonOk, Localize("Ok"), 0, &Ok) || m_EnterPressed)
+			{
+				m_Popup = POPUP_NONE;
+				// rename demo
+				if(m_DemolistSelectedIndex >= 0 && !m_DemolistSelectedIsDir)
+				{
+					char aBufOld[512];
+					str_format(aBufOld, sizeof(aBufOld), "%s/%s", m_aCurrentDemoFolder, m_lDemos[m_DemolistSelectedIndex].m_aFilename);
+					int Length = str_length(m_aCurrentDemoFile);
+					char aBufNew[512];
+					if(Length <= 4 || m_aCurrentDemoFile[Length-5] != '.' || str_comp_nocase(m_aCurrentDemoFile+Length-4, "demo"))
+						str_format(aBufNew, sizeof(aBufNew), "%s/%s.demo", m_aCurrentDemoFolder, m_aCurrentDemoFile);
+					else
+						str_format(aBufNew, sizeof(aBufNew), "%s/%s", m_aCurrentDemoFolder, m_aCurrentDemoFile);
+					if(Storage()->RenameFile(aBufOld, aBufNew, m_lDemos[m_DemolistSelectedIndex].m_StorageType))
+					{
+						DemolistPopulate();
+						DemolistOnUpdate(false);
+					}
+					else
+						PopupMessage(Localize("Error"), Localize("Unable to rename the demo"), Localize("Ok"));
+				}
+			}
+			
+			Box.HSplitBottom(60.f, &Box, &Part);
+			Box.HSplitBottom(24.f, &Box, &Part);
+			
+			Part.VSplitLeft(60.0f, 0, &Label);
+			Label.VSplitLeft(120.0f, 0, &TextBox);
+			TextBox.VSplitLeft(20.0f, 0, &TextBox);
+			TextBox.VSplitRight(60.0f, &TextBox, 0);
+			UI()->DoLabel(&Label, Localize("New name:"), 18.0f, -1);
+			static float Offset = 0.0f;
+			DoEditBox(&Offset, &TextBox, m_aCurrentDemoFile, sizeof(m_aCurrentDemoFile), 12.0f, &Offset);
+		}
+		else if(m_Popup == POPUP_REMOVE_FRIEND)
+		{
+			CUIRect Yes, No;
+			Box.HSplitBottom(20.f, &Box, &Part);
+			Box.HSplitBottom(24.f, &Box, &Part);
+			Part.VMargin(80.0f, &Part);
+			
+			Part.VSplitMid(&No, &Yes);
+			
+			Yes.VMargin(20.0f, &Yes);
+			No.VMargin(20.0f, &No);
+
+			static int s_ButtonAbort = 0;
+			if(DoButton_Menu(&s_ButtonAbort, Localize("No"), 0, &No) || m_EscapePressed)
+				m_Popup = POPUP_NONE;
+
+			static int s_ButtonTryAgain = 0;
+			if(DoButton_Menu(&s_ButtonTryAgain, Localize("Yes"), 0, &Yes) || m_EnterPressed)
+			{
+				m_Popup = POPUP_NONE;
+				// remove friend
+				if(m_FriendlistSelectedIndex >= 0)
+				{
+					m_pClient->Friends()->RemoveFriend(m_FriendlistSelectedIndex);
+					Client()->ServerBrowserUpdate();
+				}
 			}
 		}
 		else if(m_Popup == POPUP_FIRST_LAUNCH)
@@ -1127,6 +1248,10 @@ void CMenus::SetActive(bool Active)
 		{
 			m_pClient->OnRelease();
 		}
+	}
+	else if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
+	{
+		m_pClient->OnRelease();
 	}
 }
 
