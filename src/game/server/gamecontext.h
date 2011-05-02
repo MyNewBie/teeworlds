@@ -61,12 +61,6 @@ class CGameContext : public IGameServer
 	static void ConVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	
-	// Catching commands
-	static void ConPause(IConsole::IResult *pResult, void *pUserData);
-	static void ConTeleport(IConsole::IResult *pResult, void *pUserData);
-	static void ConTeleportTo(IConsole::IResult *pResult, void *pUserData);
-	static void ConGetPos(IConsole::IResult *pResult, void *pUserData);
-	
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
 
@@ -76,7 +70,6 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
-	CLayers *Layers() { return &m_Layers; }
 
 	CGameContext();
 	~CGameContext();
@@ -86,7 +79,7 @@ public:
 	CEventHandler m_Events;
 	CPlayer *m_apPlayers[MAX_CLIENTS];
 
-	class IGameController *m_pController;
+	IGameController *m_pController;
 	CGameWorld m_World;
 	
 	// helper functions
@@ -119,14 +112,13 @@ public:
 	CVoteOptionServer *m_pVoteOptionLast;
 
 	// helper functions
-	void CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner);
+	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
 	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage);
-	void CreateSmoke(vec2 Pos);
-	void CreateHammerHit(vec2 Pos, int Owner);
-	void CreatePlayerSpawn(vec2 Pos, int Owner);
-	void CreateDeath(vec2 Pos, int Who, int Owner = -1);
+	void CreateHammerHit(vec2 Pos);
+	void CreatePlayerSpawn(vec2 Pos);
+	void CreateDeath(vec2 Pos, int Who);
 	void CreateSound(vec2 Pos, int Sound, int Mask=-1);
-	void CreateSoundGlobal(int Sound, int Target=-1);
+	void CreateSoundGlobal(int Sound, int Target=-1);	
 
 
 	enum
@@ -138,7 +130,7 @@ public:
 	};
 
 	// network
-	void SendChatTarget(int To, const char *pText, int From = -1, int Team = 0);
+	void SendChatTarget(int To, const char *pText);
 	void SendChat(int ClientID, int Team, const char *pText);
 	void SendEmoticon(int ClientID, int Emoticon);
 	void SendWeaponPickup(int ClientID, int Weapon);
@@ -160,9 +152,6 @@ public:
 	virtual void OnPostSnap();
 	
 	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID);
-	virtual bool ChatCommands(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
-	virtual bool ChatCommandsCatching(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
-	virtual void ChatCommandsZCatch(int ClientId, CPlayer *p, CNetMsg_Cl_Say *pMsg);
 
 	virtual void OnClientConnected(int ClientID);
 	virtual void OnClientEnter(int ClientID);
@@ -182,6 +171,4 @@ inline int CmaskAll() { return -1; }
 inline int CmaskOne(int ClientID) { return 1<<ClientID; }
 inline int CmaskAllExceptOne(int ClientID) { return 0x7fffffff^CmaskOne(ClientID); }
 inline bool CmaskIsSet(int Mask, int ClientID) { return (Mask&CmaskOne(ClientID)) != 0; }
-int CmaskCatch(CGameContext *pGameServer, int Owner);
-int CmaskPickup(CGameContext *pGameServer, int Team);
 #endif

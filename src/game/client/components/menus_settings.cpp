@@ -219,7 +219,7 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
 		{
 			Item.m_Rect.Margin(10.0f, &Item.m_Rect);
 			float OldWidth = Item.m_Rect.w;
-			Item.m_Rect.w = 96.0f*Item.m_Rect.h/64.0f;
+			Item.m_Rect.w = Item.m_Rect.h*2;
 			Item.m_Rect.x += (OldWidth-Item.m_Rect.w)/ 2.0f;
 			Graphics()->TextureSet(pEntry->m_Texture);
 			Graphics()->QuadsBegin();
@@ -318,7 +318,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 			for(int s = 0; s < 3; s++)
 			{
 				aRects[i].HSplitTop(20.0f, &Label, &aRects[i]);
-				Label.VSplitLeft(50.0f, &Label, &Button);
+				Label.VSplitLeft(100.0f, &Label, &Button);
 				Button.HMargin(2.0f, &Button);
 
 				float k = ((PrevColor>>((2-s)*8))&0xff)  / 255.0f;
@@ -727,8 +727,8 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 		CUIRect Text;
 		MainView.HSplitTop(19.0f, &Button, &MainView);
 		Button.VMargin(15.0f, &Button);
-		Button.VSplitLeft(50.0f, &Text, &Button);
-		Button.VSplitRight(5.0f, &Button, 0);
+		Button.VSplitLeft(100.0f, &Text, &Button);
+		//Button.VSplitRight(5.0f, &Button, 0);
 		Button.HSplitTop(4.0f, 0, &Button);
 
 		float k = (*pColorSlider[s]) / 255.0f;

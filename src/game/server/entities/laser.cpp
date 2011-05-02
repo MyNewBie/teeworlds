@@ -2,7 +2,6 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
-#include <engine/shared/config.h>
 #include "laser.h"
 
 CLaser::CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner)
@@ -23,22 +22,15 @@ bool CLaser::HitCharacter(vec2 From, vec2 To)
 {
 	vec2 At;
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
-	CCharacter *Hit = GameServer()->m_World.IntersectCharacterTeam(m_Pos, To, 0.f, At, OwnerChar);
+	CCharacter *Hit = GameServer()->m_World.IntersectCharacter(m_Pos, To, 0.f, At, OwnerChar);
 	if(!Hit)
 		return false;
-	if((GameServer()->m_pController->JoiningSystem() &&
-		((Hit->GetPlayer()->m_IsJoined && OwnerChar->GetPlayer()->m_IsJoined) ||
-		(!Hit->GetPlayer()->m_IsJoined && !OwnerChar->GetPlayer()->m_IsJoined))) ||
-		!GameServer()->m_pController->JoiningSystem())
-	{
-		m_From = From;
-		m_Pos = At;
-		m_Energy = -1;		
-		Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
-		return true;
-	}
-	else
-		return false;
+
+	m_From = From;
+	m_Pos = At;
+	m_Energy = -1;		
+	Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
+	return true;
 }
 
 void CLaser::DoBounce()
@@ -75,10 +67,7 @@ void CLaser::DoBounce()
 			if(m_Bounces > GameServer()->Tuning()->m_LaserBounceNum)
 				m_Energy = -1;
 				
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE, CmaskCatch(GameServer(), m_Owner));
-			
-			if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) && m_Bounces == 1 && g_Config.m_SvLaserjumps)
-				GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GAME, false);
+			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE);
 		}
 	}
 	else
@@ -108,10 +97,8 @@ void CLaser::Snap(int SnappingClient)
 	if(NetworkClipped(SnappingClient))
 		return;
 
-	if(GameServer()->m_pController->JoiningSystem() && GameServer()->m_apPlayers[m_Owner] && !GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
-		return;
-
-	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID, sizeof(CNetObj_Laser)));	if(!pObj)
+	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID, sizeof(CNetObj_Laser)));
+	if(!pObj)
 		return;
 
 	pObj->m_X = (int)m_Pos.x;

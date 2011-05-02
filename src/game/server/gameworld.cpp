@@ -209,34 +209,6 @@ CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, v
 	return pClosest;
 }
 
-CCharacter *CGameWorld::IntersectCharacterTeam(vec2 Pos0, vec2 Pos1, float Radius, vec2& NewPos, CCharacter *pNotThis)
-{
-	// Find other players
-	float ClosestLen = distance(Pos0, Pos1) * 100.0f;
-	vec2 LineDir = normalize(Pos1-Pos0);
-	CCharacter *pClosest = 0;
-
-	CCharacter *p = (CCharacter *)FindFirst(NETOBJTYPE_CHARACTER);
-	for(; p; p = (CCharacter *)p->TypeNext())
- 	{
-		if(p == pNotThis || p->GetPlayer()->m_IsJoined != pNotThis->GetPlayer()->m_IsJoined)
-			continue;
-			
-		vec2 IntersectPos = closest_point_on_line(Pos0, Pos1, p->m_Pos);
-		float Len = distance(p->m_Pos, IntersectPos);
-		if(Len < p->m_ProximityRadius+Radius)
-		{
-			if(Len < ClosestLen)
-			{
-				NewPos = IntersectPos;
-				ClosestLen = Len;
-				pClosest = p;
-			}
-		}
-	}
-	
-	return pClosest;
-}
 
 CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotThis)
 {
@@ -248,32 +220,6 @@ CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotTh
 	for(; p; p = (CCharacter *)p->TypeNext())
  	{
 		if(p == pNotThis)
-			continue;
-			
-		float Len = distance(Pos, p->m_Pos);
-		if(Len < p->m_ProximityRadius+Radius)
-		{
-			if(Len < ClosestRange)
-			{
-				ClosestRange = Len;
-				pClosest = p;
-			}
-		}
-	}
-	
-	return pClosest;
-}
-
-CCharacter *CGameWorld::ClosestTeamCharacter(vec2 Pos, float Radius, CEntity *pNotThis, int CurrentTeam, int BaseTeam)
-{
-	// Find other players
-	float ClosestRange = Radius*2;
-	CCharacter *pClosest = 0;
-
-	CCharacter *p = (CCharacter *)GameServer()->m_World.FindFirst(NETOBJTYPE_CHARACTER);
-	for(; p; p = (CCharacter *)p->TypeNext())
- 	{
-		if(p == pNotThis || p->GetPlayer()->m_CatchingTeam == CurrentTeam || p->GetPlayer()->m_CatchingTeam == BaseTeam)
 			continue;
 			
 		float Len = distance(Pos, p->m_Pos);

@@ -60,9 +60,9 @@ MACRO_CONFIG_INT(SvTeamdamage, sv_teamdamage, 0, 0, 1, CFGFLAG_SERVER, "Team dam
 MACRO_CONFIG_STR(SvMaprotation, sv_maprotation, 768, "", CFGFLAG_SERVER, "Maps to rotate between")
 MACRO_CONFIG_INT(SvRoundsPerMap, sv_rounds_per_map, 1, 1, 100, CFGFLAG_SERVER, "Number of rounds on each map before rotating")
 MACRO_CONFIG_INT(SvPowerups, sv_powerups, 1, 0, 1, CFGFLAG_SERVER, "Allow powerups like ninja")
-MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 100, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
+MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 20, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
 MACRO_CONFIG_INT(SvTimelimit, sv_timelimit, 0, 0, 1000, CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
-MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "catch", CFGFLAG_SERVER, "Game type (dm, tdm, ctf)")
+MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dm", CFGFLAG_SERVER, "Game type (dm, tdm, ctf)")
 MACRO_CONFIG_INT(SvTournamentMode, sv_tournament_mode, 0, 0, 1, CFGFLAG_SERVER, "Tournament mode. When enabled, players joins the server as spectator")
 MACRO_CONFIG_INT(SvSpamprotection, sv_spamprotection, 1, 0, 1, CFGFLAG_SERVER, "Spam protection")
 
@@ -77,43 +77,6 @@ MACRO_CONFIG_INT(SvVoteSpectate, sv_vote_spectate, 1, 0, 1, CFGFLAG_SERVER, "All
 MACRO_CONFIG_INT(SvVoteKick, sv_vote_kick, 1, 0, 1, CFGFLAG_SERVER, "Allow voting to kick players")
 MACRO_CONFIG_INT(SvVoteKickMin, sv_vote_kick_min, 0, 0, MAX_CLIENTS, CFGFLAG_SERVER, "Minimum number of players required to start a kick vote")
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
-
-// Catching
-//  -Gametype/Gameplay
-MACRO_CONFIG_INT(SvInstagib, sv_instagib, 0, 0, 1, CFGFLAG_SERVER, "Allow to play instagib")
-MACRO_CONFIG_INT(SvHammerParty, sv_hammerparty, 0, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvGiveWeapons, sv_give_weapons, 0, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvPickups, sv_pickups, 1, 0, 1, CFGFLAG_SERVER, "")
-
-//  -Server Settings
-MACRO_CONFIG_INT(SvLaserjumps, sv_laserjumps, 0, 0, 1, CFGFLAG_SERVER, "Enable laser jumps")
-MACRO_CONFIG_INT(SvCheatProtection, sv_cheat_protection, 3, 2, 16, CFGFLAG_SERVER, "Cheat protection")
-MACRO_CONFIG_INT(SvGameOverTime, sv_game_over_time, 2, 0, 10, CFGFLAG_SERVER, "Time to wait until the next round")
-MACRO_CONFIG_INT(SvScoreIncrease, sv_score_increase, 5, 0, 20, CFGFLAG_SERVER, "Increase about this the winner after a round")
-MACRO_CONFIG_INT(SvDamagePoint, sv_damage_point, 20, 0, 80, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvHideOuts, sv_hide_outs, 1, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvHookDamage, sv_hook_damage, 0, 0, 1, CFGFLAG_SERVER, "")
-
-//   -Teleport
-MACRO_CONFIG_INT(SvTeleport, sv_teleport, 1, 0, 1, CFGFLAG_SERVER, "Enable or disable teleportation")
-MACRO_CONFIG_INT(SvTeleportGrenade, sv_teleport_grenade, 0, 0, 1, CFGFLAG_SERVER, "Enable or disable teleport of grenade")
-MACRO_CONFIG_INT(SvTeleportVelReset, sv_teleport_vel_reset, 0, 0, 1, CFGFLAG_SERVER, "Reset velocity after teleport")
-
-//   -Server Connection
-MACRO_CONFIG_INT(SvReservedSlots, sv_reserved_slots, 0, 0, 12, CFGFLAG_SERVER, "Number of reserved slots")
-MACRO_CONFIG_STR(SvReservedSlotsPass, sv_reserved_slots_pass, 32, "", CFGFLAG_SERVER, "Password for reserved slots")
-MACRO_CONFIG_INT(SvMulticonnect, sv_multiconnect, 0, 0, 1, CFGFLAG_SERVER, "Allow multi connections on the server")
-
-//  -Powerup
-MACRO_CONFIG_INT(SvShowWay, sv_show_way, 0, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvMaxWayCalc, sv_max_way_calc, 7000, 1, 50000, CFGFLAG_SERVER, "")
-
-MACRO_CONFIG_INT(SvPowerupSpeed, sv_powerup_speed, 10, 1, 20, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvPowerupEffect, sv_powerup_effect, 1, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvPowerupSound, sv_powerup_sound, 0, 0, 1, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvPowerupTime, sv_powerup_time, 2, 1, 10, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvMaxHits, sv_max_hits, 32, 0, 128, CFGFLAG_SERVER, "")
-MACRO_CONFIG_INT(SvHitDelay, sv_hit_delay, 2, 0, 20, CFGFLAG_SERVER, "")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

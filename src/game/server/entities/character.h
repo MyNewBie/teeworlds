@@ -11,8 +11,6 @@
 
 enum
 {
-	WEAPON_HOOK = -5,
-	WEAPON_POWERUP = -4,
 	WEAPON_GAME = -3, // team switching etc
 	WEAPON_SELF = -2, // console kill command
 	WEAPON_WORLD = -1, // death tiles etc
@@ -48,8 +46,6 @@ public:
 	void FireWeapon();
 
 	void Die(int Killer, int Weapon);
-	void CreateDieExplosion(bool refill);
-	void ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam);
 	bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon);	
 
 	bool Spawn(class CPlayer *pPlayer, vec2 Pos);
@@ -65,9 +61,6 @@ public:
 	
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
-
-	// the player core for the physics	
-	CCharacterCore m_Core;
 	
 private:
 	// player controlling this character
@@ -127,17 +120,14 @@ private:
 		int m_OldVelAmount;
 	} m_Ninja;
 
-	int m_PlayerState;// if the client is chatting, accessing a menu or so
-	// the player core for the physics		CCharacterCore m_Core;	
+	// the player core for the physics	
+	CCharacterCore m_Core;
+	
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
-	int m_LastSpeedup;
-	vec2 m_PrevPos;
-	int m_ShieldID;
-	bool m_Visible;
 };
 
 #endif

@@ -92,6 +92,23 @@ int CMenus::DoButton_Icon(int ImageId, int SpriteId, const CUIRect *pRect)
 	return 0;
 }
 
+int CMenus::DoButton_Toggle(const void *pID, int Checked, const CUIRect *pRect)
+{
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_GUIBUTTONS].m_Id);
+	Graphics()->QuadsBegin();
+	RenderTools()->SelectSprite(Checked?SPRITE_GUIBUTTON_ON:SPRITE_GUIBUTTON_OFF);
+	IGraphics::CQuadItem QuadItem(pRect->x, pRect->y, pRect->w, pRect->h);
+	Graphics()->QuadsDrawTL(&QuadItem, 1);
+	if((UI()->HotItem() == pID))
+	{
+		RenderTools()->SelectSprite(SPRITE_GUIBUTTON_HOVER);
+		IGraphics::CQuadItem QuadItem(pRect->x, pRect->y, pRect->w, pRect->h);
+		Graphics()->QuadsDrawTL(&QuadItem, 1);
+	}
+	Graphics()->QuadsEnd();
+	
+	return UI()->DoButtonLogic(pID, "", Checked, pRect);
+}
 
 int CMenus::DoButton_Menu(const void *pID, const char *pText, int Checked, const CUIRect *pRect)
 {
@@ -119,17 +136,6 @@ int CMenus::DoButton_MenuTab(const void *pID, const char *pText, int Checked, co
 	CUIRect Temp;
 	pRect->HMargin(2.0f, &Temp);
 	UI()->DoLabel(&Temp, pText, Temp.h*ms_FontmodHeight, 0);
-	
-	return UI()->DoButtonLogic(pID, pText, Checked, pRect);
-}
-
-int CMenus::DoButton_PageMenu(const void *pID, const char *pText, int Checked, bool Active, const CUIRect *pRect, int Corners)
-{
-	if(Active)
-		RenderTools()->DrawUIRect(pRect, vec4(1,1,1,0.5f)*ButtonColorMul(pID), Corners, 10.0f);
-	else
-		RenderTools()->DrawUIRect(pRect, vec4(0.0f, 0.0f, 0.0f, 0.25f), Corners, 10.0f);
-	UI()->DoLabel(pRect, pText, pRect->h*ms_FontmodHeight, 0);
 	
 	return UI()->DoButtonLogic(pID, pText, Checked, pRect);
 }
@@ -566,22 +572,23 @@ int CMenus::RenderMenubar(CUIRect r)
 		// online menus
 		Box.VSplitLeft(90.0f, &Button, &Box);
 		static int s_GameButton=0;
-		if(DoButton_MenuTab(&s_GameButton, Localize("Game"), m_ActivePage==PAGE_GAME, &Button, CUI::CORNER_T))
+		if(DoButton_MenuTab(&s_GameButton, Localize("Game"), m_ActivePage==PAGE_GAME, &Button, CUI::CORNER_TL))
 			NewPage = PAGE_GAME;
 
-		Box.VSplitLeft(4.0f, 0, &Box);
-		Box.VSplitLeft(140.0f, &Button, &Box);
+		Box.VSplitLeft(90.0f, &Button, &Box);
+		static int s_PlayersButton=0;
+		if(DoButton_MenuTab(&s_PlayersButton, Localize("Players"), m_ActivePage==PAGE_PLAYERS, &Button, 0))
+			NewPage = PAGE_PLAYERS;
+
+		Box.VSplitLeft(130.0f, &Button, &Box);
 		static int s_ServerInfoButton=0;
-		if(DoButton_MenuTab(&s_ServerInfoButton, Localize("Server info"), m_ActivePage==PAGE_SERVER_INFO, &Button, CUI::CORNER_T))
+		if(DoButton_MenuTab(&s_ServerInfoButton, Localize("Server info"), m_ActivePage==PAGE_SERVER_INFO, &Button, 0))
 			NewPage = PAGE_SERVER_INFO;
 
-		Box.VSplitLeft(4.0f, 0, &Box);
-		Box.VSplitLeft(140.0f, &Button, &Box);
+		Box.VSplitLeft(130.0f, &Button, &Box);
 		static int s_CallVoteButton=0;
-		if(DoButton_MenuTab(&s_CallVoteButton, Localize("Call vote"), m_ActivePage==PAGE_CALLVOTE, &Button, CUI::CORNER_T))
+		if(DoButton_MenuTab(&s_CallVoteButton, Localize("Call vote"), m_ActivePage==PAGE_CALLVOTE, &Button, CUI::CORNER_TR))
 			NewPage = PAGE_CALLVOTE;
-			
-		Box.VSplitLeft(30.0f, 0, &Box);
 	}
 		
 	/*
@@ -810,6 +817,8 @@ int CMenus::Render()
 		{
 			if(m_GamePage == PAGE_GAME)
 				RenderGame(MainView);
+			else if(m_GamePage == PAGE_PLAYERS)
+				RenderPlayers(MainView);
 			else if(m_GamePage == PAGE_SERVER_INFO)
 				RenderServerInfo(MainView);
 			else if(m_GamePage == PAGE_CALLVOTE)
@@ -947,8 +956,11 @@ int CMenus::Render()
 			Box.HSplitTop(10.0f, 0, &Box);
 			Box.VMargin(20.f/UI()->Scale(), &Box);
 			if(m_pClient->Editor()->HasUnsavedData())
-				UI()->DoLabelScaled(&Box, Localize("There's an unsaved map in the editor, you might want to save it before you quit the game.\nQuit anyway?"),
-									20.f, -1, Part.w);
+			{
+				char aBuf[128];
+				str_format(aBuf, sizeof(aBuf), "%s\n%s", Localize("There's an unsaved map in the editor, you might want to save it before you quit the game."), Localize("Quit anyway?"));
+				UI()->DoLabelScaled(&Box, aBuf, 20.f, -1, Part.w-20.0f);
+			}
 
 			// buttons
 			Part.VMargin(80.0f, &Part);

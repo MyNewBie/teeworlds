@@ -519,6 +519,9 @@ no limit
 %d Bytes
 == 
 
+%s wins!
+== 
+
 -Page %d-
 == 
 
@@ -585,16 +588,10 @@ Netversion:
 New name:
 == 
 
-Next
-== 
-
-Page %d of %d
-== 
-
 Player options
 == 
 
-Prev
+Quit anyway?
 == 
 
 REC %3d:%02d
@@ -636,7 +633,7 @@ Spectator mode
 Sudden Death
 == 
 
-There's an unsaved map in the editor, you might want to save it before you quit the game.\nQuit anyway?
+There's an unsaved map in the editor, you might want to save it before you quit the game.
 == 
 
 Type:

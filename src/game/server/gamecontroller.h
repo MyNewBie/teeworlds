@@ -4,7 +4,6 @@
 #define GAME_SERVER_GAMECONTROLLER_H
 
 #include <base/vmath.h>
-#include "pathfind.h"
 
 /*
 	Class: Game Controller
@@ -71,7 +70,7 @@ public:
 	virtual ~IGameController();
 
 	void DoTeamScoreWincheck();
-	virtual void DoPlayerScoreWincheck();
+	void DoPlayerScoreWincheck();
 	
 	void DoWarmup(int Seconds);
 	
@@ -142,20 +141,8 @@ public:
 	bool CheckTeamBalance();
 	bool CanChangeTeam(CPlayer *pPplayer, int JoinTeam);
 	int ClampTeam(int Team);
-	
-	// Catching
-	vec2 *m_pTeleporter;
-	void InitTeleporter();
 
-	virtual bool IsCatching() const;
-	virtual bool IsZCatch() const;
-	virtual bool JoiningSystem() const;
-	virtual void SetColor(class CPlayer *pP);
-	virtual int GetLeaderID();
-	bool CheckJoined(CPlayer *pP1, CPlayer *pP2);
 	virtual void PostReset();
-	class CPathfind m_Path;
-	//int GetGameOverTick() { return m_GameOverTick; };
 };
 
 #endif

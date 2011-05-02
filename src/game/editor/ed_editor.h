@@ -135,8 +135,7 @@ public:
 	{
 	}
 	
-	virtual void CheckQuads() {}
-
+	
 	virtual void BrushSelecting(CUIRect Rect) {}
 	virtual int BrushGrab(CLayerGroup *pBrush, CUIRect Rect) { return 0; }
 	virtual void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect) {}
@@ -270,8 +269,6 @@ public:
 	array<CEnvelope*> m_lEnvelopes;
 	
 	class CLayerGame *m_pGameLayer;
-	class CLayerTele *m_pTeleLayer;
-	class CLayerSpeedup *m_pSpeedupLayer;
 	CLayerGroup *m_pGameGroup;
 	
 	CEnvelope *NewEnvelope(int Channels)
@@ -283,7 +280,7 @@ public:
 	}
 
 	void DeleteEnvelope(int Index);
-
+	
 	CLayerGroup *NewGroup()
 	{
 		m_Modified = true;
@@ -330,10 +327,6 @@ public:
 
 	// io	
 	int Save(class IStorage *pStorage, const char *pFilename);
-
-	void MakeTeleLayer(CLayer *pLayer);
-	void MakeSpeedupLayer(CLayer *pLayer);
-
 	int Load(class IStorage *pStorage, const char *pFilename, int StorageType);
 };
 
@@ -371,8 +364,8 @@ public:
 	CLayerTiles(int w, int h);
 	~CLayerTiles();
 
-	virtual void Resize(int NewW, int NewH);
-	virtual void Shift(int Direction);
+	void Resize(int NewW, int NewH);
+	void Shift(int Direction);
 
 	void MakePalette();
 	virtual void Render();
@@ -403,8 +396,6 @@ public:
 	
 	int m_TexID;
 	int m_Game;
-	int m_Tele;
-	int m_Speedup;
 	int m_Image;
 	int m_Width;
 	int m_Height;
@@ -420,8 +411,6 @@ public:
 
 	virtual void Render();
 	CQuad *NewQuad();
-
-	virtual void CheckQuads();
 
 	virtual void BrushSelecting(CUIRect Rect);
 	virtual int BrushGrab(CLayerGroup *pBrush, CUIRect Rect);
@@ -448,34 +437,6 @@ public:
 	~CLayerGame();
 
 	virtual int RenderProperties(CUIRect *pToolbox);
-};
-
-class CLayerTele : public CLayerTiles
-{
-public:
-	CLayerTele(int w, int h);
-	~CLayerTele();
-	
-	CTeleTile *m_pTeleTile;
-	
-	virtual void Resize(int NewW, int NewH);
-	virtual void Shift(int Direction);
-	virtual void BrushDraw(CLayer *pBrush, float wx, float wy);
-	virtual void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect);
-};
-
-class CLayerSpeedup : public CLayerTiles
-{
-public:
-	CLayerSpeedup(int w, int h);
-	~CLayerSpeedup();
-	
-	CSpeedupTile *m_pSpeedupTile;
-	
-	virtual void Resize(int NewW, int NewH);
-	virtual void Shift(int Direction);
-	virtual void BrushDraw(CLayer *pBrush, float wx, float wy);
-	virtual void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect);
 };
 
 class CEditor : public IEditor
@@ -562,11 +523,6 @@ public:
 		ms_EntitiesTexture = 0;
 		
 		ms_pUiGotContext = 0;
-
-		m_TeleNum = 1;
-
-		m_SpeedupForce = 50;
-		m_SpeedupAngle = 0;
 	}
 	
 	virtual void Init();
@@ -727,8 +683,6 @@ public:
 	static int PopupSelectGametileOp(CEditor *pEditor, CUIRect View);
 	static int PopupImage(CEditor *pEditor, CUIRect View);
 	static int PopupMenuFile(CEditor *pEditor, CUIRect View);
-	static int PopupTele(CEditor *pEditor, CUIRect View);
-	static int PopupSpeedup(CEditor *pEditor, CUIRect View);
 
 	static void CallbackOpenMap(const char *pFileName, int StorageType, void *pUser);
 	static void CallbackAppendMap(const char *pFileName, int StorageType, void *pUser);
@@ -763,12 +717,6 @@ public:
 
 	void AddFileDialogEntry(int Index, CUIRect *pView);
 	void SortImages();
-
-	unsigned char m_TeleNum;
-
-	unsigned char m_SpeedupForce;
-	short m_SpeedupAngle;
-
 	static void ExtractName(const char *pFileName, char *pName, int BufferSize)
 	{
 		const char *pExtractedName = pFileName;

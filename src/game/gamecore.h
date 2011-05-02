@@ -185,8 +185,6 @@ public:
 	int m_HookTick;
 	int m_HookState;
 	int m_HookedPlayer;
-	bool m_HookedPowerup;
-	bool m_Joined;
 	
 	int m_Jumped;
 	

@@ -31,8 +31,6 @@ public:
 	void OnDirectInput(CNetObj_PlayerInput *NewInput);
 	void OnPredictedInput(CNetObj_PlayerInput *NewInput);
 	void OnDisconnect(const char *pReason);
-
-	void AddBroadcast(char Broadcast[512], int BroadcastTime, int BroadcastLevel, char SystemMessage[512] = "");
 	
 	void KillCharacter(int Weapon = WEAPON_GAME);
 	CCharacter *GetCharacter();
@@ -79,50 +77,12 @@ public:
 	int m_Score;
 	int m_ScoreStartTick;
 	bool m_ForceBalanced;
-	int m_LastActionTick;	struct	{		int m_TargetX;		int m_TargetY;	} m_LatestActivity;	int m_CatchingTeam;
-	int m_PrevCatchingTeam;
-	int m_BaseCatchingTeam;
-	int m_DoesDamage;
-	bool m_IsUsingCatchClient;
-	bool m_IsJoined;
-	int m_NoBroadcast;
-	bool m_TickBroadcast;
-	int m_Colorassign;
-	int m_CaughtBy;
-	int m_LastActionTick;	struct	{		int m_TargetX;		int m_TargetY;	} m_LatestActivity;	// network latency calculations		struct	{		int m_Accum;		int m_AccumMin;		int m_AccumMax;		int m_Avg;		int m_Min;		int m_Max;		} m_Latency;	private:
-	CCharacter *Character;
-	CGameContext *m_pGameServer;
-	
-	CGameContext *GameServer() const { return m_pGameServer; }
-	IServer *Server() const;
-	
-	/*void BroadcastSystem();
-	class CBroadcasts
+	int m_LastActionTick;
+	struct
 	{
-	public:
-		char Broadcast[512];
-		int BroadcastTime;
-		int BroadcastLevel;
-		char SystemMessage[512];
-		int BroadcastTick;
-
-		int GetImportance()
-		{
-			int BroadcastTickTime = Server()->Tick() - this->BroadcastTick;
-			double TickImportance = 1 / BroadcastTickTime;
-			return (this->BroadcastLevel * (TickImportance * 100));
-		}
-
-		bool operator<(const CBroadcasts& Other) const { return (this->GetImportance() > Other.GetImportance()); }
-	};
-	sorted_array<CBroadcasts> m_Broadcast;*/
-
-	bool m_Spawning;
-	int m_ClientID;
-	int m_Team;
-
-	bool m_HasTeam;
-	bool m_AssignColor;
+		int m_TargetX;
+		int m_TargetY;
+	} m_LatestActivity;
 
 	// network latency calculations	
 	struct
@@ -134,6 +94,18 @@ public:
 		int m_Min;
 		int m_Max;	
 	} m_Latency;
+	
+private:
+	CCharacter *Character;
+	CGameContext *m_pGameServer;
+	
+	CGameContext *GameServer() const { return m_pGameServer; }
+	IServer *Server() const;
+	
+	//
+	bool m_Spawning;
+	int m_ClientID;
+	int m_Team;
 };
 
 #endif

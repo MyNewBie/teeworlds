@@ -20,7 +20,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_Team = GameServer()->m_pController->ClampTeam(Team);
 	m_SpectatorID = SPEC_FREEVIEW;
 	m_LastActionTick = Server()->Tick();
-	m_LastActionTick = Server()->Tick();	m_CatchingTeam = -1;	m_PrevCatchingTeam = -1;	m_BaseCatchingTeam = -1;	m_IsUsingCatchClient = false;	m_IsJoined = false;	m_DoesDamage = 0;	m_HasTeam = true;	m_NoBroadcast = 0;	m_TickBroadcast = false;	m_Colorassign = 0;	m_CaughtBy = -1;}
+}
 
 CPlayer::~CPlayer()
 {
@@ -37,7 +37,7 @@ void CPlayer::Tick()
 		return;
 
 	Server()->SetClientScore(m_ClientID, m_Score);
-	
+
 	// do latency stuff
 	{
 		IServer::CClientInfo Info;
@@ -58,172 +58,10 @@ void CPlayer::Tick()
 			m_Latency.m_AccumMax = 0;
 		}
 	}
+	
 	if(!Character && m_DieTick+Server()->TickSpeed()*3 <= Server()->Tick())
 		m_Spawning = true;
-	
-	if(!GameServer()->m_pController->JoiningSystem() && !m_IsJoined)
-		m_IsJoined = true;
-	
-	if(GameServer()->m_pController->IsCatching() && m_Team != -1)
-	{
-		char aBuf[512];
-		// Increasing Score if ppl does VAR (Optimal: 20) or more damage
-		if(m_DoesDamage >= g_Config.m_SvDamagePoint)
-		{
-			m_Score++;
-			m_DoesDamage -= g_Config.m_SvDamagePoint;
-		}
-		
-		// Collorassign
-		int UsedColor[MAX_CLIENTS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		int NumPlayers = 0;
-		for(int i = 0; i < MAX_CLIENTS; i++)
-		{
-			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_BaseCatchingTeam != -1)
-				UsedColor[GameServer()->m_apPlayers[i]->m_BaseCatchingTeam] = 1;
-			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
-				NumPlayers++;
-		}
 
-		if(m_Colorassign && !m_IsJoined)
-		{
-			m_Colorassign--;
-			int left = m_Colorassign/Server()->TickSpeed();
-			//int mili = m_Colorassign*1000/left/Server()->TickSpeed() - 1000;
-			str_format(aBuf, sizeof(aBuf),  "%d Seconds left to select a team.", left);
-			GameServer()->SendBroadcast(aBuf, m_ClientID);
-			m_AssignColor = true;
-		}
-		else if(m_AssignColor && !m_IsJoined)
-		{
-			int Color = -1;
-
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
-				if(!UsedColor[i])
-				{
-					Color = i;
-					break;
-				}
-			}
-			m_BaseCatchingTeam = Color;
-
-			if(NumPlayers < g_Config.m_SvCheatProtection)
-			{
-				m_IsJoined = true;
-				GameServer()->SendBroadcast("", m_ClientID);
-				if(GetCharacter())
-					GetCharacter()->CreateDieExplosion(false);
-			}
-			else
-				GameServer()->SendChatTarget(m_ClientID, "Please wait until this round ends");
-
-			GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
-			GameServer()->SendChatTarget(m_ClientID, "You got a random color");
-			m_AssignColor = false;
-		}
-		else if(!m_IsJoined && NumPlayers >= g_Config.m_SvCheatProtection)
-			GameServer()->SendBroadcast("Please wait until this round ends", m_ClientID);
-
-		//Strange bug
-		if(!GameServer())
-			return;
-
-		// Teambroadcast
-		if(Server()->Tick()%Server()->TickSpeed()/2 == 0)
-		{
-			if(m_IsJoined && m_Colorassign)
-			{
-				m_Colorassign = 0;
-				m_AssignColor = false;
-			}
-
-			int NumPlayers = 0;
-			int TeamPlayers = 0;
-			int OtherTeam = 0;
-			int OtherOwner = -1;
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
-				if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != -1 && GameServer()->m_apPlayers[i]->m_IsJoined)
-				{
-					NumPlayers++;
-					if(GameServer()->m_apPlayers[i]->m_CatchingTeam == m_BaseCatchingTeam)
-						TeamPlayers++;
-					else if(GameServer()->m_apPlayers[i]->m_CatchingTeam == m_CatchingTeam)
-						OtherTeam++;
-					if(GameServer()->m_apPlayers[i]->m_BaseCatchingTeam == m_CatchingTeam)
-						OtherOwner = i;
-				}
-			}
-			if((TeamPlayers > 0 || m_HasTeam) && !m_NoBroadcast && m_Team != -1 && m_IsJoined && NumPlayers > 2)
-			{
-				if(TeamPlayers == 0 && m_HasTeam)
-				{
-					m_HasTeam = false;
-					m_NoBroadcast = Server()->TickSpeed() * 3;
-					m_TickBroadcast = true;
-					GameServer()->SendChatTarget(m_ClientID, "You lose your Team");
-					GameServer()->SendBroadcast("You lose your Team", m_ClientID);
-				}
-				else
-				{
-					char Buf[128];
-					str_format(Buf, sizeof(Buf),  "Your Team: %d / %d Player", TeamPlayers, NumPlayers);
-					GameServer()->SendBroadcast(Buf, m_ClientID);
-				}
-			}
-			else if(!m_HasTeam && OtherTeam > 0 && TeamPlayers == 0 && !m_NoBroadcast && m_Team != -1 && m_IsJoined && NumPlayers > 2)
-			{
-				char Buf[128];
-				if(OtherOwner > -1)
-					str_format(Buf, sizeof(Buf),  "%s's Team: %d / %d Player", Server()->ClientName(OtherOwner), OtherTeam, NumPlayers);
-				else
-					str_format(Buf, sizeof(Buf),  "Team: %d / %d Player", OtherTeam, NumPlayers);
-				GameServer()->SendBroadcast(Buf, m_ClientID);
-			}
-		}
-
-		if(m_TickBroadcast && m_NoBroadcast > 0)
-			m_NoBroadcast--;
-		else if(m_TickBroadcast)
-			m_TickBroadcast = false;
-	}
-	else if(GameServer()->m_pController->IsZCatch())
-	{
-		char aBuf[512];
-		int Total = 0, Num = 0;
-		GameServer()->m_pController->SetColor(this);
-		if(m_CaughtBy == -1)
-		{
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
-				if(i != m_ClientID && GameServer()->m_apPlayers[i])
-				{
-					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
-						Total++;
-					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_ClientID)
-						Num++;
-				}
-			}
-			str_format(aBuf, sizeof(aBuf), "(%d/%d)", Num, Total);
-		}
-		else
-		{
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
-				if(i != m_CaughtBy && GameServer()->m_apPlayers[i])
-				{
-					if(GameServer()->m_apPlayers[i]->GetTeam() != -1)
-						Total++;
-					if(GameServer()->m_apPlayers[i]->m_CaughtBy == m_CaughtBy)
-						Num++;
-				}
-			}
-			str_format(aBuf, sizeof(aBuf), "Caught by %s (%d/%d)", Server()->ClientName(m_CaughtBy), Num, Total);
-		}
-		GameServer()->SendBroadcast(aBuf, m_ClientID);
-	}
-	
 	if(Character)
 	{
 		if(Character->IsAlive())
@@ -417,4 +255,4 @@ void CPlayer::TryRespawn()
 	Character = new(m_ClientID) CCharacter(&GameServer()->m_World);
 	Character->Spawn(this, SpawnPos);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
-	// check if the position is occupado	CEntity *apEnts[2] = {0};	int NumEnts = GameServer()->m_World.FindEntities(SpawnPos, 64, apEnts, 2, NETOBJTYPE_CHARACTER);		if(NumEnts == 0)	{		m_Spawning = false;		Character = new(m_ClientID) CCharacter(&GameServer()->m_World);		Character->Spawn(this, SpawnPos);		GameServer()->CreatePlayerSpawn(SpawnPos, m_ClientID);	}}
+}

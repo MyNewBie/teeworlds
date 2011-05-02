@@ -13,9 +13,6 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
-#include "gamemodes/catching.h"
-#include "gamemodes/zcatch.h"
-#include <stdio.h>
 
 enum
 {
@@ -87,7 +84,7 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	return m_apPlayers[ClientID]->GetCharacter();
 }
 
-void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner)
+void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
 {
 	float a = 3 * 3.14159f / 2 + Angle;
 	//float a = get_angle(dir);
@@ -96,7 +93,7 @@ void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner)
 	for(int i = 0; i < Amount; i++)
 	{
 		float f = mix(s, e, float(i+1)/float(Amount+2));
-		NETEVENT_DAMAGEIND *pEvent = (NETEVENT_DAMAGEIND *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(NETEVENT_DAMAGEIND), CmaskCatch(this, Owner));
+		NETEVENT_DAMAGEIND *pEvent = (NETEVENT_DAMAGEIND *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(NETEVENT_DAMAGEIND));
 		if(pEvent)
 		{
 			pEvent->m_X = (int)Pos.x;
@@ -106,10 +103,10 @@ void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int Owner)
 	}
 }
 
-void CGameContext::CreateHammerHit(vec2 Pos, int Owner)
+void CGameContext::CreateHammerHit(vec2 Pos)
 {
 	// create the event
-	NETEVENT_HAMMERHIT *pEvent = (NETEVENT_HAMMERHIT *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(NETEVENT_HAMMERHIT), CmaskCatch(this, Owner));
+	NETEVENT_HAMMERHIT *pEvent = (NETEVENT_HAMMERHIT *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(NETEVENT_HAMMERHIT));
 	if(pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -121,7 +118,7 @@ void CGameContext::CreateHammerHit(vec2 Pos, int Owner)
 void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage)
 {
 	// create the event
-	NETEVENT_EXPLOSION *pEvent = (NETEVENT_EXPLOSION *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(NETEVENT_EXPLOSION), CmaskCatch(this, Owner));
+	NETEVENT_EXPLOSION *pEvent = (NETEVENT_EXPLOSION *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(NETEVENT_EXPLOSION));
 	if(pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -145,13 +142,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 			l = 1-clamp((l-InnerRadius)/(Radius-InnerRadius), 0.0f, 1.0f);
 			float Dmg = 6 * l;
 			if((int)Dmg)
-			{
-				if((m_pController->JoiningSystem() &&
-					((apEnts[i]->GetPlayer()->m_IsJoined && GetPlayerChar(Owner)->GetPlayer()->m_IsJoined) ||
-					(!apEnts[i]->GetPlayer()->m_IsJoined && !GetPlayerChar(Owner)->GetPlayer()->m_IsJoined))) ||
-					!m_pController->JoiningSystem())
-					apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
-			}
+				apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
 		}
 	}
 }
@@ -168,10 +159,10 @@ void create_smoke(vec2 Pos)
 	}
 }*/
 
-void CGameContext::CreatePlayerSpawn(vec2 Pos, int Owner)
+void CGameContext::CreatePlayerSpawn(vec2 Pos)
 {
 	// create the event
-	NETEVENT_SPAWN *ev = (NETEVENT_SPAWN *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(NETEVENT_SPAWN), CmaskCatch(this, Owner));
+	NETEVENT_SPAWN *ev = (NETEVENT_SPAWN *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(NETEVENT_SPAWN));
 	if(ev)
 	{
 		ev->m_X = (int)Pos.x;
@@ -179,16 +170,10 @@ void CGameContext::CreatePlayerSpawn(vec2 Pos, int Owner)
 	}
 }
 
-void CGameContext::CreateDeath(vec2 Pos, int ClientID, int Owner)
+void CGameContext::CreateDeath(vec2 Pos, int ClientID)
 {
-	int CID = Owner;
-	if(ClientId != -1)
-		CID = ClientId;
-	if(CID == -1)
-		return;
-
 	// create the event
-	NETEVENT_DEATH *pEvent = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH), CmaskCatch(this, CID));
+	NETEVENT_DEATH *pEvent = (NETEVENT_DEATH *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(NETEVENT_DEATH));
 	if(pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -223,14 +208,15 @@ void CGameContext::CreateSoundGlobal(int Sound, int Target)
 }
 
 
-void CGameContext::SendChatTarget(int To, const char *pText, int From, int Team)
+void CGameContext::SendChatTarget(int To, const char *pText)
 {
 	CNetMsg_Sv_Chat Msg;
-	Msg.m_Team = Team;
-	Msg.m_ClientID = From;
+	Msg.m_Team = 0;
+	Msg.m_ClientID = -1;
 	Msg.m_pMessage = pText;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
 }
+
 
 void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText)
 {
@@ -528,22 +514,6 @@ void CGameContext::OnClientEnter(int ClientID)
 	str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' team=%d", ClientID, Server()->ClientName(ClientID), m_apPlayers[ClientID]->GetTeam());
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
-	if(m_pController->IsCatching())
-		m_apPlayers[ClientId]->m_Colorassign = Server()->TickSpeed() * 30; // und nachher m_Colorassign herunterzaehlen... ist doch Schwachsinn, nimm gleich den Tick // Niemals
-	if(m_pController->IsZCatch())
-	{
-		int LeaderId = m_pController->GetLeaderID();
-		if(LeaderId > -1 && LeaderId != ClientId)
-		{
-			m_apPlayers[ClientId]->m_CaughtBy = LeaderId;
-			m_apPlayers[ClientId]->m_IsJoined = false;
-		}
-		else
-		{
-			m_apPlayers[ClientId]->m_CaughtBy = -1;
-			m_apPlayers[ClientId]->m_IsJoined = true;
-		}
-	}
 	m_VoteUpdate = true;
 }
 
@@ -621,36 +591,17 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		
 		pPlayer->m_LastChat = Server()->Tick();
 
-		if(m_pController->IsCatching())
+		// check for invalid chars
+		unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
+		while (*pMessage)
 		{
-			bool DisplayChat = ChatCommandsCatching(ClientId, p, pMsg);
-			if(DisplayChat && p->GetTeam() != -1 && Team != CGameContext::CHAT_ALL)
-			{
-				for(int i = 0; i < MAX_CLIENTS; i++)
-				{
-					if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_CatchingTeam == p->m_CatchingTeam)
-					{
-						SendChatTarget(i, pMsg->m_pMessage, ClientId, 1);
-					}
-				}
-			}
-			else if(DisplayChat)
-			{
-				// check for invalid chars
-				unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
-				while (*pMessage)
-				{
-					if(*pMessage < 32)
-						*pMessage = ' ';
-					pMessage++;
-				}
-			
-				SendChat(ClientId, Team, pMsg->m_pMessage);
-			}
+			if(*pMessage < 32)
+				*pMessage = ' ';
+			pMessage++;
 		}
 		
 		SendChat(ClientID, Team, pMsg->m_pMessage);
-		else if(m_pController->IsZCatch() && !str_comp_num(pMsg->m_pMessage, "/", 1))		{			ChatCommandsZCatch(ClientId, p, pMsg);		}		else		{			// check for invalid chars			unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;			while (*pMessage)			{				if(*pMessage < 32)					*pMessage = ' ';				pMessage++;			}						SendChat(ClientId, Team, pMsg->m_pMessage);		}	}
+	}
 	else if(MsgID == NETMSGTYPE_CL_CALLVOTE)
 	{
 		if(g_Config.m_SvSpamprotection && pPlayer->m_LastVoteTry && pPlayer->m_LastVoteTry+Server()->TickSpeed()*3 > Server()->Tick())
@@ -831,17 +782,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				if(pPlayer->GetTeam() == TEAM_SPECTATORS || pMsg->m_Team == TEAM_SPECTATORS)
 					m_VoteUpdate = true;
 				pPlayer->SetTeam(pMsg->m_Team);
-				if(pMsg->m_Team == -1)
-					p->m_IsJoined = false;
-				else
-				{
-					int NumPlayers = 0;
-					for(int i = 0; i < MAX_CLIENTS; i++)
-					{
-						if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->m_IsJoined)
-							NumPlayers++;
-					}
-				}
 				(void)m_pController->CheckTeamBalance();
 			}
 			else
@@ -1007,16 +947,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 	{
 		if(pPlayer->m_LastKill && pPlayer->m_LastKill+Server()->TickSpeed()*3 > Server()->Tick())
 			return;
-		if(m_pController->IsCatching())		{			SendChatTarget(ClientId, "You can not kill yourself");			SendBroadcast("You can not kill yourself", ClientId);			/*if(m_apPlayers[ClientId]) // Crashpoint			{				GetPlayerChar(ClientId)->CreateDieExplosion(false);			}*/		}		else		{			if(p->m_Last_Kill && p->m_Last_Kill+Server()->TickSpeed()*3 > Server()->Tick())				return;		
-			pPlayer->m_LastKill = Server()->Tick();
-			pPlayer->KillCharacter(WEAPON_SELF);
-			p->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*3;
-		}
-	}
-	else if(m_pController->IsCatching() && MsgId == NETMSGTYPE_CL_ISCATCH)
-	{
-		p->m_IsUsingCatchClient = true;
-		dbg_msg("Catch", "Client 1");
+		
+		pPlayer->m_LastKill = Server()->Tick();
+		pPlayer->KillCharacter(WEAPON_SELF);
 	}
 }
 
@@ -1139,7 +1072,9 @@ void CGameContext::ConAddVote(IConsole::IResult *pResult, void *pUserData)
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 		return;
 	}
-	if(str_length(pDescription) >= VOTE_DESC_LENGTH)
+	while(*pDescription && *pDescription == ' ')
+		pDescription++;
+	if(str_length(pDescription) >= VOTE_DESC_LENGTH || *pDescription == 0)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "skipped invalid option '%s'", pDescription);
@@ -1206,6 +1141,11 @@ void CGameContext::ConRemoveVote(IConsole::IResult *pResult, void *pUserData)
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 		return;
 	}
+
+	// inform clients about removed option
+	CNetMsg_Sv_VoteOptionRemove OptionMsg;
+	OptionMsg.m_pDescription = pOption->m_aDescription;
+	pSelf->Server()->SendPackMsg(&OptionMsg, MSGFLAG_VITAL, -1);
 	
 	// TODO: improve this
 	// remove the option
@@ -1244,11 +1184,6 @@ void CGameContext::ConRemoveVote(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_pVoteOptionFirst = pVoteOptionFirst;
 	pSelf->m_pVoteOptionLast = pVoteOptionLast;
 	pSelf->m_NumVoteOptions = NumVoteOptions;
-
-	// inform clients about removed option
-	CNetMsg_Sv_VoteOptionRemove OptionMsg;
-	OptionMsg.m_pDescription = pOption->m_aDescription;
-	pSelf->Server()->SendPackMsg(&OptionMsg, MSGFLAG_VITAL, -1);
 }
 
 void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
@@ -1357,59 +1292,6 @@ void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *p
 	}
 }
 
-void CGameContext::ConPause(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->m_World.m_Paused ^= 1;
-
-	if(pSelf->m_World.m_Paused)
-		pSelf->SendChat(-1, CGameContext::CHAT_ALL, "Game paused by admin");
-	else
-		pSelf->SendChat(-1, CGameContext::CHAT_ALL, "Game continued by admin");
-}
-
-void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	int CID1 = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
-	int CID2 = clamp(pResult->GetInteger(1), 0, (int)MAX_CLIENTS-1);
-	if(pSelf->m_apPlayers[CID1] && pSelf->m_apPlayers[CID2])
-	{
-		CCharacter* pChr = pSelf->GetPlayerChar(CID1);
-		if(pChr)
-			pChr->m_Core.m_Pos = pSelf->m_apPlayers[CID2]->m_ViewPos;
-		else
-			pSelf->m_apPlayers[CID1]->m_ViewPos = pSelf->m_apPlayers[CID2]->m_ViewPos;
-	}
-}
-
-void CGameContext::ConTeleportTo(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	int CID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
-	if(pSelf->m_apPlayers[CID])
-	{
-		CCharacter* pChr = pSelf->GetPlayerChar(CID);
-		vec2 TelePos = vec2(pResult->GetInteger(1), pResult->GetInteger(2));
-		if(pChr)
-			pChr->m_Core.m_Pos = TelePos;
-		else
-			pSelf->m_apPlayers[CID]->m_ViewPos = TelePos;
-	}
-}
-
-void CGameContext::ConGetPos(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	int CID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
-	if(pSelf->m_apPlayers[CID])
-	{
-		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "%s Position (X, Y): %d, %d", pSelf->Server()->ClientName(CID), (int)pSelf->m_apPlayers[CID]->m_ViewPos.x, (int)pSelf->m_apPlayers[CID]->m_ViewPos.y);
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
-	}
-}
-
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1433,13 +1315,6 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "");
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
-
-	// Catching commands
-	Console()->Register("pause", "", CFGFLAG_SERVER, ConPause, this, "");
-	Console()->Register("teleport", "ii", CFGFLAG_SERVER, ConTeleport, this, "");
-	Console()->Register("teleport_to", "iii", CFGFLAG_SERVER, ConTeleportTo, this, "");
-	Console()->Register("get_pos", "i", CFGFLAG_SERVER, ConGetPos, this, "");
-
 }
 
 void CGameContext::OnInit(/*class IKernel *pKernel*/)
@@ -1463,12 +1338,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//players = new CPlayer[MAX_CLIENTS];
 
 	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "catch") == 0 ||
-		str_comp(g_Config.m_SvGametype, "catching") == 0)
-		m_pController = new CGameControllerCatching(this);
-	else if(str_comp(g_Config.m_SvGametype, "zcatch") == 0)
-		m_pController = new CGameControllerZCatch(this);
-	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
+	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);
@@ -1476,7 +1346,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		m_pController = new CGameControllerTDM(this);
 	else
 		m_pController = new CGameControllerDM(this);
-
 
 	// setup core world
 	//for(int i = 0; i < MAX_CLIENTS; i++)
@@ -1530,7 +1399,7 @@ void CGameContext::OnShutdown()
 }
 
 void CGameContext::OnSnap(int ClientID)
-int CmaskCatch(CGameContext *pGameServer, int Owner){	int Mask = 0;	if(!pGameServer->m_pController->JoiningSystem())		return -1;	for(int i = 0; i < MAX_CLIENTS; i++)	{		if(pGameServer->m_apPlayers[i] && (!pGameServer->m_apPlayers[i]->m_IsJoined || (pGameServer->m_apPlayers[Owner] && pGameServer->m_apPlayers[Owner]->m_IsJoined && pGameServer->m_apPlayers[i]->m_IsJoined) || i == Owner))			Mask = Mask|(1<<i);	}	return Mask;}int CmaskPickup(CGameContext *pGameServer, int Team){	int Mask = 0;	for(int i = 0; i < MAX_CLIENTS; i++)	{		if(!pGameServer->m_apPlayers[i])			continue;					if(pGameServer->m_apPlayers[i]->m_IsJoined)			Mask = Mask|(1<<i);	}		if(Team)		return Mask;	else		return ~Mask;}void CGameContext::OnSnap(int ClientId){
+{
 	m_World.Snap(ClientID);
 	m_pController->Snap(ClientID);
 	m_Events.Snap(ClientID);

@@ -239,7 +239,9 @@ public:
 	class CMotd *m_pMotd;
 	class CMapImages *m_pMapimages;
 	class CVoting *m_pVoting;
-	class CScoreboard *m_pScoreboard;	class CColorboard *m_pColorboard;	bool m_IsCatch;	bool m_CatchMsgSent;};
+	class CScoreboard *m_pScoreboard;
+	class CItems *m_pItems;
+};
 
 
 inline float HueToRgb(float v1, float v2, float h)

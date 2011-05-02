@@ -49,7 +49,6 @@
 #include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/voting.h"
-#include "components/colorboard.h"
 
 CGameClient g_GameClient;
 
@@ -75,7 +74,7 @@ static CSounds gs_Sounds;
 static CEmoticon gs_Emoticon;
 static CDamageInd gsDamageInd;
 static CVoting gs_Voting;
-static CSpectator gs_Spectator;static CColorboard gs_Colorboard;
+static CSpectator gs_Spectator;
 
 static CPlayers gs_Players;
 static CNamePlates gs_NamePlates;
@@ -136,7 +135,9 @@ void CGameClient::OnConsoleInit()
 	m_pDamageind = &::gsDamageInd;
 	m_pMapimages = &::gs_MapImages;
 	m_pVoting = &::gs_Voting;
-	m_pScoreboard = &::gs_Scoreboard;	m_pColorboard = &::gs_Colorboard;	
+	m_pScoreboard = &::gs_Scoreboard;
+	m_pItems = &::gs_Items;
+	
 	// make a list of all the systems, make sure to add them in the corrent render order
 	m_All.Add(m_pSkins);
 	m_All.Add(m_pCountryFlags);
@@ -152,7 +153,7 @@ void CGameClient::OnConsoleInit()
 	
 	m_All.Add(&gs_MapLayersBackGround); // first to render
 	m_All.Add(&m_pParticles->m_RenderTrail);
-	m_All.Add(&gs_Items);
+	m_All.Add(m_pItems);
 	m_All.Add(&gs_Players);
 	m_All.Add(&gs_MapLayersForeGround);
 	m_All.Add(&m_pParticles->m_RenderExplosions);
@@ -170,7 +171,6 @@ void CGameClient::OnConsoleInit()
 	m_All.Add(m_pMotd);
 	m_All.Add(m_pMenus);
 	m_All.Add(m_pGameConsole);
-	m_All.Add(m_pColorboard);
 	
 	// build the input stack
 	m_Input.Add(&m_pMenus->m_Binder); // this will take over all input when we want to bind a key
@@ -478,30 +478,24 @@ void CGameClient::OnRelease()
 
 void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 {
-	
 	// special messages
 	if(MsgId == NETMSGTYPE_SV_EXTRAPROJECTILE)
 	{
-		/*
-		int num = msg_unpack_int();
+		int Num = pUnpacker->GetInt();
 		
-		for(int k = 0; k < num; k++)
+		for(int k = 0; k < Num; k++)
 		{
-			NETOBJ_PROJECTILE proj;
-			for(unsigned i = 0; i < sizeof(NETOBJ_PROJECTILE)/sizeof(int); i++)
-				((int *)&proj)[i] = msg_unpack_int();
+			CNetObj_Projectile Proj;
+			for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+				((int *)&Proj)[i] = pUnpacker->GetInt();
 				
-			if(msg_unpack_error())
+			if(pUnpacker->Error())
 				return;
-				
-			if(extraproj_num != MAX_EXTRA_PROJECTILES)
-			{
-				extraproj_projectiles[extraproj_num] = proj;
-				extraproj_num++;
-			}
+			
+			g_GameClient.m_pItems->AddExtraProjectile(&Proj);
 		}
 		
-		return;*/
+		return;
 	}
 	else if(MsgId == NETMSGTYPE_SV_TUNEPARAMS)
 	{
@@ -842,7 +836,7 @@ void CGameClient::OnNewSnapshot()
 	// update friend state
 	for(int i = 0; i < MAX_CLIENTS; ++i)
 	{
-		if(i == m_Snap.m_LocalClientID || !m_Snap.m_paPlayerInfos[i] || !Friends()->IsFriend(m_aClients[i].m_aName, m_aClients[i].m_aClan))
+		if(i == m_Snap.m_LocalClientID || !m_Snap.m_paPlayerInfos[i] || !Friends()->IsFriend(m_aClients[i].m_aName, m_aClients[i].m_aClan, true))
 			m_aClients[i].m_Friend = false;
 		else
 			m_aClients[i].m_Friend = true;
@@ -875,25 +869,6 @@ void CGameClient::OnNewSnapshot()
 		else
 			m_ServerMode = SERVERMODE_PUREMOD;
 	}
-	// send Catch msg
-	if(m_Snap.m_pGameobj)
-	{
-		CServerInfo CurrentServerInfo;
-		Client()->GetServerInfo(&CurrentServerInfo);
-		if(str_find_nocase(CurrentServerInfo.m_aGameType, "Catch"))
-		{
-			m_IsCatch = true;
-			if(!m_CatchMsgSent)
-			{
-				CNetMsg_Cl_IsCatch Msg;
-				Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
-				m_CatchMsgSent = true;
-				dbg_msg("ClientInfo", "Catching Server");
-			}
-		}
-	}
-	//dbg_msg("Point", "+A");
-	
 
 }
 

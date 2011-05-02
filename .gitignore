@@ -3,30 +3,20 @@ bam
 config.lua
 datasrc/__pycache__
 datasrc/*.pyc
-freetype*.dll
-objssrc/game/generated
+objs
+src/game/generated
 SDL.dll
+freetype.dll
 autoexec.cfg
-/teeworlds_catching_d
-/teeworlds_catching_srv_d
-/client_release.bat
-/config_directory.bat
-/server_debug.bat
-/server_release.bat
-/server_release-debug.bat
-/autoexec.cfg
-/-c all.bat
-/Catching/Catching.sdf
-/Catching/Catching.suo
-/data/editor/stuff
 
 crapnet*
 dilate*
 fake_server*
 map_resave*
+map_version*
 mastersrv*
 packetgen*
 teeworlds*
-teeworlds_catching_srv*
+teeworlds_srv*
 tileset_borderfix*
 versionsrv*

@@ -26,5 +26,4 @@ public:
 extern IStorage *CreateStorage(const char *pApplicationName, int NumArgs, const char **ppArguments);
 
 
-
 #endif

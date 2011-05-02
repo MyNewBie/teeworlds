@@ -1,11 +1,8 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-
-#include <engine/shared/config.h>
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
 #include "projectile.h"
-#include <game/server/entities/pickup.h>
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon)
@@ -67,54 +64,21 @@ void CProjectile::Tick()
 	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, 0);
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
-	CPlayer *pOwner = GameServer()->m_apPlayers[m_Owner];
-	CPlayer *pTarget;
-	if(TargetChr)
-		pTarget = TargetChr->GetPlayer();
 
 	m_LifeSpan--;
 	
 	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
 	{
-		
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
-		{
-			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
-				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
-				GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatch(GameServer(), m_Owner));
-		}
+			GameServer()->CreateSound(CurPos, m_SoundImpact);
 
 		if(m_Explosive)
-		{
-			if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
-				!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
-				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
-		}
+			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
 			
 		else if(TargetChr)
-		{
-			if((GameServer()->m_pController->JoiningSystem() && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
-				!GameServer()->m_pController->JoiningSystem())
-				TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
-			else
-				return;
-		}
+			TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
 
-		//CPickup *pPickup = new CPickup(&GameServer()->m_World, POWERUP_HEALTH, 0);
-		//pPickup->m_Pos = PrevPos;
-		if((GameServer()->m_pController->JoiningSystem() && TargetChr && GameServer()->m_pController->CheckJoined(pTarget, pOwner)) ||
-			!GameServer()->m_pController->JoiningSystem() || (GameServer()->m_pController->JoiningSystem() && !TargetChr))
-			GameServer()->m_World.DestroyEntity(this);
-	}
-
-	int z = GameServer()->Collision()->IsTeleport(GameServer()->Collision()->GetIndex(PrevPos, CurPos));
-  	if(g_Config.m_SvTeleport && z)
-  	{
-		if(g_Config.m_SvTeleportGrenade && m_Weapon == WEAPON_GRENADE)
-		{
- 			m_Pos = (GameServer()->m_pController)->m_pTeleporter[z-1];
-  			m_StartTick = Server()->Tick();
-		}
+		GameServer()->m_World.DestroyEntity(this);
 	}
 }
 
@@ -133,8 +97,6 @@ void CProjectile::Snap(int SnappingClient)
 	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
 	
 	if(NetworkClipped(SnappingClient, GetPos(Ct)))
-		return;
-	if(GameServer()->m_pController->JoiningSystem() && !GameServer()->m_apPlayers[m_Owner]->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
 		return;
 
 	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_ID, sizeof(CNetObj_Projectile)));

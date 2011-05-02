@@ -14,7 +14,7 @@ Address
 == Adres
 
 All
-== Wszystki
+== Wszyscy
 
 Alpha
 == Alfa
@@ -350,7 +350,7 @@ Server details
 == Szczegóły serwera
 
 Server info
-== Informacje o serwerze
+== Server info
 
 Server not full
 == Nie pokazuj pełnych
@@ -480,6 +480,9 @@ Your skin
 %i seconds left
 == 
 
+%s wins!
+== 
+
 -Page %d-
 == 
 
@@ -567,19 +570,13 @@ Netversion:
 New name:
 == 
 
-Next
-== 
-
-Page %d of %d
-== 
-
 Parent Folder
 == 
 
 Player options
 == 
 
-Prev
+Quit anyway?
 == 
 
 REC %3d:%02d
@@ -630,7 +627,7 @@ Stop record
 The audio device couldn't be initialised.
 == 
 
-There's an unsaved map in the editor, you might want to save it before you quit the game.\nQuit anyway?
+There's an unsaved map in the editor, you might want to save it before you quit the game.
 == 
 
 Time limit: %d min

@@ -1,8 +1,6 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <new>
-#include <stdio.h>
-#include <string.h>
 #include <engine/shared/config.h>
 #include <game/server/gamecontext.h>
 #include <game/mapitems.h>
@@ -10,7 +8,6 @@
 #include "character.h"
 #include "laser.h"
 #include "projectile.h"
-#include "moving.h"
 
 //input count
 struct CInputCount
@@ -59,22 +56,12 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 {
 	m_EmoteStop = -1;
 	m_LastAction = -1;
-
 	m_ActiveWeapon = WEAPON_GUN;
 	m_LastWeapon = WEAPON_HAMMER;
 	m_QueuedWeapon = -1;
 	
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
-	m_PrevPos = Pos;
-	m_ShieldID = Server()->SnapNewID();
-	m_Visible = true;
-
-	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == -1)
-	{
-		m_pPlayer->m_CatchingTeam = m_pPlayer->m_BaseCatchingTeam;
-		GameServer()->m_pController->OnPlayerInfoChange(m_pPlayer);
-	}
 	
 	m_Core.Reset();
 	m_Core.Init(&GameServer()->m_World.m_Core, GameServer()->Collision());
@@ -87,8 +74,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	
 	GameServer()->m_World.InsertEntity(this);
 	m_Alive = true;
-
-	m_LastSpeedup = -1;
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
 
@@ -109,7 +94,7 @@ void CCharacter::SetWeapon(int W)
 	m_LastWeapon = m_ActiveWeapon;
 	m_QueuedWeapon = -1;
 	m_ActiveWeapon = W;
-	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH);
 	
 	if(m_ActiveWeapon < 0 || m_ActiveWeapon >= NUM_WEAPONS)
 		m_ActiveWeapon = 0;
@@ -193,7 +178,7 @@ void CCharacter::HandleNinja()
 					continue;
 
 				// Hit a player, give him damage and stuffs...
-				GameServer()->CreateSound(aEnts[i]->m_Pos, SOUND_NINJA_HIT, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+				GameServer()->CreateSound(aEnts[i]->m_Pos, SOUND_NINJA_HIT);
 				// set his velocity to fast upward (for now)
 				if(m_NumObjectsHit < 10)
 					m_apHitObjects[m_NumObjectsHit++] = aEnts[i];
@@ -212,8 +197,6 @@ void CCharacter::HandleNinja()
 void CCharacter::DoWeaponSwitch()
 {
 	// make sure we can switch
-	if(GameServer()->m_pController->IsZCatch() && (!m_pPlayer->m_IsJoined || g_Config.m_SvInstagib))
-		return;
 	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_aWeapons[WEAPON_NINJA].m_Got)
 		return;
 
@@ -291,7 +274,7 @@ void CCharacter::FireWeapon()
 	{
 		// 125ms is a magical limit of how fast a human can click
 		m_ReloadTimer = 125 * Server()->TickSpeed() / 1000;
-		GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+		GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
 		return;
 	}
 	
@@ -303,7 +286,7 @@ void CCharacter::FireWeapon()
 		{
 			// reset objects Hit
 			m_NumObjectsHit = 0;
-			GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE);
 			
 			CCharacter *apEnts[MAX_CLIENTS];
 			int Hits = 0;
@@ -322,8 +305,7 @@ void CCharacter::FireWeapon()
 					GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*m_ProximityRadius*0.5f);
 				else
 					GameServer()->CreateHammerHit(ProjStartPos);
-
-				if((GameServer()->m_pController->JoiningSystem() &&					((Target->GetPlayer()->m_IsJoined && m_pPlayer->m_IsJoined) ||					(!Target->GetPlayer()->m_IsJoined && !m_pPlayer->m_IsJoined))) ||					!GameServer()->m_pController->JoiningSystem())				{					GameServer()->CreateHammerHit(m_Pos, Target->GetPlayer()->GetCID());					aEnts[i]->TakeDamage(vec2(0.f, -1.f), g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage, m_pPlayer->GetCID(), m_ActiveWeapon);				}				
+				
 				vec2 Dir;
 				if (length(pTarget->m_Pos - m_Pos) > 0.0f)
 					Dir = normalize(pTarget->m_Pos - m_Pos);
@@ -332,7 +314,7 @@ void CCharacter::FireWeapon()
 					
 				pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
 					m_pPlayer->GetCID(), m_ActiveWeapon);
-								if((GameServer()->m_pController->IsCatching() &&					((Target->GetPlayer()->m_IsJoined && m_pPlayer->m_IsJoined) ||					(!Target->GetPlayer()->m_IsJoined && !m_pPlayer->m_IsJoined))) ||					!GameServer()->m_pController->IsCatching())					Target->m_Core.m_Vel += normalize(Dir + vec2(0.f, -1.1f)) * 10.0f;				Hits++;
+				Hits++;
 			}
 			
 			// if we Hit anything, we have to wait for the reload
@@ -361,7 +343,7 @@ void CCharacter::FireWeapon()
 				
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 	
-			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
 		
 		case WEAPON_SHOTGUN:
@@ -395,7 +377,7 @@ void CCharacter::FireWeapon()
 
 			Server()->SendMsg(&Msg, 0,m_pPlayer->GetCID());					
 			
-			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
 		} break;
 
 		case WEAPON_GRENADE:
@@ -417,13 +399,13 @@ void CCharacter::FireWeapon()
 				Msg.AddInt(((int *)&p)[i]);
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			
-			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
 		
 		case WEAPON_RIFLE:
 		{
 			new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
 		
 		case WEAPON_NINJA:
@@ -435,7 +417,7 @@ void CCharacter::FireWeapon()
 			m_Ninja.m_CurrentMoveTime = g_pData->m_Weapons.m_Ninja.m_Movetime * Server()->TickSpeed() / 1000;
 			m_Ninja.m_OldVelAmount = length(m_Core.m_Vel);
 
-			GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+			GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE);
 		} break;
 		
 	}
@@ -505,17 +487,13 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 
 void CCharacter::GiveNinja()
 {
-	if(GameServer()->m_pController->IsCatching())
-		/*CMoving *pMoving = */new CMoving(&GameServer()->m_World, m_pPlayer->GetCID(), m_Pos, POWERUP_HEALTH, 0);
-	else
-	{
-		m_Ninja.m_ActivationTick = Server()->Tick();
-		m_aWeapons[WEAPON_NINJA].m_Got = true;
-		m_aWeapons[WEAPON_NINJA].m_Ammo = -1;
-		m_LastWeapon = m_ActiveWeapon;
-		m_ActiveWeapon = WEAPON_NINJA;
-	}
-	GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+	m_Ninja.m_ActivationTick = Server()->Tick();
+	m_aWeapons[WEAPON_NINJA].m_Got = true;
+	m_aWeapons[WEAPON_NINJA].m_Ammo = -1;
+	m_LastWeapon = m_ActiveWeapon;
+	m_ActiveWeapon = WEAPON_NINJA;
+	
+	GameServer()->CreateSound(m_Pos, SOUND_PICKUP_NINJA);
 }
 
 void CCharacter::SetEmote(int Emote, int Tick)
@@ -564,99 +542,10 @@ void CCharacter::Tick()
 		m_pPlayer->m_ForceBalanced = false;
 	}
 
-	// save jumping state
-	int Jumped = m_Core.m_Jumped;
-
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 	
-	if(!m_Core.m_Joined && m_pPlayer->m_IsJoined)
-		m_Core.m_Joined = true;
-	else if(m_Core.m_Joined && !m_pPlayer->m_IsJoined)
-		m_Core.m_Joined = false;
-	
-	// handle tiles
-	if(GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch())
-	{
-		// tile index
-		int TileIndex = GameServer()->Collision()->GetIndex(m_PrevPos, m_Pos);
-	
-		if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPL)
-		{
-			if(m_Core.m_Vel.x > 0)
-			{
-				if((int)GameServer()->Collision()->GetPos(TileIndex).x < (int)m_Core.m_Pos.x)
-					m_Core.m_Pos.x = m_PrevPos.x;
-				m_Core.m_Vel.x = 0;
-			}
-		}
-		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPR)
-		{
-			if(m_Core.m_Vel.x < 0)
-			{
-				if((int)GameServer()->Collision()->GetPos(TileIndex).x > (int)m_Core.m_Pos.x)
-					m_Core.m_Pos.x = m_PrevPos.x;
-				m_Core.m_Vel.x = 0;
-			}
-		}
-		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPB)
-		{
-			if(m_Core.m_Vel.y < 0)
-			{
-				if((int)GameServer()->Collision()->GetPos(TileIndex).y > (int)m_Core.m_Pos.y)
-					m_Core.m_Pos.y = m_PrevPos.y;
-				m_Core.m_Vel.y = 0;
-			}
-		}
-		else if(GameServer()->Collision()->GetCollisionIndex(TileIndex) == TILE_STOPT)
-		{
-			if(m_Core.m_Vel.y > 0)
-			{
-				if((int)GameServer()->Collision()->GetPos(TileIndex).y < (int)m_Core.m_Pos.y)
-					m_Core.m_Pos.y = m_PrevPos.y;
-				if(Jumped&3 && m_Core.m_Jumped != Jumped) // check double jump
-					m_Core.m_Jumped = Jumped;
-				m_Core.m_Vel.y = 0;
-			}
-		}
-	
-		// handle speedup tiles
-		int CurrentSpeedup = GameServer()->Collision()->IsSpeedup(TileIndex);
-		if(m_LastSpeedup != CurrentSpeedup && CurrentSpeedup > -1)
-		{
-			vec2 Direction;
-			int Force;
-			GameServer()->Collision()->GetSpeedup(TileIndex, &Direction, &Force);
-		
-			m_Core.m_Vel += Direction*Force;
-		}
-	
-		m_LastSpeedup = CurrentSpeedup;
-	
-		// handle teleporter
-		int z = GameServer()->Collision()->IsTeleport(TileIndex);
-		if(g_Config.m_SvTeleport && z)
-		{
-			m_Core.m_HookedPlayer = -1;
-			m_Core.m_HookState = HOOK_RETRACTED;
-			m_Core.m_TriggeredEvents |= COREEVENT_HOOK_RETRACT;
-			m_Core.m_HookState = HOOK_RETRACTED;
-			m_Core.m_Pos = (GameServer()->m_pController)->m_pTeleporter[z-1];
-			m_Core.m_HookPos = m_Core.m_Pos;
-			//Resetting velocity to prevent exploit
-			if(g_Config.m_SvTeleportVelReset)
-				m_Core.m_Vel = vec2(0,0);
-		}
-
-		if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Pos))
-		{
-			m_Visible = true;
-		}
-		if(GameServer()->Collision()->IsHideTile(m_Pos))
-		{
-			m_Visible = false;
-		}
-	}
+	// handle death-tiles and leaving gamelayer
 	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
@@ -671,8 +560,6 @@ void CCharacter::Tick()
 
 	// Previnput
 	m_PrevInput = m_Input;
-
-	m_PrevPos = m_Core.m_Pos;
 	return;
 }
 
@@ -725,16 +612,11 @@ void CCharacter::TickDefered()
 	}
 
 	int Events = m_Core.m_TriggeredEvents;
-	int Mask = ~(CmaskCatch(GameServer(), m_pPlayer->GetCID())^CmaskAllExceptOne(m_pPlayer->GetCID()));
+	int Mask = CmaskAllExceptOne(m_pPlayer->GetCID());
 	
 	if(Events&COREEVENT_GROUND_JUMP) GameServer()->CreateSound(m_Pos, SOUND_PLAYER_JUMP, Mask);
 	
-	if(Events&COREEVENT_HOOK_ATTACH_PLAYER)
-	{
-		if(g_Config.m_SvHookDamage)
-			GameServer()->CreateExplosion(m_Core.m_HookPos, m_pPlayer->GetCID(), WEAPON_HOOK, false);
-		GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_PLAYER, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
-	}
+	if(Events&COREEVENT_HOOK_ATTACH_PLAYER) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_PLAYER, CmaskAll());
 	if(Events&COREEVENT_HOOK_ATTACH_GROUND) GameServer()->CreateSound(m_Pos, SOUND_HOOK_ATTACH_GROUND, Mask);
 	if(Events&COREEVENT_HOOK_HIT_NOHOOK) GameServer()->CreateSound(m_Pos, SOUND_HOOK_NOATTACH, Mask);
 
@@ -794,101 +676,30 @@ void CCharacter::Die(int Killer, int Weapon)
 
 	// send the kill message
 	CNetMsg_Sv_KillMsg Msg;
-	if(!m_pPlayer->m_IsJoined)
-	{
-		Msg.m_Killer = Killer;
-		Msg.m_Victim = m_pPlayer->GetCID();
-		Msg.m_Weapon = Weapon;
-		Msg.m_ModeSpecial = ModeSpecial;
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
-	}
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		if(GameServer()->m_apPlayers[i])
-		{
-			if(!GameServer()->m_apPlayers[i]->m_IsUsingCatchClient && (Weapon == WEAPON_POWERUP || Weapon == WEAPON_HOOK))
-				Msg.m_Weapon = WEAPON_GAME;
-		}
-	}
+	Msg.m_Killer = Killer;
+	Msg.m_Victim = m_pPlayer->GetCID();
+	Msg.m_Weapon = Weapon;
+	Msg.m_ModeSpecial = ModeSpecial;
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 
 	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 	
-	if(!GameServer()->m_pController->JoiningSystem() || (Weapon == WEAPON_GAME || Weapon == WEAPON_WORLD) || !m_pPlayer->m_IsJoined)
-	{
-		// this is for auto respawn after 3 secs
-		m_pPlayer->m_DieTick = Server()->Tick();
-		
-		m_Alive = false;
-		GameServer()->m_World.RemoveEntity(this);
-		GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	// this is for auto respawn after 3 secs
+	m_pPlayer->m_DieTick = Server()->Tick();
 	
-		// we got to wait 0.5 secs before respawning
-		m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
-		return;
-	}
-}
-
-void CCharacter::CreateDieExplosion(bool refill)
-{
-	int o = 50;
-	int d = 35;
-	GameServer()->CreateExplosion(m_Pos, m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(o, 0), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(-o, 0), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(0, o), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(0, -o), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(d, d), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(-d, d), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(d, -d), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateExplosion(m_Pos + vec2(-d, -d), m_pPlayer->GetCID(), WEAPON_SELF, true);
-	GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
-	GameServer()->CreateDeath(m_Pos, -1, m_pPlayer->GetCID());
-	GameServer()->CreateDeath(m_Pos + vec2(d, 0), -1, m_pPlayer->GetCID());
-	GameServer()->CreateDeath(m_Pos + vec2(-d, 0), -1, m_pPlayer->GetCID());
-	GameServer()->CreateDeath(m_Pos + vec2(0, d), -1, m_pPlayer->GetCID());
-	GameServer()->CreateDeath(m_Pos + vec2(0, -d), -1, m_pPlayer->GetCID());
-	GameServer()->CreatePlayerSpawn(m_Pos, m_pPlayer->GetCID());
-
-	if(refill)
-	{
-		IncreaseHealth(10);
-		//IncreaseArmor(10);
-	}
-}
-void CCharacter::ChangeTeam(int ClientId, int Killer, int OldTeam, int NewTeam)
-{
-	dbg_msg("Teamchange", "Player %d: Old Team: %d  ->  New Team: %d: Killer %d", ClientId, OldTeam, NewTeam, Killer);
-	GameServer()->m_apPlayers[ClientId]->m_PrevCatchingTeam = GameServer()->m_apPlayers[ClientId]->m_CatchingTeam;
-	GameServer()->m_apPlayers[ClientId]->m_CatchingTeam = NewTeam;
-	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[ClientId]);
-	
+	m_Alive = false;
+	GameServer()->m_World.RemoveEntity(this);
+	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 }
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
 	m_Core.m_Vel += Force;
 	
-	if(!GameServer()->m_pController->IsCatching() && GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
+	if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
-	if(GameServer()->m_pController->IsCatching() && m_pPlayer->m_CatchingTeam == GameServer()->m_apPlayers[From]->m_CatchingTeam && m_pPlayer->m_IsJoined)
-		return false;
-	if(GameServer()->m_pController->IsCatching() && Weapon == WEAPON_GAME)
-		return false;
-	if(GameServer()->m_pController->JoiningSystem()  && g_Config.m_SvInstagib)
-	{
-		Die(From, Weapon);
-		return true;
-	}
-	if(GameServer()->m_pController->JoiningSystem() && !GameServer()->m_apPlayers[From]->m_IsJoined)
-		return false;
-	if(GameServer()->m_pController->JoiningSystem() && !m_pPlayer->m_IsJoined)
-		return false;
-	
-	// Add Damage
-	if(GameServer()->m_pController->IsCatching() && g_Config.m_SvDamagePoint)
-		GameServer()->m_apPlayers[From]->m_DoesDamage += Dmg;
 
 	// m_pPlayer only inflicts half damage on self
 	if(From == m_pPlayer->GetCID())
@@ -900,12 +711,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	if(Server()->Tick() < m_DamageTakenTick+25)
 	{
 		// make sure that the damage indicators doesn't group together
-		GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg, m_pPlayer->GetCID());
+		GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg);
 	}
 	else
 	{
 		m_DamageTaken = 0;
-		GameServer()->CreateDamageInd(m_Pos, 0, Dmg, m_pPlayer->GetCID());
+		GameServer()->CreateDamageInd(m_Pos, 0, Dmg);
 	}
 
 	if(Dmg)
@@ -936,7 +747,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	m_DamageTakenTick = Server()->Tick();
 
 	// do damage Hit sound
-	if(From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From] && (m_pPlayer->m_IsJoined || (!GameServer()->m_apPlayers[From]->m_IsJoined && !m_pPlayer->m_IsJoined)))
+	if(From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From])
 		GameServer()->CreateSound(GameServer()->m_apPlayers[From]->m_ViewPos, SOUND_HIT, CmaskOne(From));
 
 	// check for death
@@ -959,9 +770,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	}
 
 	if (Dmg > 2)
-		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_LONG, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_LONG);
 	else
-		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_SHORT, CmaskCatch(GameServer(), m_pPlayer->GetCID()));
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_SHORT);
 
 	m_EmoteType = EMOTE_PAIN;
 	m_EmoteStop = Server()->Tick() + 500 * Server()->TickSpeed() / 1000;
@@ -973,39 +784,6 @@ void CCharacter::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient))
 		return;
-
-	if((GameServer()->m_pController->IsCatching() || GameServer()->m_pController->IsZCatch()) && SnappingClient != m_pPlayer->GetCID())
-	{
-		if(GameServer()->m_pController->IsCatching() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && GameServer()->m_apPlayers[SnappingClient]->GetTeam() != -1 && GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam != m_pPlayer->m_CatchingTeam && !m_Visible)
-			return;
-
-		if(GameServer()->m_pController->IsZCatch() && !GameServer()->m_World.m_Paused && g_Config.m_SvHideOuts && GameServer()->m_apPlayers[SnappingClient]->GetTeam() != -1 && !m_Visible)
-			return; // Hideouts for zCatch
-
-		if(!m_pPlayer->m_IsJoined && GameServer()->m_apPlayers[SnappingClient]->m_IsJoined)
-			return;
-	}
-
-	if(GameServer()->m_pController->JoiningSystem())
-	{
-		bool Passed = false;
-		if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (SnappingClient == m_pPlayer->GetCID() && !m_Visible))
-			Passed = true; // Catching: Hideouts Check 1
-		else if(GameServer()->m_pController->IsCatching() && g_Config.m_SvHideOuts && (GameServer()->m_apPlayers[SnappingClient]->m_CatchingTeam == m_pPlayer->m_CatchingTeam && !m_Visible))
-			Passed = true; // Catching: Hideouts Check 2
-		else if(GameServer()->m_pController->IsZCatch() && g_Config.m_SvHideOuts && (SnappingClient == m_pPlayer->GetCID() && !m_Visible))
-			Passed = true; // Hideouts for zCatch
-		else if(!m_pPlayer->m_IsJoined && m_pPlayer->GetTeam() == 0)
-			Passed = true; // Joining System
-		if(Passed)
-		{
-			CNetObj_Pickup *shield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
-			shield->m_X = (int)m_Core.m_Pos.x;
-			shield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
-			shield->m_Type = 1;
-			shield->m_Subtype = 0;
-		}
-	}
 	
 	CNetObj_Character *pCharacter = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, m_pPlayer->GetCID(), sizeof(CNetObj_Character)));
 	if(!pCharacter)
