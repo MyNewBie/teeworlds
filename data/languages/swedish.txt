@@ -25,6 +25,9 @@
 %i seconds left
 == %i sekunder kvar
 
+%s wins!
+== %s vinner!
+
 -Page %d-
 == -Sida %d-
 
@@ -65,7 +68,7 @@ Automatically record demos
 == Spela in demon automatiskt
 
 Automatically take game over screenshot
-== Ta automatiska skärmdumpar vid spelens slut
+== Ta skärmdumpar vid matchslut
 
 Blue team
 == Blå laget
@@ -654,7 +657,19 @@ no limit
 
 ##### needs translation #####
 
-%s wins!
+Demofile: %s
+== 
+
+Play background music
+== 
+
+Spectate next
+== 
+
+Spectate previous
+== 
+
+Strict gametype filter
 == 
 
 ##### old translations #####

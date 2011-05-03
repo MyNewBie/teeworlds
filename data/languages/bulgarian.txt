@@ -346,9 +346,6 @@ New name:
 News
 == Новини
 
-Next
-== Нататък
-
 Next weapon
 == Следващо оръжие
 
@@ -372,9 +369,6 @@ Ok
 
 Open
 == Отвори
-
-Page %d of %d
-== Страница %d/%d
 
 Parent Folder
 == Предишна Папка
@@ -405,9 +399,6 @@ Players
 
 Please balance teams!
 == Моля уравновесете отборите!
-
-Prev
-== Назад
 
 Prev. weapon
 == Пред. оръжие
@@ -666,5 +657,29 @@ no limit
 
 ##### needs translation #####
 
+Demofile: %s
+== 
+
+Play background music
+== 
+
+Spectate next
+== 
+
+Spectate previous
+== 
+
+Strict gametype filter
+== 
+
 ##### old translations #####
+
+Page %d of %d
+== Страница %d/%d
+
+Next
+== Нататък
+
+Prev
+== Назад
 

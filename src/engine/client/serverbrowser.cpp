@@ -86,7 +86,7 @@ bool CServerBrowser::SortCompareName(int Index1, int Index2) const
 	CServerEntry *a = m_ppServerlist[Index1];
 	CServerEntry *b = m_ppServerlist[Index2];
 	//	make sure empty entries are listed last
-	return (a->m_GotInfo && b->m_GotInfo) || (!a->m_GotInfo && !b->m_GotInfo) ?  str_comp(a->m_Info.m_aName, b->m_Info.m_aName) < 0 :
+	return (a->m_GotInfo && b->m_GotInfo) || (!a->m_GotInfo && !b->m_GotInfo) ? str_comp(a->m_Info.m_aName, b->m_Info.m_aName) < 0 :
 			a->m_GotInfo ? true : false;
 }
 
@@ -196,7 +196,9 @@ void CServerBrowser::Filter()
 				Filtered = 1;
 			else if(g_Config.m_BrFilterServerAddress[0] && !str_find_nocase(m_ppServerlist[i]->m_Info.m_aAddress, g_Config.m_BrFilterServerAddress))
 				Filtered = 1;
-			else if(g_Config.m_BrFilterGametype[0] && !str_find_nocase(m_ppServerlist[i]->m_Info.m_aGameType, g_Config.m_BrFilterGametype))
+			else if(g_Config.m_BrFilterGametypeStrict && g_Config.m_BrFilterGametype[0] && str_comp_nocase(m_ppServerlist[i]->m_Info.m_aGameType, g_Config.m_BrFilterGametype))
+				Filtered = 1;
+			else if(!g_Config.m_BrFilterGametypeStrict && g_Config.m_BrFilterGametype[0] && !str_find_nocase(m_ppServerlist[i]->m_Info.m_aGameType, g_Config.m_BrFilterGametype))
 				Filtered = 1;
 			else if(g_Config.m_BrFilterString[0] != 0)
 			{
@@ -252,6 +254,7 @@ int CServerBrowser::SortHash() const
 	i |= g_Config.m_BrFilterCompatversion<<10;
 	i |= g_Config.m_BrFilterPure<<11;
 	i |= g_Config.m_BrFilterPureMap<<12;
+	i |= g_Config.m_BrFilterGametypeStrict<<13;
 	i |= g_Config.m_BrFilterPing<<18;
 	return i;
 }
@@ -535,7 +538,7 @@ void CServerBrowser::RequestImpl(const NETADDR &Addr, CServerEntry *pEntry) cons
 	Packet.m_Flags = NETSENDFLAG_CONNLESS;
 	Packet.m_DataSize = sizeof(Buffer);
 	Packet.m_pData = Buffer;
-	
+
 	m_pNetClient->Send(&Packet);
 
 	if(pEntry)
@@ -659,7 +662,7 @@ void CServerBrowser::AddFavorite(const NETADDR &Addr)
 	if(pEntry)
 		pEntry->m_Info.m_Favorite = 1;
 
-    if(g_Config.m_Debug)
+	if(g_Config.m_Debug)
 	{
 		char aAddrStr[NETADDR_MAXSTRSIZE];
 		net_addr_str(&Addr, aAddrStr, sizeof(aAddrStr));
@@ -705,7 +708,7 @@ int CServerBrowser::LoadingProgression() const
 {
 	if(m_NumServers == 0)
 		return 0;
-	
+
 	int Servers = m_NumServers;
 	int Loaded = m_NumServers-m_NumRequests;
 	return 100.0f * Loaded/Servers;

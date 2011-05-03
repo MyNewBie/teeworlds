@@ -657,5 +657,20 @@ no limit
 
 ##### needs translation #####
 
+Demofile: %s
+== 
+
+Play background music
+== 
+
+Spectate next
+== 
+
+Spectate previous
+== 
+
+Strict gametype filter
+== 
+
 ##### old translations #####
 

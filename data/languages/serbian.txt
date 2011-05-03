@@ -528,6 +528,9 @@ Delete demo
 Demo details
 == 
 
+Demofile: %s
+== 
+
 Folder
 == 
 
@@ -571,6 +574,9 @@ Open
 == 
 
 Parent Folder
+== 
+
+Play background music
 == 
 
 Player options
@@ -618,10 +624,19 @@ Size:
 Sound error
 == 
 
+Spectate next
+== 
+
+Spectate previous
+== 
+
 Spectator mode
 == 
 
 Stop record
+== 
+
+Strict gametype filter
 == 
 
 The audio device couldn't be initialised.
