@@ -13,6 +13,8 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
+#include "gamemodes/catching.h"
+// #include "gamemodes/zcatch.h" // Not supportet yet
 
 enum
 {
@@ -590,6 +592,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			return;
 		
 		pPlayer->m_LastChat = Server()->Tick();
+
+		/* Catching */
+
+		if(m_pController->IsCatching())
+		{
+			SendChatTarget(ClientID, "Is Catching!!!");
+		}
+
+		/* Catching End */
 
 		// check for invalid chars
 		unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
@@ -1338,7 +1349,9 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//players = new CPlayer[MAX_CLIENTS];
 
 	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
+	if(str_comp(g_Config.m_SvGametype, "catch") == 0)
+		m_pController = new CGameControllerCatching(this);
+	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);

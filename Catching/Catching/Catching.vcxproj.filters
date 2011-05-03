@@ -422,6 +422,9 @@
     <ClInclude Include="..\..\src\game\server\gamemodes\ctf.h">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\game\server\gamemodes\catching.h">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\base\system.c">
@@ -746,6 +749,9 @@
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\server\gamemodes\ctf.cpp">
+      <Filter>Quelldateien\game\server\gamemodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\server\gamemodes\catching.cpp">
       <Filter>Quelldateien\game\server\gamemodes</Filter>
     </ClCompile>
   </ItemGroup>

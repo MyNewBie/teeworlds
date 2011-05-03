@@ -27,3 +27,5 @@ exit
 @..\bam\bam server_release
 @echo.
 @pause
+cls
+goto compile
