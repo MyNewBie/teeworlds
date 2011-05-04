@@ -5,7 +5,10 @@
 CGameControllerCatching::CGameControllerCatching(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
-	m_pGameType = "Catch";
+	if(!str_comp(g_Config.m_SvGametype, "icatch"))
+		m_pGameType = "iCatch";
+	else
+		m_pGameType = "Catch";
 }
 
 void CGameControllerCatching::Tick()

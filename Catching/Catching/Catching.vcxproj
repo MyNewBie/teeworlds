@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\src\game\generated\server_data.cpp" />
     <ClCompile Include="..\..\src\game\layers.cpp" />
     <ClCompile Include="..\..\src\game\localization.cpp" />
+    <ClCompile Include="..\..\src\game\server\chatcmd.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\character.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\flag.cpp" />
     <ClCompile Include="..\..\src\game\server\entities\laser.cpp" />

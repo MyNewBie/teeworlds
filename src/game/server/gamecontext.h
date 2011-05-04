@@ -165,6 +165,11 @@ public:
 	virtual const char *GameType();
 	virtual const char *Version();
 	virtual const char *NetVersion();
+
+	/* Catching */
+	virtual bool ChatCommands(int ClientID, CPlayer *pPlayer, const char * Message);
+	//virtual bool ChatCommandsCatching();
+	//virtual bool ChatCommandsZCatch();
 };
 
 inline int CmaskAll() { return -1; }

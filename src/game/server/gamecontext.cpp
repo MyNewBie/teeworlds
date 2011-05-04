@@ -13,6 +13,8 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
+#include "gamemodes/catching.h"
+//#include "gamemodes/zcatch.h" // Not supported yet
 
 enum
 {
@@ -591,16 +593,27 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 		pPlayer->m_LastChat = Server()->Tick();
 
-		// check for invalid chars
-		unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
-		while (*pMessage)
+		/* Catching */
+
+		bool SendToChat = true;
+		if(m_pController->IsCatching()) 
 		{
-			if(*pMessage < 32)
-				*pMessage = ' ';
-			pMessage++;
+			SendToChat = ChatCommands(ClientID, pPlayer, pMsg->m_pMessage);
 		}
 
-		SendChat(ClientID, Team, pMsg->m_pMessage);
+		if(SendToChat)
+		{
+			// check for invalid chars
+			unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
+			while (*pMessage)
+			{
+				if(*pMessage < 32)
+					*pMessage = ' ';
+				pMessage++;
+			}
+
+			SendChat(ClientID, Team, pMsg->m_pMessage);
+		}
 	}
 	else if(MsgID == NETMSGTYPE_CL_CALLVOTE)
 	{
@@ -1338,7 +1351,11 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//players = new CPlayer[MAX_CLIENTS];
 
 	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
+	if(str_comp(g_Config.m_SvGametype, "catch") == 0)
+		m_pController = new CGameControllerCatching(this);
+	else if(str_comp(g_Config.m_SvGametype, "icatch") == 0)
+		m_pController = new CGameControllerCatching(this);
+	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);
