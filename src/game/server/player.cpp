@@ -20,6 +20,13 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_Team = GameServer()->m_pController->ClampTeam(Team);
 	m_SpectatorID = SPEC_FREEVIEW;
 	m_LastActionTick = Server()->Tick();
+
+	/* Catching */
+	m_CurrentTeam = -1;
+	m_PreviousTeam = -1;
+	m_BaseTeam = -1;
+
+	m_Joined = false;
 }
 
 CPlayer::~CPlayer()
@@ -255,4 +262,32 @@ void CPlayer::TryRespawn()
 	Character = new(m_ClientID) CCharacter(&GameServer()->m_World);
 	Character->Spawn(this, SpawnPos);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
+}
+
+/* Catching */
+
+void CPlayer::SetCatchingTeam(int Team)
+{
+	if(Team != -1)
+		Team = clamp(Team, 0, MAX_CLIENTS-1);
+
+
+	if(Team == -1) {
+		// Delete Team
+		m_CurrentTeam = -1;
+		m_PreviousTeam = -1;
+		m_BaseTeam = -1;
+		m_Joined = false;
+	} else if(m_BaseTeam == -1) {
+		// Set Base Team
+		m_BaseTeam = Team;
+		m_CurrentTeam = Team;
+
+		// TODO: Check if player can join:
+		m_Joined = true;
+	} else
+		m_CurrentTeam = Team;
+
+	// Update Player Info (Color)
+	GameServer()->m_pController->OnPlayerInfoChange(this);
 }

@@ -95,6 +95,13 @@ public:
 		int m_Max;
 	} m_Latency;
 
+	/* Catching */
+	void SetCatchingTeam(int Team);
+	int GetCurrentTeam() const { return m_CurrentTeam; };
+	int GetBaseTeam() const { return m_BaseTeam; };
+	int GetPrevTeam() const { return m_PreviousTeam; };
+	bool IsJoined() const { return m_Joined; };
+
 private:
 	CCharacter *Character;
 	CGameContext *m_pGameServer;
@@ -106,6 +113,12 @@ private:
 	bool m_Spawning;
 	int m_ClientID;
 	int m_Team;
+
+	/* Catching */
+	int m_CurrentTeam;
+	int m_PreviousTeam;
+	int m_BaseTeam;
+	bool m_Joined;
 };
 
 #endif

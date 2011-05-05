@@ -4,9 +4,14 @@
 
 class CGameControllerCatching : public IGameController
 {
+private:
 public:
+
 	CGameControllerCatching(class CGameContext *pGameServer);
 	virtual void Tick();
 	virtual bool IsCatching() const;
+	virtual void OnPlayerInfoChange(class CPlayer *pP);
+	virtual TeamStatistics TeamStatistic(int Team = -1);
+	void DoPlayerNumWincheck();
 };
 #endif

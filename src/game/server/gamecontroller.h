@@ -5,6 +5,14 @@
 
 #include <base/vmath.h>
 
+
+struct TeamStatistics {
+	int TeamNum;
+	int PlayerNum;
+	int PlayerJoined;
+	bool IsUsed;
+};
+
 /*
 	Class: Game Controller
 		Controls the main game logic. Keeping track of team and player score,
@@ -146,6 +154,7 @@ public:
 
 	/* Catching */
 	virtual bool IsCatching() const;
+	virtual TeamStatistics TeamStatistic(int Team = -1);
 };
 
 #endif
