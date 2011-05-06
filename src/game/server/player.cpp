@@ -283,8 +283,11 @@ void CPlayer::SetCatchingTeam(int Team)
 		m_BaseTeam = Team;
 		m_CurrentTeam = Team;
 
-		// TODO: Check if player can join:
-		m_Joined = true;
+		TeamStatistics Stat = GameServer()->m_pController->TeamStatistic();
+		if(Stat.PlayerJoined < g_Config.m_SvFreeJoin)
+			m_Joined = true;
+		else
+			return;
 	} else
 		m_CurrentTeam = Team;
 
