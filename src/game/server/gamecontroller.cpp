@@ -771,7 +771,7 @@ bool IGameController::IsCatching() const
 	return false;
 }
 
-TeamStatistics IGameController::TeamStatistic(int Team)
+TeamStatistics IGameController::TeamStatistic(int Team, int BaseColor)
 {
 	TeamStatistics Return = {-1, -1, -1, false};
 	return Return;

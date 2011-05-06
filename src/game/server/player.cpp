@@ -271,7 +271,7 @@ void CPlayer::SetCatchingTeam(int Team)
 	if(Team != -1)
 		Team = clamp(Team, 0, MAX_CLIENTS-1);
 
-
+	bool UpdateInfo = true;
 	if(Team == -1) {
 		// Delete Team
 		m_CurrentTeam = -1;
@@ -282,15 +282,18 @@ void CPlayer::SetCatchingTeam(int Team)
 		// Set Base Team
 		m_BaseTeam = Team;
 		m_CurrentTeam = Team;
+		m_PreviousTeam = Team;
 
-		TeamStatistics Stat = GameServer()->m_pController->TeamStatistic();
-		if(Stat.PlayerJoined < g_Config.m_SvFreeJoin)
+		if(GameServer()->m_pController->GetJoinedPlayers() < g_Config.m_SvFreeJoin)
 			m_Joined = true;
 		else
-			return;
-	} else
+			UpdateInfo = false;
+	} else {
+		m_PreviousTeam = m_CurrentTeam;
 		m_CurrentTeam = Team;
+	}
 
 	// Update Player Info (Color)
-	GameServer()->m_pController->OnPlayerInfoChange(this);
+	if(UpdateInfo)
+		GameServer()->m_pController->OnPlayerInfoChange(this);
 }

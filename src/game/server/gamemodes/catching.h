@@ -11,7 +11,12 @@ public:
 	virtual void Tick();
 	virtual bool IsCatching() const;
 	virtual void OnPlayerInfoChange(class CPlayer *pP);
-	virtual TeamStatistics TeamStatistic(int Team = -1);
+	virtual TeamStatistics TeamStatistic(int Team = -1, int BaseColor = -1);
+		virtual int GetTeamNum();
+		virtual int GetPlayersNum(int Team);
+		virtual int GetJoinedPlayers();
+		virtual bool IsColorUsed(int Color);
+		virtual int GetColorOwner(int BaseColor);
 	void DoPlayerNumWincheck();
 };
 #endif

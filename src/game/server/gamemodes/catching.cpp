@@ -26,19 +26,24 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pP)
 {
 }
 
-TeamStatistics CGameControllerCatching::TeamStatistic(int Team)
+TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 {
 	/*
 		How many teams?
 		How many players per team (int teamid)
 		How many players are joined?
 		Is (Base)Color used?
+		Wich Player(ID) has the Base Color?
 	*/
+
+	if(BaseColor == -1)
+		BaseColor = Team;
 
 	int TeamNum = 0;
 	int PlayerNum = 0;
 	int PlayerJoined = 0;
 	bool IsUsed = false;
+	int PlayerID = -1;
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -57,8 +62,11 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team)
 				PlayerJoined++;
 
 			// Is (Base)Color used
-			if(GameServer()->m_apPlayers[i]->GetBaseTeam() == Team)
+			// Wich Player(ID) has the Base Color
+			if(GameServer()->m_apPlayers[i]->GetBaseTeam() == BaseColor) {
 				IsUsed = true;
+				PlayerID = i;
+			}
 		}
 	}
 	
@@ -66,10 +74,42 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team)
 		TeamNum,
 		PlayerNum,
 		PlayerJoined,
-		IsUsed
+		IsUsed,
+		PlayerID
 	};
 	return Return;
 }
+
+// Single Functions
+	int CGameControllerCatching::GetTeamNum()
+	{
+		TeamStatistics Return = TeamStatistic();
+		return Return.TeamNum;
+	}
+
+	int CGameControllerCatching::GetPlayersNum(int Team)
+	{
+		TeamStatistics Return = TeamStatistic(Team);
+		return Return.PlayerNum;
+	}
+
+	int CGameControllerCatching::GetJoinedPlayers()
+	{
+		TeamStatistics Return = TeamStatistic();
+		return Return.PlayerJoined;
+	}
+
+	bool CGameControllerCatching::IsColorUsed(int Color)
+	{
+		TeamStatistics Return = TeamStatistic(Color);
+		return Return.IsUsed;
+	}
+
+	int CGameControllerCatching::GetColorOwner(int BaseColor)
+	{
+		TeamStatistics Return = TeamStatistic(BaseColor);
+		return Return.PlayerID;
+	}
 
 void CGameControllerCatching::DoPlayerNumWincheck()
 {
