@@ -103,7 +103,7 @@ public:
 	bool IsJoined() const { return m_Joined; };
 
 private:
-	CCharacter *Character;
+	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;
 
 	CGameContext *GameServer() const { return m_pGameServer; }
