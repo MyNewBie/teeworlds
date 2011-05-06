@@ -113,4 +113,24 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 
 void CGameControllerCatching::DoPlayerNumWincheck()
 {
+	if(m_GameOverTick == -1 && !m_Warmup)
+	{
+		int PlayerNum = 0;
+		int TeamID = -1;
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(IsColorUsed(i)) {
+				if(GetPlayersNum(i) > PlayerNum)
+				{
+					PlayerNum = GetPlayersNum(i);
+					TeamID = i;
+				}
+			}
+		}
+
+		if(PlayerNum == GetJoinedPlayers() && GetJoinedPlayers() > 1)
+		{
+			EndRound();
+		}
+	}
 }
