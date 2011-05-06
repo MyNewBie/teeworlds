@@ -62,6 +62,12 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
 
+	/* Catching */
+
+	// the player core for the physics
+	CCharacterCore m_Core;
+	//class CCharacterCore GetCore() { return m_Core; }
+
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -119,9 +125,6 @@ private:
 		int m_CurrentMoveTime;
 		int m_OldVelAmount;
 	} m_Ninja;
-
-	// the player core for the physics
-	CCharacterCore m_Core;
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From
