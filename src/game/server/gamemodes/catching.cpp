@@ -24,6 +24,37 @@ bool CGameControllerCatching::IsCatching() const
 
 void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pP)
 {
+	// Good old "Teamcolorwave" \o/
+	int Black = 0,
+		White = 255,
+		Def = 1834896,
+		Red = 16776960,
+		Pink = 16760679,
+		Orange = 1507072,
+		LOrange = 1507201,
+		LYellow = 2686852,
+		Yellow = 2621184,
+		RPink = 15138560,
+		Green = 5018112,
+		Aqua = 8453888,
+		Blue = 9830144,
+		LBlue = 9830257,
+		LGreen = 5018235,
+		Purple = 12896518,
+		LPurple = 12896649;
+	int TeamColors[MAX_CLIENTS + 1] = {White, Def, Orange, Aqua, RPink, Yellow, Green, Red, Blue, Purple, Black, Pink, LPurple, LBlue, LYellow, LOrange, LGreen};
+
+	// If something was wrong, update Team
+	if(pP->GetBaseTeam() != -1 && pP->GetCurrentTeam() == -1)
+		pP->SetCatchingTeam(pP->GetBaseTeam());
+
+	if(pP->GetCurrentTeam() >= -1 && pP->GetCurrentTeam() < MAX_CLIENTS)
+	{
+		// Set the teecolor
+		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_ColorBody = TeamColors[pP->GetCurrentTeam() + 1];
+		pP->m_TeeInfos.m_ColorFeet = TeamColors[pP->GetPrevTeam() + 1];
+	}
 }
 
 TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
