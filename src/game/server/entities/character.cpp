@@ -660,41 +660,69 @@ bool CCharacter::IncreaseArmor(int Amount)
 
 void CCharacter::Die(int Killer, int Weapon)
 {
-	// we got to wait 0.5 secs before respawning
-	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
-		Killer, Server()->ClientName(Killer),
-		m_pPlayer->GetCID(), Server()->ClientName(m_pPlayer->GetCID()), Weapon, ModeSpecial);
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+	/* Catching */
+	if(GameServer()->m_pController->IsCatching() && Weapon != WEAPON_WORLD)
+	{
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "catch catcher='%d:%s' caught='%d:%s' weapon=%d special=%d",
+			Killer, Server()->ClientName(Killer),
+			m_pPlayer->GetCID(), Server()->ClientName(m_pPlayer->GetCID()), Weapon, ModeSpecial);
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
-	// send the kill message
-	CNetMsg_Sv_KillMsg Msg;
-	Msg.m_Killer = Killer;
-	Msg.m_Victim = m_pPlayer->GetCID();
-	Msg.m_Weapon = Weapon;
-	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+		// send the kill message
+		CNetMsg_Sv_KillMsg Msg;
+		Msg.m_Killer = Killer;
+		Msg.m_Victim = m_pPlayer->GetCID();
+		Msg.m_Weapon = Weapon;
+		Msg.m_ModeSpecial = ModeSpecial;
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	}
+	else
+	{
+		// we got to wait 0.5 secs before respawning
+		m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 
-	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
+			Killer, Server()->ClientName(Killer),
+			m_pPlayer->GetCID(), Server()->ClientName(m_pPlayer->GetCID()), Weapon, ModeSpecial);
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
-	// this is for auto respawn after 3 secs
-	m_pPlayer->m_DieTick = Server()->Tick();
+		// send the kill message
+		CNetMsg_Sv_KillMsg Msg;
+		Msg.m_Killer = Killer;
+		Msg.m_Victim = m_pPlayer->GetCID();
+		Msg.m_Weapon = Weapon;
+		Msg.m_ModeSpecial = ModeSpecial;
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	
+		// a nice sound
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
 
-	m_Alive = false;
-	GameServer()->m_World.RemoveEntity(this);
-	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+		// this is for auto respawn after 3 secs
+		m_pPlayer->m_DieTick = Server()->Tick();
+
+		m_Alive = false;
+		GameServer()->m_World.RemoveEntity(this);
+		GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
+		GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	}
 }
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
 	m_Core.m_Vel += Force;
-
-	if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
+	
+	/* Catching */
+	if(GameServer()->m_pController->IsCatching())
+	{
+		if(m_pPlayer->GetCurrentTeam() == GameServer()->m_apPlayers[From]->GetCurrentTeam())
+			return false;
+	}
+	/* Catching End */
+	else if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
 
 	// m_pPlayer only inflicts half damage on self
@@ -832,4 +860,22 @@ void CCharacter::Snap(int SnappingClient)
 	}
 
 	pCharacter->m_PlayerFlags = GetPlayer()->m_PlayerFlags;
+}
+
+/* Catching */
+
+void CCharacter::CaughtAnimation(int CatcherID, bool Refill)
+{
+	GameServer()->CreateExplosion(m_Pos, m_pPlayer->GetCID(), WEAPON_SELF, true);
+	GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+	for(int i = 0; i < 2; i++)
+		GameServer()->CreateDeath(m_Pos, CatcherID);
+	GameServer()->CreatePlayerSpawn(m_Pos);
+	for(int t = 0; t < 3; t++)
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+
+	if(Refill)
+	{
+		IncreaseHealth(10);
+	}
 }

@@ -89,7 +89,7 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 				PlayerNum++;
 			
 			// How many players are joined
-			if(GameServer()->m_apPlayers[i]->IsJoined())
+			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 				PlayerJoined++;
 
 			// Is (Base)Color used
@@ -142,6 +142,39 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		return Return.PlayerID;
 	}
 
+int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
+{
+	// do scoreing
+	if(!pKiller || Weapon == WEAPON_GAME)
+		return 0;
+	if(pKiller == pVictim->GetPlayer())
+		pVictim->GetPlayer()->m_Score--; // suicide
+	else
+	{
+		// Successful Catch
+		pVictim->CaughtAnimation(pKiller->GetCID(), true);
+		pVictim->GetPlayer()->SetCatchingTeam(pKiller->GetCurrentTeam());
+		pKiller->m_Score++;
+	}
+	return 0;
+}
+
+void CGameControllerCatching::PostReset()
+{
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(GameServer()->m_apPlayers[i])
+		{
+			GameServer()->m_apPlayers[i]->SetCatchingTeam(GameServer()->m_apPlayers[i]->GetBaseTeam(), true);
+
+			GameServer()->m_apPlayers[i]->Respawn();
+			//GameServer()->m_apPlayers[i]->m_Score = 0;
+			GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();
+			GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+		}
+	}
+}
+
 void CGameControllerCatching::DoPlayerNumWincheck()
 {
 	if(m_GameOverTick == -1 && !m_Warmup)
@@ -160,8 +193,6 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 		}
 
 		if(PlayerNum == GetJoinedPlayers() && GetJoinedPlayers() > 1)
-		{
 			EndRound();
-		}
 	}
 }

@@ -66,7 +66,7 @@ public:
 
 	// the player core for the physics
 	CCharacterCore m_Core;
-	//class CCharacterCore GetCore() { return m_Core; }
+	void CaughtAnimation(int CatcherID, bool Refill = false);
 
 private:
 	// player controlling this character

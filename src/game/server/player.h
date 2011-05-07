@@ -96,7 +96,7 @@ public:
 	} m_Latency;
 
 	/* Catching */
-	void SetCatchingTeam(int Team);
+	void SetCatchingTeam(int Team, bool BaseTeam = false);
 	int GetCurrentTeam() const { return m_CurrentTeam; };
 	int GetBaseTeam() const { return m_BaseTeam; };
 	int GetPrevTeam() const { return m_PreviousTeam; };

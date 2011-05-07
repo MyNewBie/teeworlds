@@ -256,6 +256,8 @@ void CPlayer::SetTeam(int Team)
 			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->m_SpectatorID == m_ClientID)
 				GameServer()->m_apPlayers[i]->m_SpectatorID = SPEC_FREEVIEW;
 		}
+		/* Catching */
+		m_Joined = false;
 	}
 }
 
@@ -274,7 +276,7 @@ void CPlayer::TryRespawn()
 
 /* Catching */
 
-void CPlayer::SetCatchingTeam(int Team)
+void CPlayer::SetCatchingTeam(int Team, bool BaseTeam)
 {
 	if(Team != -1)
 		Team = clamp(Team, 0, MAX_CLIENTS-1);
@@ -286,7 +288,7 @@ void CPlayer::SetCatchingTeam(int Team)
 		m_PreviousTeam = -1;
 		m_BaseTeam = -1;
 		m_Joined = false;
-	} else if(m_BaseTeam == -1) {
+	} else if(m_BaseTeam == -1 || BaseTeam) {
 		// Set Base Team
 		m_BaseTeam = Team;
 		m_CurrentTeam = Team;

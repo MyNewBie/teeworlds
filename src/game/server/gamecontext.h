@@ -170,6 +170,7 @@ public:
 	virtual bool ChatCommands(int ClientID, CPlayer *pPlayer, const char * Message);
 	//virtual bool ChatCommandsCatching();
 	//virtual bool ChatCommandsZCatch();
+	virtual int SearchName(char Name[MAX_NAME_LENGTH]);
 };
 
 inline int CmaskAll() { return -1; }
