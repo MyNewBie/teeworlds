@@ -79,9 +79,9 @@ MACRO_CONFIG_INT(SvVoteKickMin, sv_vote_kick_min, 0, 0, MAX_CLIENTS, CFGFLAG_SER
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
 
 /* Catching */
-MACRO_CONFIG_INT(SvFreeJoin, sv_free_join, 3, 2, MAX_CLIENTS, CFGFLAG_SERVER, "Maximum ingame player before new player can't join in an active round.")
-MACRO_CONFIG_INT(SvTimeBetweenRounds, sv_time_between_rounds, 3, 1, 10, CFGFLAG_SERVER, "Time to wait until a new round starts.")
-MACRO_CONFIG_INT(SvExtraPoints, sv_extra_points, 5, 0, 20, CFGFLAG_SERVER, "Time to wait until a new round starts.")
+MACRO_CONFIG_INT(SvFreeJoin, sv_free_join, 3, 2, MAX_CLIENTS, CFGFLAG_SERVER, "Maximum ingame player before new player can't join in an active round")
+MACRO_CONFIG_INT(SvTimeBetweenRounds, sv_time_between_rounds, 3, 1, 10, CFGFLAG_SERVER, "Time to wait until a new round starts")
+MACRO_CONFIG_INT(SvExtraPoints, sv_extra_points, 5, 0, 20, CFGFLAG_SERVER, "Increase the score by the specified value")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
