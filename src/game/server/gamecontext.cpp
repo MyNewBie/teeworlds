@@ -517,6 +517,16 @@ void CGameContext::OnClientEnter(int ClientID)
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
 	m_VoteUpdate = true;
+
+	/* Catching */
+	if(m_pController->IsCatching())
+	{
+		str_format(aBuf, sizeof(aBuf), "Welcome to Catching %s for Teeworlds %s", CATCHING_VERSION, GAME_VERSION);
+		SendChatTarget(ClientID, " ");
+		SendChatTarget(ClientID, aBuf);
+		SendChatTarget(ClientID, "A modification by Nox Nebula (Noxi Foxi)");
+		SendChatTarget(ClientID, "Say \"/cmdlist\" for list of command available.");
+	}
 }
 
 void CGameContext::OnClientConnected(int ClientID)

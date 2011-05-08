@@ -23,8 +23,6 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_LastActionTick = Server()->Tick();
 
 	/* Catching */
-	m_GotWelcomeMessage = false;
-
 	m_CurrentTeam = -1;
 	m_PreviousTeam = -1;
 	m_BaseTeam = -1;
@@ -87,18 +85,6 @@ void CPlayer::Tick()
 	}
 	else if(m_Spawning && m_RespawnTick <= Server()->Tick())
 		TryRespawn();
-
-	/* Catching */
-	if(GameServer()->m_pController->IsCatching() && !m_GotWelcomeMessage)
-	{
-		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "Welcome to Catching %s for Teeworlds %s", CATCHING_VERSION, GAME_VERSION);
-		GameServer()->SendChatTarget(GetCID(), " ");
-		GameServer()->SendChatTarget(GetCID(), aBuf);
-		GameServer()->SendChatTarget(GetCID(), "A modification by Nox Nebula (Noxi Foxi)");
-		GameServer()->SendChatTarget(GetCID(), "Say \"/cmdlist\" for list of command available.");
-		m_GotWelcomeMessage = true;
-	}
 }
 
 void CPlayer::PostTick()

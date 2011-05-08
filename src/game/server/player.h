@@ -117,7 +117,6 @@ private:
 	int m_Team;
 
 	/* Catching */
-	bool m_GotWelcomeMessage;
 	int m_CurrentTeam;
 	int m_PreviousTeam;
 	int m_BaseTeam;
