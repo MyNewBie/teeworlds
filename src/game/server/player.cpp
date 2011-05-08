@@ -29,6 +29,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_ColorWish = -1;
 
 	m_Joined = false;
+	m_AssignColor = true;
+	m_AssignTime = 0;
 }
 
 CPlayer::~CPlayer()
@@ -85,6 +87,67 @@ void CPlayer::Tick()
 	}
 	else if(m_Spawning && m_RespawnTick <= Server()->Tick())
 		TryRespawn();
+
+	/* Catching */
+	if(GameServer()->m_pController->IsCatching())
+	{
+		char aBuf[512];
+		
+		if(!g_Config.m_SvAutoAssingColorTime)
+			m_AssignColor = false;
+
+		// Auto assign color
+		if(m_AssignColor && m_BaseTeam == -1)
+		{
+			if(m_Team != TEAM_SPECTATORS)
+			{
+				if(m_AssignTime == 0)
+					m_AssignTime = Server()->Tick() + (Server()->TickSpeed() * g_Config.m_SvAutoAssingColorTime);
+
+				if(m_AssignTime - Server()->Tick() > 0)
+				{
+					int Left = (m_AssignTime - Server()->Tick()) / Server()->TickSpeed();
+					if(Left == 1)
+						str_format(aBuf, sizeof(aBuf),  "%d second left to choose a color", Left);
+					else
+						str_format(aBuf, sizeof(aBuf),  "%d seconds left to choose a color", Left);
+					GameServer()->SendBroadcast(aBuf, m_ClientID);
+				}
+				else
+				{
+					char aTeamColors[MAX_CLIENTS][64] =
+						{"Default", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
+						"Black", "LightRed", "LightPurple", "LightBlue", "LightYellow", "LightOrange", "LightGreen"};
+
+					int ColorID = -1;
+					for(int i = 0; i < MAX_CLIENTS; i++)
+					{
+						if(!GameServer()->m_pController->IsColorUsed(i))
+						{
+							ColorID = i;
+							break;
+						}
+					}
+
+					m_AssignTime = 0;
+					m_AssignColor = false;
+					SetCatchingTeam(ColorID, true);
+
+					if(IsJoined())
+					{
+						str_format(aBuf, sizeof(aBuf), "You are now '%s'", aTeamColors[ColorID]);
+						GetCharacter()->CaughtAnimation(GetCID());
+					}
+					else
+						str_format(aBuf, sizeof(aBuf), "You join automaticaly in '%s', when a new round starts", aTeamColors[ColorID]);
+					GameServer()->SendChatTarget(GetCID(), aBuf);
+					GameServer()->SendBroadcast(" ", m_ClientID);
+				}
+			}
+			else
+				m_AssignTime = 0;
+		}
+	}
 }
 
 void CPlayer::PostTick()
@@ -298,6 +361,9 @@ void CPlayer::SetCatchingTeam(int Team, bool BaseTeam, bool RoundRestart)
 		m_BaseTeam = -1;
 		m_Joined = false;
 	} else if(m_BaseTeam == -1 || BaseTeam || RoundRestart) {
+		if(m_AssignColor)
+			m_AssignColor = false;
+
 		// Set Base Team
 		m_BaseTeam = Team;
 		m_CurrentTeam = Team;

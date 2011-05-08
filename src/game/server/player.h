@@ -122,6 +122,8 @@ private:
 	int m_BaseTeam;
 	bool m_Joined;
 	int m_ColorWish;
+	bool m_AssignColor;
+	int m_AssignTime;
 };
 
 #endif
