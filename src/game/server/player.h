@@ -97,10 +97,12 @@ public:
 
 	/* Catching */
 	void SetCatchingTeam(int Team, bool BaseTeam = false, bool RoundRestart = false);
-	int GetCurrentTeam() const { return m_CurrentTeam; };
-	int GetBaseTeam() const { return m_BaseTeam; };
-	int GetPrevTeam() const { return m_PreviousTeam; };
-	bool IsJoined() const { return m_Joined; };
+	int GetCurrentTeam() const { return m_CurrentTeam; }
+	int GetBaseTeam() const { return m_BaseTeam; }
+	int GetPrevTeam() const { return m_PreviousTeam; }
+	bool IsJoined() const { return m_Joined; }
+	void SetColorWish(int ColorID);
+	int GetColorWish() { return m_ColorWish; }
 
 private:
 	CCharacter *m_pCharacter;
@@ -119,6 +121,7 @@ private:
 	int m_PreviousTeam;
 	int m_BaseTeam;
 	bool m_Joined;
+	int m_ColorWish;
 };
 
 #endif

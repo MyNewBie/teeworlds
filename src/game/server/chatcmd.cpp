@@ -56,9 +56,26 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 			SendChatTarget(ClientID, "This color is already taken.");
 		else
 		{
-			m_apPlayers[ClientID]->SetCatchingTeam(ColorID, true);
-			str_format(Buf, sizeof(Buf), "You are now '%s'", aTeamColors[ColorID]);
-			SendChatTarget(ClientID, Buf);
+			if(m_pController->GetJoinedPlayers() < 3)
+			{
+				m_apPlayers[ClientID]->SetCatchingTeam(ColorID, true);
+
+				if(m_apPlayers[ClientID]->IsJoined())
+					str_format(Buf, sizeof(Buf), "You are now '%s'", aTeamColors[ColorID]);
+				else
+					str_format(Buf, sizeof(Buf), "You join automaticaly in '%s', when a new round starts", aTeamColors[ColorID]);
+				SendChatTarget(ClientID, Buf);
+			}
+			else
+			{
+				if(m_pController->IsWishUsed(ColorID))
+					SendChatTarget(ClientID, "This color is already wished by another player, please try it later again.");
+				else
+				{
+					m_apPlayers[ClientID]->SetColorWish(ColorID);
+					SendChatTarget(ClientID, "Your color will change automaticaly after this round.");
+				}
+			}
 		}
 	}
 	else if(!str_comp(Message, "/admincmd") && Server()->IsAuthed(ClientID))

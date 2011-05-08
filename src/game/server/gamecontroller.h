@@ -12,6 +12,7 @@ struct TeamStatistics {
 	int PlayerJoined;
 	bool IsUsed;
 	int PlayerID;
+	bool WishIsUsed;
 };
 
 /*
@@ -159,11 +160,12 @@ public:
 	/* Catching */
 	virtual bool IsCatching() const;
 	virtual TeamStatistics TeamStatistic(int Team = -1, int BaseColor = -1);
-		virtual int GetTeamNum() { return -1; };
-		virtual int GetPlayersNum(int Team) { return -1; };
-		virtual int GetJoinedPlayers() { return -1; };
-		virtual bool IsColorUsed(int Color) { return false; };
-		virtual int GetColorOwner(int BaseColor) { return -1; };
+		virtual int GetTeamNum() { return -1; }
+		virtual int GetPlayersNum(int Team) { return -1; }
+		virtual int GetJoinedPlayers() { return -1; }
+		virtual bool IsColorUsed(int Color) { return false; }
+		virtual int GetColorOwner(int BaseColor) { return -1; }
+		virtual bool IsWishUsed(int Color) { return false; }
 };
 
 #endif

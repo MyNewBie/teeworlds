@@ -25,6 +25,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_CurrentTeam = -1;
 	m_PreviousTeam = -1;
 	m_BaseTeam = -1;
+	m_ColorWish = -1;
 
 	m_Joined = false;
 }
@@ -281,6 +282,12 @@ void CPlayer::SetCatchingTeam(int Team, bool BaseTeam, bool RoundRestart)
 	if(Team != -1)
 		Team = clamp(Team, 0, MAX_CLIENTS-1);
 
+	if(m_ColorWish != -1 && RoundRestart)
+	{
+		Team = m_ColorWish;
+		m_ColorWish = -1;
+	}
+
 	bool UpdateInfo = true;
 	if(Team == -1) {
 		// Delete Team
@@ -311,4 +318,9 @@ void CPlayer::SetCatchingTeam(int Team, bool BaseTeam, bool RoundRestart)
 	// Update Player Info (Color)
 	if(UpdateInfo)
 		GameServer()->m_pController->OnPlayerInfoChange(this);
+}
+
+void CPlayer::SetColorWish(int ColorID)
+{
+	m_ColorWish = ColorID;
 }

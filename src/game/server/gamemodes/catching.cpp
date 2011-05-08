@@ -65,6 +65,7 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		How many players are joined?
 		Is (Base)Color used?
 		Wich Player(ID) has the Base Color?
+		Is this Color-Wish used?
 	*/
 
 	if(BaseColor == -1)
@@ -75,6 +76,7 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 	int PlayerJoined = 0;
 	bool IsUsed = false;
 	int PlayerID = -1;
+	bool WishIsUsed = false;
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -98,6 +100,10 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 				IsUsed = true;
 				PlayerID = i;
 			}
+
+			// Is this Color-Wish used
+			if(GameServer()->m_apPlayers[i]->GetColorWish() == BaseColor)
+				WishIsUsed = true;
 		}
 	}
 	
@@ -106,7 +112,8 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		PlayerNum,
 		PlayerJoined,
 		IsUsed,
-		PlayerID
+		PlayerID,
+		WishIsUsed
 	};
 	return Return;
 }
@@ -140,6 +147,12 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 	{
 		TeamStatistics Return = TeamStatistic(BaseColor);
 		return Return.PlayerID;
+	}
+
+	bool CGameControllerCatching::IsWishUsed(int Color)
+	{
+		TeamStatistics Return = TeamStatistic(Color);
+		return Return.WishIsUsed;
 	}
 
 int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
