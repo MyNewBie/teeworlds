@@ -480,7 +480,7 @@ void IGameController::Tick()
 		// game over.. wait for restart
 		if(IsCatching()) /* Catching */
 		{
-			if((!m_FinalRound && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvTimeBetweenRound) ||
+			if((!m_FinalRound && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*g_Config.m_SvTimeBetweenRounds) ||
 				(m_FinalRound && Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10))
 			{
 				if(m_FinalRound)
