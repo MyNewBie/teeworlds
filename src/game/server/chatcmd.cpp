@@ -52,6 +52,8 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 
 		if(ColorID == -1)
 			SendChatTarget(ClientID, "The specified color could not be found.");
+		else if(m_pController->IsColorUsed(ColorID))
+			SendChatTarget(ClientID, "This color is already taken.");
 		else
 		{
 			m_apPlayers[ClientID]->SetCatchingTeam(ColorID, true);
@@ -72,7 +74,10 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 
 		int TargetID = SearchName(aTarget);
 		if(TargetID == -1)
-			SendChatTarget(ClientID, "The specified name could not be found.");
+		{
+			str_format(Buf, sizeof(Buf), "The specified name '%s' could not be found.", aTarget);
+			SendChatTarget(ClientID, Buf);
+		}
 		else
 		{
 			CCharacter* pChar = GetPlayerChar(TargetID);
@@ -86,8 +91,11 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 			}
 			else if(TargetID == ClientID)
 				SendChatTarget(ClientID, "Yeah... Funny...");
-			else
-				SendChatTarget(ClientID, "Invalid ID");
+			else // Invalid ID
+			{
+				//str_format(Buf, sizeof(Buf), "Oops, yo can't teleport '%s' here, because the character of ID '%i' wasn't found.", aTarget, TargetID);
+				SendChatTarget(ClientID, "No match found.");
+			}
 		}
 	}
 	else if(!str_comp_num(Message, "/tp", 3) && Server()->IsAuthed(ClientID))
@@ -98,7 +106,10 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 
 		int TargetID = SearchName(aTarget);
 		if(TargetID == -1)
-			SendChatTarget(ClientID, "The specified name could not be found.");
+		{
+			str_format(Buf, sizeof(Buf), "The specified name '%s' could not be found.", aTarget);
+			SendChatTarget(ClientID, Buf);
+		}
 		else
 		{
 			CCharacter* pChar = GetPlayerChar(ClientID);
@@ -112,8 +123,11 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 			}
 			else if(TargetID == ClientID)
 				SendChatTarget(ClientID, "Yeah... Funny...");
-			else
-				SendChatTarget(ClientID, "Invalid ID");
+			else // Invalid ID
+			{
+				//str_format(Buf, sizeof(Buf), "Oops, yo can't teleport to '%s', because the character of ID '%i' wasn't found.", aTarget, TargetID);
+				SendChatTarget(ClientID, "No match found.");
+			}
 		}
 	}
 	else if(!str_comp_num(Message, "/", 1))
