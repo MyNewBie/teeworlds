@@ -482,7 +482,8 @@ void IGameController::Tick()
 		{
 			if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*5)
 			{
-				// CycleMap(); // Do not
+				if(m_FinalRound)
+					CycleMap();
 				StartRound();
 				m_RoundCount++;
 			}
