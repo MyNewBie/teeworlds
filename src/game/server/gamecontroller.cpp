@@ -465,11 +465,23 @@ void IGameController::Tick()
 	if(m_GameOverTick != -1)
 	{
 		// game over.. wait for restart
-		if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10)
+		if(IsCatching()) /* Catching */
 		{
-			CycleMap();
-			StartRound();
-			m_RoundCount++;
+			if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*5)
+			{
+				CycleMap();
+				StartRound();
+				m_RoundCount++;
+			}
+		}
+		else
+		{
+			if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*10)
+			{
+				CycleMap();
+				StartRound();
+				m_RoundCount++;
+			}
 		}
 	}
 
