@@ -29,12 +29,12 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pP)
 		White = 255,
 		Def = 1834896,
 		Red = 16776960,
-		Pink = 16760679,
+		Pink = 15138560,
 		Orange = 1507072,
 		LOrange = 1507201,
 		LYellow = 2686852,
 		Yellow = 2621184,
-		RPink = 15138560,
+		LRed = 16760679,
 		Green = 5018112,
 		Aqua = 8453888,
 		Blue = 9830144,
@@ -42,7 +42,7 @@ void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pP)
 		LGreen = 5018235,
 		Purple = 12896518,
 		LPurple = 12896649;
-	int TeamColors[MAX_CLIENTS + 1] = {White, Def, Orange, Aqua, RPink, Yellow, Green, Red, Blue, Purple, Black, Pink, LPurple, LBlue, LYellow, LOrange, LGreen};
+	int TeamColors[MAX_CLIENTS + 1] = {White, Def, Orange, Aqua, Pink, Yellow, Green, Red, Blue, Purple, Black, LRed, LPurple, LBlue, LYellow, LOrange, LGreen};
 
 	// If something was wrong, update Team
 	if(pP->GetBaseTeam() != -1 && pP->GetCurrentTeam() == -1)

@@ -7,6 +7,10 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 {
 	bool SendToChat = false;
 
+	char aTeamColors[MAX_CLIENTS][64] =
+		{"Default", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
+		"Black", "LightRed", "LightPurple", "LightBlue", "LightYellow", "LightOrange", "LightGreen"};
+
 	char Buf[512];
 	if(!str_comp(Message, "/info"))
 	{
@@ -16,24 +20,33 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 		SendChatTarget(ClientID, " ");
 		SendChatTarget(ClientID, "Say \"/cmdlist\" for list of command available.");
 	}
-	else if(!str_comp(Message, "/cmdlist"))
+	else if(!str_comp(Message, "/cmdlist") || !str_comp(Message, "/cmd"))
 	{
 		SendChatTarget(ClientID, "-- Commands --");
 		SendChatTarget(ClientID, "'/info' - Display infos about this Mod.");
+		SendChatTarget(ClientID, "'/color <Color>' - Choose your color from the color list.");
+		SendChatTarget(ClientID, "'/colorlist' or '/list' - Display all available colors.");
 		if(Server()->IsAuthed(ClientID))
 			SendChatTarget(ClientID, "'/admincmd' - Display admin commands.");
+	}
+	else if(!str_comp(Message, "/colorlist") || !str_comp(Message, "/list"))
+	{
+		SendChatTarget(ClientID, "-- Color List --");
+		for(int i = 0; i < MAX_CLIENTS; i += 2)
+		{
+			str_format(Buf, sizeof(Buf), "%i. %s        %i. %s", i + 1, aTeamColors[i], i + 2, aTeamColors[i + 1]);
+			SendChatTarget(ClientID, Buf);
+		}
 	}
 	else if(!str_comp_num(Message, "/color", 6) && m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS)
 	{
 		char aColor[64];
 		sscanf(Message, "/color %s", aColor);
 
-		char TeamColors[MAX_CLIENTS][64] = {"Default", "Orange", "Aqua", "RedPink", "Yellow", "Green", "Red", "Blue", "Purple",
-											"Black", "Pink", "LightPurple", "LightBlue", "LightYellow", "LightOrange", "LightGreen"};
 		int ColorID = -1;
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			if(!str_comp_nocase(aColor, TeamColors[i]))
+			if(!str_comp_nocase(aColor, aTeamColors[i]))
 				ColorID = i;
 		}
 
@@ -42,7 +55,7 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 		else
 		{
 			m_apPlayers[ClientID]->SetCatchingTeam(ColorID, true);
-			str_format(Buf, sizeof(Buf), "You are now %s", TeamColors[ColorID]);
+			str_format(Buf, sizeof(Buf), "You are now '%s'", aTeamColors[ColorID]);
 			SendChatTarget(ClientID, Buf);
 		}
 	}
