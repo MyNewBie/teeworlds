@@ -257,8 +257,9 @@ void CPlayer::SetTeam(int Team)
 			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->m_SpectatorID == m_ClientID)
 				GameServer()->m_apPlayers[i]->m_SpectatorID = SPEC_FREEVIEW;
 		}
+
 		/* Catching */
-		m_Joined = false;
+		SetCatchingTeam(-1, true);
 	}
 }
 
