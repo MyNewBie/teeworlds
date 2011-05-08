@@ -70,6 +70,9 @@ protected:
 	int m_UnbalancedTick;
 	bool m_ForceBalanced;
 
+	/* Catching */
+	bool m_FinalRound;
+
 public:
 	const char *m_pGameType;
 

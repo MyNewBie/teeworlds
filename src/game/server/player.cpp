@@ -276,7 +276,7 @@ void CPlayer::TryRespawn()
 
 /* Catching */
 
-void CPlayer::SetCatchingTeam(int Team, bool BaseTeam)
+void CPlayer::SetCatchingTeam(int Team, bool BaseTeam, bool RoundRestart)
 {
 	if(Team != -1)
 		Team = clamp(Team, 0, MAX_CLIENTS-1);
@@ -288,16 +288,21 @@ void CPlayer::SetCatchingTeam(int Team, bool BaseTeam)
 		m_PreviousTeam = -1;
 		m_BaseTeam = -1;
 		m_Joined = false;
-	} else if(m_BaseTeam == -1 || BaseTeam) {
+	} else if(m_BaseTeam == -1 || BaseTeam || RoundRestart) {
 		// Set Base Team
 		m_BaseTeam = Team;
 		m_CurrentTeam = Team;
 		m_PreviousTeam = Team;
 
-		if(GameServer()->m_pController->GetJoinedPlayers() < g_Config.m_SvFreeJoin)
+		if(RoundRestart)
 			m_Joined = true;
 		else
-			UpdateInfo = false;
+		{
+			if(GameServer()->m_pController->GetJoinedPlayers() < g_Config.m_SvFreeJoin)
+				m_Joined = true;
+			else
+				UpdateInfo = false;
+		}
 	} else {
 		m_PreviousTeam = m_CurrentTeam;
 		m_CurrentTeam = Team;

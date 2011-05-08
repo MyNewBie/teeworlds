@@ -81,11 +81,11 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		if(GameServer()->m_apPlayers[i])
 		{
 			// How many teams
-			if(GameServer()->m_apPlayers[i]->GetBaseTeam() > -1)
+			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetBaseTeam() > -1)
 				TeamNum++;
 
 			// How many players per team
-			if(GameServer()->m_apPlayers[i]->GetCurrentTeam() == Team && Team > -1)
+			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetCurrentTeam() == Team && Team > -1)
 				PlayerNum++;
 			
 			// How many players are joined
@@ -161,26 +161,39 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 
 void CGameControllerCatching::PostReset()
 {
+	bool WasFinalRound = false;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
-			GameServer()->m_apPlayers[i]->SetCatchingTeam(GameServer()->m_apPlayers[i]->GetBaseTeam(), true);
+			GameServer()->m_apPlayers[i]->SetCatchingTeam(GameServer()->m_apPlayers[i]->GetBaseTeam(), true, true);
 
 			GameServer()->m_apPlayers[i]->Respawn();
-			//GameServer()->m_apPlayers[i]->m_Score = 0;
 			GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();
 			GameServer()->m_apPlayers[i]->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+			
+			if(m_FinalRound)
+			{
+				WasFinalRound = true;
+				GameServer()->m_apPlayers[i]->m_Score = 0;
+			}
 		}
 	}
+	if(WasFinalRound)
+		m_FinalRound = false;
 }
 
 void CGameControllerCatching::DoPlayerNumWincheck()
 {
 	if(m_GameOverTick == -1 && !m_Warmup)
 	{
+		// Team Win
 		int PlayerNum = 0;
 		int TeamID = -1;
+		// Score Win
+		int Topscore = 0;
+		int TopscoreCount = 0;
+		int PlayerID = -1;
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
 			if(IsColorUsed(i)) {
@@ -190,8 +203,35 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 					TeamID = i;
 				}
 			}
+
+			if(GameServer()->m_apPlayers[i])
+			{
+				if(GameServer()->m_apPlayers[i]->m_Score > Topscore)
+				{
+					Topscore = GameServer()->m_apPlayers[i]->m_Score;
+					PlayerID = i;
+					TopscoreCount = 1;
+				}
+				else if(GameServer()->m_apPlayers[i]->m_Score > Topscore)
+					TopscoreCount++;
+
+			}
 		}
 
+		// Score Win
+		if((g_Config.m_SvScorelimit > 0 && Topscore >= g_Config.m_SvScorelimit) ||
+			(g_Config.m_SvTimelimit > 0 && (Server()->Tick()-m_RoundStartTick) >= g_Config.m_SvTimelimit*Server()->TickSpeed()*60))
+		{
+			if(TopscoreCount == 1)
+			{
+				m_FinalRound = true;
+				EndRound();
+			}
+			else
+				m_SuddenDeath = 1;
+		}
+
+		// Team Win
 		if(PlayerNum == GetJoinedPlayers() && GetJoinedPlayers() > 1)
 			EndRound();
 	}

@@ -33,6 +33,9 @@ IGameController::IGameController(class CGameContext *pGameServer)
 	m_aNumSpawnPoints[0] = 0;
 	m_aNumSpawnPoints[1] = 0;
 	m_aNumSpawnPoints[2] = 0;
+
+	/* Catching */
+	m_FinalRound = false;
 }
 
 IGameController::~IGameController()
@@ -258,7 +261,17 @@ void IGameController::StartRound()
 {
 	ResetGame();
 
-	m_RoundStartTick = Server()->Tick();
+	/* Catching */
+	if(IsCatching())
+	{
+		if(m_FinalRound)
+		{
+			m_RoundStartTick = Server()->Tick();
+		}
+	}
+	else
+		m_RoundStartTick = Server()->Tick();
+
 	m_SuddenDeath = 0;
 	m_GameOverTick = -1;
 	GameServer()->m_World.m_Paused = false;
@@ -469,7 +482,7 @@ void IGameController::Tick()
 		{
 			if(Server()->Tick() > m_GameOverTick+Server()->TickSpeed()*5)
 			{
-				CycleMap();
+				// CycleMap(); // Do not
 				StartRound();
 				m_RoundCount++;
 			}
