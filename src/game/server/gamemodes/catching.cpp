@@ -189,7 +189,7 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 	{
 		// Team Win
 		int PlayerNum = 0;
-		int TeamID = -1;
+		int ColorID = -1;
 		// Score Win
 		int Topscore = 0;
 		int TopscoreCount = 0;
@@ -200,7 +200,7 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 				if(GetPlayersNum(i) > PlayerNum)
 				{
 					PlayerNum = GetPlayersNum(i);
-					TeamID = i;
+					ColorID = i;
 				}
 			}
 
@@ -232,7 +232,12 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 		}
 
 		// Team Win
-		if(PlayerNum == GetJoinedPlayers() && GetJoinedPlayers() > 1)
+		if(PlayerNum >= GetJoinedPlayers() && GetJoinedPlayers() > 1)
+		{
+			int Owner = GetColorOwner(ColorID);
+			if(GameServer()->m_apPlayers[Owner])
+				GameServer()->m_apPlayers[Owner]->m_Score += g_Config.m_SvExtraPoints;
 			EndRound();
+		}
 	}
 }
