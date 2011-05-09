@@ -90,9 +90,7 @@ void CPlayer::Tick()
 
 	/* Catching */
 	if(GameServer()->m_pController->IsCatching())
-	{
-		char aBuf[512];
-		
+	{		
 		if(!g_Config.m_SvAutoAssingColorTime)
 			m_AssignColor = false;
 
@@ -101,6 +99,8 @@ void CPlayer::Tick()
 		{
 			if(m_Team != TEAM_SPECTATORS)
 			{
+				char aBuf[512];
+
 				if(m_AssignTime == 0)
 					m_AssignTime = Server()->Tick() + (Server()->TickSpeed() * g_Config.m_SvAutoAssingColorTime);
 
