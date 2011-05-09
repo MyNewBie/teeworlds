@@ -161,7 +161,38 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;
 	if(pKiller == pVictim->GetPlayer())
+	{
 		pVictim->GetPlayer()->m_Score--; // suicide
+		if(Weapon == WEAPON_WORLD)
+		{
+			// Force team
+			int LowestColor = -1;
+			int TeamMembers = -1;
+			for(int i = 0; i < MAX_CLIENTS; i++)
+			{
+				if(IsColorUsed(i))
+				{
+					if(GetPlayersNum(i) < TeamMembers || TeamMembers == -1)
+					{
+						if(GetPlayersNum(i) > 0 && i != pVictim->GetPlayer()->GetCurrentTeam())
+						{
+							LowestColor = i;
+							TeamMembers = GetPlayersNum(i);
+						}
+					}
+				}
+			}
+
+			if(LowestColor != -1 && LowestColor != pVictim->GetPlayer()->GetCurrentTeam() && GetJoinedPlayers() > 2)
+			{
+				pVictim->GetPlayer()->SetCatchingTeam(LowestColor);
+
+				char aBuf[512];
+				str_format(aBuf, sizeof(aBuf),  "You are now in %s's team", Server()->ClientName(GetColorOwner(LowestColor)));
+				GameServer()->SendChatTarget(pVictim->GetPlayer()->GetCID(), aBuf);
+			}
+		}
+	}
 	else
 	{
 		// Successful Catch
