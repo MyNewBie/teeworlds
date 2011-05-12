@@ -165,7 +165,7 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		return Return.WishIsUsed;
 	}
 	
-	bool CGameControllerCatching::GetTeamscore(int Team)
+	int CGameControllerCatching::GetTeamscore(int Team)
 	{
 		TeamStatistics Return = TeamStatistic(Team);
 		return Return.Teamscore;
@@ -184,6 +184,7 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 			// Force team
 			int LowestColor = -1;
 			int TeamMembers = -1;
+			int TeamCount = 0;
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
 				if(IsColorUsed(i))
@@ -194,6 +195,28 @@ int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class C
 						{
 							LowestColor = i;
 							TeamMembers = GetPlayersNum(i);
+							TeamCount = 1;
+						}
+					}
+					else if(GetPlayersNum(i) == TeamMembers)
+						TeamCount++;
+				}
+			}
+			// Get lowest scored team
+			int Teamscore = g_Config.m_SvScorelimit * TeamMembers; // Pseudo first score
+			if(TeamCount > 1)
+			{
+				for(int i = 0; i < MAX_CLIENTS; i++)
+				{
+					if(IsColorUsed(i))
+					{
+						if(GetPlayersNum(i) == TeamMembers)
+						{
+							if(GetTeamscore(i) < Teamscore)
+							{
+								Teamscore = GetTeamscore(i);
+								LowestColor = i;
+							}
 						}
 					}
 				}
