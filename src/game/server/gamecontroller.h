@@ -13,6 +13,7 @@ struct TeamStatistics {
 	bool IsUsed;
 	int PlayerID;
 	bool WishIsUsed;
+	int Teamscore;
 };
 
 /*
@@ -166,6 +167,7 @@ public:
 		virtual bool IsColorUsed(int Color) { return false; }
 		virtual int GetColorOwner(int BaseColor) { return -1; }
 		virtual bool IsWishUsed(int Color) { return false; }
+		virtual int GetTeamscore(int Team) { return 0; }
 };
 
 #endif

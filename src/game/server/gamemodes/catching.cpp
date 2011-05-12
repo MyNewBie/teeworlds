@@ -66,6 +66,7 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		Is (Base)Color used?
 		Wich Player(ID) has the Base Color?
 		Is this Color-Wish used?
+		Teamscore?
 	*/
 
 	if(BaseColor == -1)
@@ -77,22 +78,30 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 	bool IsUsed = false;
 	int PlayerID = -1;
 	bool WishIsUsed = false;
+	int Teamscore = 0;
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
-			// How many teams
-			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetBaseTeam() > -1)
-				TeamNum++;
+			if(GameServer()->m_apPlayers[i]->IsJoined())
+			{
+				// How many teams
+				if(GameServer()->m_apPlayers[i]->GetBaseTeam() > -1)
+					TeamNum++;
 
-			// How many players per team
-			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetCurrentTeam() == Team && Team > -1)
-				PlayerNum++;
+				// How many players per team
+				if(GameServer()->m_apPlayers[i]->GetCurrentTeam() == Team && Team > -1)
+					PlayerNum++;
 			
-			// How many players are joined
-			if(GameServer()->m_apPlayers[i]->IsJoined() && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
-				PlayerJoined++;
+				// How many players are joined
+				if(GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+					PlayerJoined++;
+
+				// Get the Teamscore
+				if(GameServer()->m_apPlayers[i]->GetCurrentTeam() == Team && Team > -1)
+					Teamscore += GameServer()->m_apPlayers[i]->m_Score;
+			}
 
 			// Is (Base)Color used
 			// Wich Player(ID) has the Base Color
@@ -113,7 +122,8 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 		PlayerJoined,
 		IsUsed,
 		PlayerID,
-		WishIsUsed
+		WishIsUsed,
+		Teamscore
 	};
 	return Return;
 }
@@ -153,6 +163,12 @@ TeamStatistics CGameControllerCatching::TeamStatistic(int Team, int BaseColor)
 	{
 		TeamStatistics Return = TeamStatistic(Color);
 		return Return.WishIsUsed;
+	}
+	
+	bool CGameControllerCatching::GetTeamscore(int Team)
+	{
+		TeamStatistics Return = TeamStatistic(Team);
+		return Return.Teamscore;
 	}
 
 int CGameControllerCatching::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)

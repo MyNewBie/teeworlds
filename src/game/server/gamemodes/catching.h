@@ -18,6 +18,7 @@ public:
 		virtual bool IsColorUsed(int Color);
 		virtual int GetColorOwner(int BaseColor);
 		virtual bool IsWishUsed(int Color);
+		virtual int GetTeamscore(int Team);
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
 	virtual void PostReset();
 	void DoPlayerNumWincheck();
