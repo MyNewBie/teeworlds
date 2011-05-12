@@ -17,6 +17,7 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 		str_format(Buf, sizeof(Buf), "Catching %s for Teeworlds %s", CATCHING_VERSION, GAME_VERSION);
 		SendChatTarget(ClientID, Buf);
 		SendChatTarget(ClientID, "By Nox Nebula (Noxi Foxi) and Erd B\xC3\xA4r"); // "\xC3\xA4" = UTF-8 "ä"
+		SendChatTarget(ClientID, "Don't play \"Catch16\", this is a noobie fake of my mod.");
 		SendChatTarget(ClientID, " ");
 		SendChatTarget(ClientID, "Say \"/cmdlist\" for list of command available.");
 	}
