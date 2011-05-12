@@ -26,6 +26,7 @@ exit
 @echo === compiling teeworlds (server release) ===
 @..\bam\bam server_release
 @echo.
+copy /Y teeworlds_catching_srv.exe %UserProfile%\Dropbox\Public\Teeworlds\Catching\Latest_Build
 @pause
 cls
 goto compile
