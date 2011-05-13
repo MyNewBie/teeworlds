@@ -1368,9 +1368,15 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	// select gametype
 	if(str_comp(g_Config.m_SvGametype, "catch") == 0)
+	{
 		m_pController = new CGameControllerCatching(this);
+		CatchingController()->InitTeleporter();
+	}
 	else if(str_comp(g_Config.m_SvGametype, "icatch") == 0)
+	{
 		m_pController = new CGameControllerCatching(this);
+		CatchingController()->InitTeleporter();
+	}
 	else if(str_comp(g_Config.m_SvGametype, "mod") == 0)
 		m_pController = new CGameControllerMOD(this);
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)

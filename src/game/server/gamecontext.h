@@ -71,6 +71,9 @@ public:
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
 
+	// catching
+	class CGameControllerCatching *CatchingController() { return (CGameControllerCatching*)m_pController; }
+
 	CGameContext();
 	~CGameContext();
 

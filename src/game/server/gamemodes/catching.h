@@ -4,23 +4,33 @@
 
 class CGameControllerCatching : public IGameController
 {
-private:
 public:
+	vec2 *m_pTeleporter;
 
 	CGameControllerCatching(class CGameContext *pGameServer);
+	~CGameControllerCatching();
+
+	void InitTeleporter();
+
 	virtual void Tick();
-	virtual bool IsCatching() const;
 	virtual void OnPlayerInfoChange(class CPlayer *pP);
-	virtual TeamStatistics TeamStatistic(int Team = -1, int BaseColor = -1);
-		virtual int GetTeamNum();
-		virtual int GetPlayersNum(int Team);
-		virtual int GetJoinedPlayers();
-		virtual bool IsColorUsed(int Color);
-		virtual int GetColorOwner(int BaseColor);
-		virtual bool IsWishUsed(int Color);
-		virtual int GetTeamscore(int Team);
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon);
+
+	virtual TeamStatistics TeamStatistic(int Team = -1, int BaseColor = -1);
+	virtual int GetTeamNum();
+
+	virtual int GetPlayersNum(int Team);
+	virtual int GetJoinedPlayers();
+
+	virtual bool IsColorUsed(int Color);
+	virtual int GetColorOwner(int BaseColor);
+	virtual bool IsWishUsed(int Color);
+
+	virtual int GetTeamscore(int Team);
+
 	virtual void PostReset();
 	void DoPlayerNumWincheck();
+
+	virtual bool IsCatching() const;
 };
 #endif

@@ -83,6 +83,11 @@ MACRO_CONFIG_INT(SvFreeJoin, sv_free_join, 3, 2, MAX_CLIENTS, CFGFLAG_SERVER, "M
 MACRO_CONFIG_INT(SvTimeBetweenRounds, sv_time_between_rounds, 3, 1, 10, CFGFLAG_SERVER, "Time to wait until a new round starts")
 MACRO_CONFIG_INT(SvExtraPoints, sv_extra_points, 5, 0, 20, CFGFLAG_SERVER, "Increase the score by the specified value")
 MACRO_CONFIG_INT(SvAutoAssingColorTime, sv_auto_assign_color_time, 20, 0, 60, CFGFLAG_SERVER, "The time in seconds that remaining in wich the player can choose a team (0 = off)")
+MACRO_CONFIG_INT(SvStrip, sv_strip, 0, 0, 1, CFGFLAG_SERVER, "Enable or disable keeping weapon after teleporting")
+MACRO_CONFIG_INT(SvTeleport, sv_teleport, 1, 0, 1, CFGFLAG_SERVER, "Enable or disable teleportation")
+MACRO_CONFIG_INT(SvTeleportGrenade, sv_teleport_grenade, 0, 0, 1, CFGFLAG_SERVER, "Enable or disable teleport of grenade")
+MACRO_CONFIG_INT(SvTeleportKill, sv_teleport_kill, 0, 0, 1, CFGFLAG_SERVER, "Teleporting one someone kills him")
+MACRO_CONFIG_INT(SvTeleportVelReset, sv_teleport_vel_reset, 0, 0, 1, CFGFLAG_SERVER, "Reset velocity after teleport")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
