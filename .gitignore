@@ -24,3 +24,8 @@ versionsrv*
 /Catching/Catching.opensdf
 /Catching/Catching.sdf
 /Catching/Catching.suo
+
+/c-all.bat
+/client_release.bat
+/server_debug.bat
+/server_release.bat

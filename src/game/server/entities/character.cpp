@@ -628,7 +628,7 @@ void CCharacter::Tick()
 				m_ActiveWeapon = WEAPON_HAMMER;
 				m_LastWeapon = WEAPON_HAMMER;
 				m_aWeapons[0].m_Got = true;
-				for(int i = 1; i < NUM_WEAPONS; i++)
+				for(int i = 2; i < NUM_WEAPONS; i++)
 					m_aWeapons[i].m_Got = false;
 			}
 			if(g_Config.m_SvTeleportKill)
