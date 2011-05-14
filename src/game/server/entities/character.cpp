@@ -46,6 +46,9 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_ProximityRadius = ms_PhysSize;
 	m_Health = 0;
 	m_Armor = 0;
+
+	/* Catching */
+	m_Visible = true;
 }
 
 void CCharacter::Reset()
@@ -545,7 +548,7 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
-	// catching
+	/* Catching */
 	if(GameServer()->m_pController->IsCatching())
 	{
 		// tile index
@@ -589,6 +592,15 @@ void CCharacter::Tick()
 				m_Core.m_Vel.y = 0;
 			}
 		}
+		
+		// handle hide tiles
+		if(m_Visible && GameServer()->Collision()->IsHideTile(m_Core.m_Pos))
+			m_Visible = false;
+		else if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Core.m_Pos))
+			m_Visible = true;
+
+		if(!m_Visible)
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Invisible");
 
 		// handle speedup tiles
 		int CurrentSpeedup = GameServer()->Collision()->IsSpeedup(TileIndex);

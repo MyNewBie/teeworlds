@@ -131,8 +131,10 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
+	/* Catching */
 	int m_LastSpeedup;
 	vec2 m_PrevPos;
+	bool m_Visible;
 };
 
 #endif

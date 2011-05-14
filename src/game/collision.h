@@ -40,6 +40,7 @@ public:
 	int GetIndex(vec2 PrevPos, vec2 Pos);
 	vec2 GetPos(int Index);
 	int GetCollisionCatching(int Index);
+	bool IsHideTile(vec2 Pos);
 	int IsTeleport(int Index);
 	int IsSpeedup(int Index);
 	void GetSpeedup(int Index, vec2 *Dir, int *Force);

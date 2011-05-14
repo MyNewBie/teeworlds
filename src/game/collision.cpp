@@ -141,6 +141,14 @@ int CCollision::GetCollisionCatching(int Index)
 	return m_pTiles[Index].m_Index;
 }
 
+bool CCollision::IsHideTile(vec2 Pos)
+{
+	int nx = clamp((int)Pos.x/32, 0, m_Width-1);
+	int ny = clamp((int)Pos.y/32, 0, m_Height-1);
+
+	return m_pTiles[ny*m_Width+nx].m_Index == TILE_HIDE;
+}
+
 int CCollision::IsTeleport(int Index)
 {
 	if(!m_pTele || Index < 0)
