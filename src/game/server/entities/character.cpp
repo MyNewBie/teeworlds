@@ -599,9 +599,6 @@ void CCharacter::Tick()
 		else if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Core.m_Pos))
 			m_Visible = true;
 
-		if(!m_Visible)
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Invisible");
-
 		// handle speedup tiles
 		int CurrentSpeedup = GameServer()->Collision()->IsSpeedup(TileIndex);
 		bool SpeedupTouch = false;

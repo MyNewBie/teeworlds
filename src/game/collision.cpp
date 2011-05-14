@@ -51,6 +51,9 @@ void CCollision::Init(class CLayers *pLayers)
 		case TILE_NOHOOK:
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
+		case TILE_HIDE:
+			m_pTiles[i].m_Index = Index;
+			break;
 		default:
 			m_pTiles[i].m_Index = 0;
 		}
@@ -77,7 +80,7 @@ bool CCollision::IsTileSolid(int x, int y)
 	return GetTile(x, y)&COLFLAG_SOLID;
 }
 
-// catching
+/* Catching */
 /*int CCollision::GetIndex(vec2 Pos)
 {
 	int nx = clamp((int)Pos.x/32, 0, m_Width-1);
