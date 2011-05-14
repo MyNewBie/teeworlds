@@ -135,6 +135,7 @@ private:
 	int m_LastSpeedup;
 	vec2 m_PrevPos;
 	bool m_Visible;
+	int m_ShieldID;
 };
 
 #endif

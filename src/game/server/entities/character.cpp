@@ -49,6 +49,7 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 
 	/* Catching */
 	m_Visible = true;
+	m_ShieldID = Server()->SnapNewID();
 }
 
 void CCharacter::Reset()
@@ -599,6 +600,9 @@ void CCharacter::Tick()
 		else if(!m_Visible && !GameServer()->Collision()->IsHideTile(m_Core.m_Pos))
 			m_Visible = true;
 
+		if(!g_Config.m_SvHideouts && !m_Visible)
+			m_Visible = true;
+
 		// handle speedup tiles
 		int CurrentSpeedup = GameServer()->Collision()->IsSpeedup(TileIndex);
 		bool SpeedupTouch = false;
@@ -629,7 +633,12 @@ void CCharacter::Tick()
 			m_Core.m_HookState = HOOK_RETRACTED;
 			m_Core.m_Pos = ((CGameControllerCatching*)GameServer()->m_pController)->m_pTeleporter[z-1];
 			m_Core.m_HookPos = m_Core.m_Pos;
-			//Resetting velocity to prevent exploit
+
+			// Death animation for teleporting
+			GameServer()->CreateDeath(m_pPlayer->m_ViewPos, m_pPlayer->GetCID());
+			GameServer()->CreateSound(m_pPlayer->m_ViewPos, SOUND_PLAYER_DIE);
+
+			// Resetting velocity to prevent exploit
 			if(g_Config.m_SvTeleportVelReset)
 				m_Core.m_Vel = vec2(0,0);
 			if(g_Config.m_SvStrip)
@@ -932,6 +941,30 @@ void CCharacter::Snap(int SnappingClient)
 	CNetObj_Character *pCharacter = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, m_pPlayer->GetCID(), sizeof(CNetObj_Character)));
 	if(!pCharacter)
 		return;
+
+	/* Catching */
+	if(GameServer()->m_pController->IsCatching())
+	{
+		// Handle hideouts
+		if(!m_Visible && !GameServer()->m_World.m_Paused)
+		{
+			if(GameServer()->m_apPlayers[SnappingClient]->GetCurrentTeam() == m_pPlayer->GetCurrentTeam())
+			{
+				// Show friends
+				CNetObj_Pickup *pShield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
+				pShield->m_X = (int)m_Core.m_Pos.x;
+				pShield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
+				pShield->m_Type = 1;
+				pShield->m_Subtype = 0;
+			}
+			else
+			{
+				// Hide enemies
+				return;
+			}
+		}
+	}
+	/* Catching End */
 
 	// write down the m_Core
 	if(!m_ReckoningTick || GameServer()->m_World.m_Paused)
