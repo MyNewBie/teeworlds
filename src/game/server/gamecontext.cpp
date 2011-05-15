@@ -1490,7 +1490,7 @@ int CmaskCatching(CGameContext *pGameServer, bool Joined)
 		if(!pPlayer)
 			continue;
 
-		if((Joined == pPlayer->IsJoined() && pPlayer->GetTEAM() != TEAM_SPECTATORS) || (Joined && pPlayer->GetTEAM() == TEAM_SPECTATORS))
+		if((Joined == pPlayer->IsJoined() && pPlayer->GetTeam() != TEAM_SPECTATORS) || (Joined && pPlayer->GetTeam() == TEAM_SPECTATORS))
 			Mask = Mask|(1<<i);
 	}
 	return Mask;
