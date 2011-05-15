@@ -1481,6 +1481,21 @@ bool CGameContext::IsClientPlayer(int ClientID)
 	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS ? false : true;
 }
 
+int CmaskCatching(CGameContext *pGameServer, bool Joined)
+{
+	int Mask = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		CPlayer *pPlayer = pGameServer->m_apPlayers[i];
+		if(!pPlayer)
+			continue;
+
+		if((Joined == pPlayer->IsJoined() && pPlayer->GetTEAM() != TEAM_SPECTATORS) || (Joined && pPlayer->GetTEAM() == TEAM_SPECTATORS))
+			Mask = Mask|(1<<i);
+	}
+	return Mask;
+}
+
 const char *CGameContext::GameType() { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
 const char *CGameContext::Version() { return GAME_VERSION; }
 const char *CGameContext::NetVersion() { return GAME_NETVERSION; }
