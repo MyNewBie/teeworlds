@@ -945,23 +945,30 @@ void CCharacter::Snap(int SnappingClient)
 	/* Catching */
 	if(GameServer()->m_pController->IsCatching())
 	{
+		bool SendShild = false;
+
+		// Handle not joined players
+		if(!m_pPlayer->IsJoined() && GameServer()->m_apPlayers[SnappingClient]->IsJoined())
+			return;
+		else if(!m_pPlayer->IsJoined() && !GameServer()->m_apPlayers[SnappingClient]->IsJoined())
+			SendShild = true;
+
 		// Handle hideouts
 		if(!m_Visible && !GameServer()->m_World.m_Paused)
 		{
 			if(GameServer()->m_apPlayers[SnappingClient]->GetCurrentTeam() == m_pPlayer->GetCurrentTeam())
-			{
-				// Show friends
-				CNetObj_Pickup *pShield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
-				pShield->m_X = (int)m_Core.m_Pos.x;
-				pShield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
-				pShield->m_Type = 1;
-				pShield->m_Subtype = 0;
-			}
-			else
-			{
-				// Hide enemies
+				SendShild = true; // Show friends
+			else if(m_pPlayer->IsJoined()) // Hide enemies
 				return;
-			}
+		}
+		
+		if(SendShild)
+		{
+			CNetObj_Pickup *pShield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
+			pShield->m_X = (int)m_Core.m_Pos.x;
+			pShield->m_Y = (int)m_Core.m_Pos.y - 1.5 * ms_PhysSize;
+			pShield->m_Type = 1;
+			pShield->m_Subtype = 0;
 		}
 	}
 	/* Catching End */
