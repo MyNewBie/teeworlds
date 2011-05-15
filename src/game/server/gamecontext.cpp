@@ -210,11 +210,11 @@ void CGameContext::CreateSoundGlobal(int Sound, int Target)
 }
 
 
-void CGameContext::SendChatTarget(int To, const char *pText)
+void CGameContext::SendChatTarget(int To, const char *pText, int From, int Team)
 {
 	CNetMsg_Sv_Chat Msg;
-	Msg.m_Team = 0;
-	Msg.m_ClientID = -1;
+	Msg.m_Team = Team;
+	Msg.m_ClientID = From;
 	Msg.m_pMessage = pText;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
 }
@@ -615,6 +615,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		{
 			// check for invalid chars
 			unsigned char *pMessage = (unsigned char *)pMsg->m_pMessage;
+
 			while (*pMessage)
 			{
 				if(*pMessage < 32)
@@ -622,7 +623,22 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				pMessage++;
 			}
 
-			SendChat(ClientID, Team, pMsg->m_pMessage);
+			// Teammessage
+			if(m_pController->IsCatching() && pPlayer->GetTeam() != -1 && Team != CGameContext::CHAT_ALL)
+			{
+				for(int i = 0; i < MAX_CLIENTS; i++)
+				{
+					if(m_apPlayers[i])
+					{
+						if(m_apPlayers[i]->GetTeam() != -1 && m_apPlayers[i]->GetCurrentTeam() == pPlayer->GetCurrentTeam())
+							SendChatTarget(i, pMsg->m_pMessage, ClientID, 1);
+					}
+				}
+			}
+			else // Normal Message
+			{
+				SendChat(ClientID, Team, pMsg->m_pMessage);
+			}
 		}
 	}
 	else if(MsgID == NETMSGTYPE_CL_CALLVOTE)

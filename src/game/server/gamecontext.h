@@ -133,7 +133,7 @@ public:
 	};
 
 	// network
-	void SendChatTarget(int To, const char *pText);
+	//void SendChatTarget(int To, const char *pText); //Replaced with catching function
 	void SendChat(int ClientID, int Team, const char *pText);
 	void SendEmoticon(int ClientID, int Emoticon);
 	void SendWeaponPickup(int ClientID, int Weapon);
@@ -174,6 +174,7 @@ public:
 	//virtual bool ChatCommandsCatching();
 	//virtual bool ChatCommandsZCatch();
 	virtual int SearchName(char Name[MAX_NAME_LENGTH]);
+	void SendChatTarget(int To, const char *pText, int From = -1, int Team = 0);
 };
 
 inline int CmaskAll() { return -1; }
