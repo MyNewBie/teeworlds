@@ -136,7 +136,8 @@ void CPlayer::Tick()
 					if(IsJoined())
 					{
 						str_format(aBuf, sizeof(aBuf), "You are now '%s'", aTeamColors[ColorID]);
-						GetCharacter()->CaughtAnimation(GetCID());
+						if(GetCharacter())
+							GetCharacter()->CaughtAnimation(GetCID());
 					}
 					else
 						str_format(aBuf, sizeof(aBuf), "You join automaticaly in '%s', when a new round starts", aTeamColors[ColorID]);

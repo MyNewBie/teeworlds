@@ -64,7 +64,8 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 				if(m_apPlayers[ClientID]->IsJoined())
 				{
 					str_format(Buf, sizeof(Buf), "You are now '%s'", aTeamColors[ColorID]);
-					m_apPlayers[ClientID]->GetCharacter()->CaughtAnimation(ClientID);
+					if(m_apPlayers[ClientID]->GetCharacter())
+						m_apPlayers[ClientID]->GetCharacter()->CaughtAnimation(ClientID);
 				}
 				else
 					str_format(Buf, sizeof(Buf), "You join automaticaly in '%s', when a new round starts", aTeamColors[ColorID]);

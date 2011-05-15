@@ -1029,16 +1029,13 @@ void CCharacter::Snap(int SnappingClient)
 
 void CCharacter::CaughtAnimation(int CatcherID, bool Refill)
 {
-	if(this)
-	{
-		GameServer()->CreateExplosion(m_Pos, m_pPlayer->GetCID(), WEAPON_SELF, true, m_pPlayer->IsJoined());
-		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, CmaskCatching(GameServer(), m_pPlayer->IsJoined()));
-		for(int i = 0; i < 2; i++)
-			GameServer()->CreateDeath(m_Pos, CatcherID, m_pPlayer->IsJoined());
-		GameServer()->CreatePlayerSpawn(m_Pos, m_pPlayer->IsJoined());
-		for(int t = 0; t < 3; t++)
-			GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatching(GameServer(), m_pPlayer->IsJoined()));
-	}
+	GameServer()->CreateExplosion(m_Pos, m_pPlayer->GetCID(), WEAPON_SELF, true, m_pPlayer->IsJoined());
+	GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, CmaskCatching(GameServer(), m_pPlayer->IsJoined()));
+	for(int i = 0; i < 2; i++)
+		GameServer()->CreateDeath(m_Pos, CatcherID, m_pPlayer->IsJoined());
+	GameServer()->CreatePlayerSpawn(m_Pos, m_pPlayer->IsJoined());
+	for(int t = 0; t < 3; t++)
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatching(GameServer(), m_pPlayer->IsJoined()));
 
 	if(Refill)
 	{
