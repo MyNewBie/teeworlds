@@ -115,11 +115,11 @@ public:
 	CVoteOptionServer *m_pVoteOptionLast;
 
 	// helper functions
-	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage);
-	void CreateHammerHit(vec2 Pos);
-	void CreatePlayerSpawn(vec2 Pos);
-	void CreateDeath(vec2 Pos, int Who);
+	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount, bool Visible);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, bool Visible);
+	void CreateHammerHit(vec2 Pos, bool Visible);
+	void CreatePlayerSpawn(vec2 Pos, bool Visible);
+	void CreateDeath(vec2 Pos, int Who, bool Visible);
 	void CreateSound(vec2 Pos, int Sound, int Mask=-1);
 	void CreateSoundGlobal(int Sound, int Target=-1);
 

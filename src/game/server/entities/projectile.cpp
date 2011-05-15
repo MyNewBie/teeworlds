@@ -22,6 +22,10 @@ CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, 
 	m_StartTick = Server()->Tick();
 	m_Explosive = Explosive;
 
+	/* Catching */
+	m_Joined = GameServer()->m_apPlayers[m_Owner]->IsJoined();
+	/* --- */
+
 	GameWorld()->InsertEntity(this);
 }
 
@@ -72,10 +76,10 @@ void CProjectile::Tick()
 	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
 	{
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
-			GameServer()->CreateSound(CurPos, m_SoundImpact);
+			GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatching(GameServer(), m_Joined));
 
 		if(m_Explosive)
-			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false);
+			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, m_Joined);
 
 		else if(TargetChr)
 			TargetChr->TakeDamage(m_Direction * max(0.001f, m_Force), m_Damage, m_Owner, m_Weapon);
@@ -107,6 +111,14 @@ void CProjectile::Snap(int SnappingClient)
 
 	if(NetworkClipped(SnappingClient, GetPos(Ct)))
 		return;
+
+	/* Catching */
+	/*char aBuf[512];
+	str_format(aBuf, sizeof(aBuf), "Joined: %i ,  Mask: %i", m_Joined, CmaskCatching(GameServer(), m_Joined)&(1<<SnappingClient));
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Mask", aBuf);*/
+	if(!(CmaskCatching(GameServer(), m_Joined)&(1<<SnappingClient)))
+		return;
+	/* --- */
 
 	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_ID, sizeof(CNetObj_Projectile)));
 	if(pProj)

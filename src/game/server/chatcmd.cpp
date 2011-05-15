@@ -107,8 +107,8 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 			{
 				pChar->m_Core.m_Pos = m_apPlayers[ClientID]->m_ViewPos;
 				SendChatTarget(TargetID, "Wooosh...");
-				CreateDeath(m_apPlayers[TargetID]->m_ViewPos, TargetID);
-				CreateSound(m_apPlayers[ClientID]->m_ViewPos, SOUND_PLAYER_DIE);
+				CreateDeath(m_apPlayers[TargetID]->m_ViewPos, TargetID, m_apPlayers[TargetID]->IsJoined());
+				CreateSound(m_apPlayers[ClientID]->m_ViewPos, SOUND_PLAYER_DIE, CmaskCatching(this, m_apPlayers[TargetID]->IsJoined()));
 			}
 			else if(TargetID == ClientID)
 				SendChatTarget(ClientID, "Yeah... Funny...");
@@ -139,8 +139,8 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 			{
 				pChar->m_Core.m_Pos = m_apPlayers[TargetID]->m_ViewPos;
 				SendChatTarget(ClientID, "Wooosh...");
-				CreateDeath(m_apPlayers[ClientID]->m_ViewPos, ClientID);
-				CreateSound(m_apPlayers[ClientID]->m_ViewPos, SOUND_PLAYER_DIE);
+				CreateDeath(m_apPlayers[ClientID]->m_ViewPos, ClientID, m_apPlayers[ClientID]->IsJoined());
+				CreateSound(m_apPlayers[ClientID]->m_ViewPos, SOUND_PLAYER_DIE, CmaskCatching(this, m_apPlayers[ClientID]->IsJoined()));
 			}
 			else if(TargetID == ClientID)
 				SendChatTarget(ClientID, "Yeah... Funny...");

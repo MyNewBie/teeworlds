@@ -27,6 +27,9 @@ private:
 	float m_Force;
 	int m_StartTick;
 	bool m_Explosive;
+
+	/* Catching */
+	bool m_Joined;
 };
 
 #endif
