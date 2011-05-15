@@ -946,9 +946,13 @@ void CCharacter::Snap(int SnappingClient)
 	if(GameServer()->m_pController->IsCatching())
 	{
 		bool SendShild = false;
+		bool IsSpectator = false;
+
+		if(m_pPlayer->GetTeam() != TEAM_SPECTATORS)
+			IsSpectator = true;
 
 		// Handle not joined players
-		if(!m_pPlayer->IsJoined() && GameServer()->m_apPlayers[SnappingClient]->IsJoined())
+		if(!m_pPlayer->IsJoined() && GameServer()->m_apPlayers[SnappingClient]->IsJoined() && !IsSpectator)
 			return;
 		else if(!m_pPlayer->IsJoined() && !GameServer()->m_apPlayers[SnappingClient]->IsJoined())
 			SendShild = true;
@@ -958,7 +962,7 @@ void CCharacter::Snap(int SnappingClient)
 		{
 			if(GameServer()->m_apPlayers[SnappingClient]->GetCurrentTeam() == m_pPlayer->GetCurrentTeam())
 				SendShild = true; // Show friends
-			else if(m_pPlayer->IsJoined()) // Hide enemies
+			else if(m_pPlayer->IsJoined() || !IsSpectator) // Hide enemies
 				return;
 		}
 		
