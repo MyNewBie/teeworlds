@@ -136,6 +136,9 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 		int Num = m_World.FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 		for(int i = 0; i < Num; i++)
 		{
+			if(!(CmaskCatching(this, Visible)&(1<<apEnts[i]->GetPlayer()->GetCID())))
+				continue;
+
 			vec2 Diff = apEnts[i]->m_Pos - Pos;
 			vec2 ForceDir(0,1);
 			float l = length(Diff);
@@ -1483,6 +1486,9 @@ bool CGameContext::IsClientPlayer(int ClientID)
 
 int CmaskCatching(CGameContext *pGameServer, bool Joined)
 {
+	if(Joined)
+		return -1;
+
 	int Mask = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -1490,10 +1496,8 @@ int CmaskCatching(CGameContext *pGameServer, bool Joined)
 		if(!pPlayer)
 			continue;
 
-		if((Joined == pPlayer->IsJoined() && pPlayer->GetTeam() != TEAM_SPECTATORS) ||
-			(Joined && pPlayer->GetTeam() == TEAM_SPECTATORS) ||
-			(Joined && !pPlayer->IsJoined()))
-			Mask = Mask|(1<<i);
+		if(!Joined && !pPlayer->IsJoined())
+			Mask |= (1<<i);
 	}
 	return Mask;
 }
