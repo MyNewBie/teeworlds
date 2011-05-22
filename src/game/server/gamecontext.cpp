@@ -136,7 +136,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 		int Num = m_World.FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 		for(int i = 0; i < Num; i++)
 		{
-			if(!(CmaskCatching(this, Visible)&(1<<apEnts[i]->GetPlayer()->GetCID())))
+			if(!(CmaskCatching(this, Visible)&(1<<apEnts[i]->GetPlayer()->GetCID())) || (Visible && !apEnts[i]->GetPlayer()->IsJoined()))
 				continue;
 
 			vec2 Diff = apEnts[i]->m_Pos - Pos;

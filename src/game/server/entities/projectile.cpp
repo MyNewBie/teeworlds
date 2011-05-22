@@ -71,9 +71,12 @@ void CProjectile::Tick()
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
 
+	if(TargetChr && (!(CmaskCatching(GameServer(), m_Joined)&(1<<TargetChr->GetPlayer()->GetCID())) || (m_Joined && !TargetChr->GetPlayer()->IsJoined())))
+		TargetChr = 0;
+
 	m_LifeSpan--;
 
-	if((TargetChr && CmaskCatching(GameServer(), m_Joined)&(1<<TargetChr->GetPlayer()->GetCID())) || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
+	if(TargetChr || Collide || m_LifeSpan < 0 || GameLayerClipped(CurPos))
 	{
 		if(m_LifeSpan >= 0 || m_Weapon == WEAPON_GRENADE)
 			GameServer()->CreateSound(CurPos, m_SoundImpact, CmaskCatching(GameServer(), m_Joined));
