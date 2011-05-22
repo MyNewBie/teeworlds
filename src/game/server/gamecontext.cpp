@@ -527,7 +527,7 @@ void CGameContext::OnClientEnter(int ClientID)
 		str_format(aBuf, sizeof(aBuf), "Welcome to Catching %s for Teeworlds %s", CATCHING_VERSION, GAME_VERSION);
 		SendChatTarget(ClientID, " ");
 		SendChatTarget(ClientID, aBuf);
-		SendChatTarget(ClientID, "A modification by Nox Nebula (Noxi Foxi)");
+		SendChatTarget(ClientID, "A modification by Nox Nebula (Noxi Foxi) and Sushi");
 		SendChatTarget(ClientID, "Say \"/cmdlist\" for list of command available.");
 	}
 }
