@@ -13,6 +13,11 @@ CLaser::CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEner
 	m_Dir = Direction;
 	m_Bounces = 0;
 	m_EvalTick = 0;
+
+	/* Catching */
+	m_Joined = GameServer()->m_apPlayers[m_Owner]->IsJoined();
+	/* --- */
+
 	GameWorld()->InsertEntity(this);
 	DoBounce();
 }
@@ -22,7 +27,7 @@ bool CLaser::HitCharacter(vec2 From, vec2 To)
 {
 	vec2 At;
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
-	CCharacter *Hit = GameServer()->m_World.IntersectCharacter(m_Pos, To, 0.f, At, OwnerChar);
+	CCharacter *Hit = GameServer()->m_World.IntersectCharacterTeam(m_Pos, To, 0.f, At, OwnerChar, m_Joined);
 	if(!Hit)
 		return false;
 
@@ -95,6 +100,11 @@ void CLaser::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient))
 		return;
+
+	/* Catching */
+	if(!(CmaskCatching(GameServer(), m_Joined)&(1<<SnappingClient)))
+		return;
+	/* --- */
 
 	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID, sizeof(CNetObj_Laser)));
 	if(!pObj)

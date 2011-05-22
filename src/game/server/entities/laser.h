@@ -25,6 +25,7 @@ private:
 	int m_Bounces;
 	int m_EvalTick;
 	int m_Owner;
+	bool m_Joined;
 };
 
 #endif

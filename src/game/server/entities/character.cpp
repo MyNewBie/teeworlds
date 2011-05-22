@@ -300,7 +300,7 @@ void CCharacter::FireWeapon()
 			{
 				CCharacter *pTarget = apEnts[i];
 
-				if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL) || !(CmaskCatching(GameServer(), m_pPlayer->IsJoined())&(1<<apEnts[i]->GetPlayer()->GetCID())) || (m_pPlayer->IsJoined() && !apEnts[i]->GetPlayer()->IsJoined()))
+				if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL) || m_pPlayer->IsJoined() != apEnts[i]->GetPlayer()->IsJoined())
 					continue;
 
 				// set his velocity to fast upward (for now)

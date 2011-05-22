@@ -71,7 +71,8 @@ void CProjectile::Tick()
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
 
-	if(TargetChr && (!(CmaskCatching(GameServer(), m_Joined)&(1<<TargetChr->GetPlayer()->GetCID())) || (m_Joined && !TargetChr->GetPlayer()->IsJoined())))
+	CPlayer *pOwnerPlayer = GameServer()->m_apPlayers[m_Owner];
+	if(TargetChr && m_Joined != TargetChr->GetPlayer()->IsJoined())
 		TargetChr = 0;
 
 	m_LifeSpan--;
