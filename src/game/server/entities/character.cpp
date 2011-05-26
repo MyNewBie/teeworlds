@@ -550,6 +550,11 @@ void CCharacter::Tick()
 	m_Core.Tick(true);
 
 	/* Catching */
+	if(!m_Core.m_Joined && m_pPlayer->IsJoined())
+		m_Core.m_Joined = true;
+	else if(m_Core.m_Joined && !m_pPlayer->IsJoined())
+		m_Core.m_Joined = false;
+
 	if(GameServer()->m_pController->IsCatching())
 	{
 		// tile index

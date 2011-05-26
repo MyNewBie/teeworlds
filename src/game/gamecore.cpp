@@ -216,6 +216,11 @@ void CCharacterCore::Tick(bool UseInput)
 				if(!pCharCore || pCharCore == this)
 					continue;
 
+				/* Catching */
+				if(pCharCore->m_Joined != m_Joined)
+					continue;
+				/* --- */
+
 				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, pCharCore->m_Pos);
 				if(distance(pCharCore->m_Pos, ClosestPoint) < PhysSize+2.0f)
 				{
@@ -313,6 +318,11 @@ void CCharacterCore::Tick(bool UseInput)
 			//player *p = (player*)ent;
 			if(pCharCore == this) // || !(p->flags&FLAG_ALIVE)
 				continue; // make sure that we don't nudge our self
+
+			/* Catching */
+			if(pCharCore->m_Joined != m_Joined)
+				continue;
+			/* --- */
 
 			// handle player <-> player collision
 			float Distance = distance(m_Pos, pCharCore->m_Pos);
