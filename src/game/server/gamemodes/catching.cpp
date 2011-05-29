@@ -352,7 +352,7 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 		if(PlayerNum >= GetJoinedPlayers() && GetJoinedPlayers() > 1)
 		{
 			int Owner = GetColorOwner(ColorID);
-			if(GameServer()->m_apPlayers[Owner])
+			if(Owner > -1 && GameServer()->m_apPlayers[Owner])
 				GameServer()->m_apPlayers[Owner]->m_Score += g_Config.m_SvExtraPoints;
 			EndRound();
 		}
