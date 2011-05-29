@@ -316,12 +316,10 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 		int PlayerID = -1;
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			if(IsColorUsed(i)) {
-				if(GetPlayersNum(i) > PlayerNum)
-				{
-					PlayerNum = GetPlayersNum(i);
-					ColorID = i;
-				}
+			if(GetPlayersNum(i) > PlayerNum)
+			{
+				PlayerNum = GetPlayersNum(i);
+				ColorID = i;
 			}
 
 			if(GameServer()->m_apPlayers[i])
@@ -334,7 +332,6 @@ void CGameControllerCatching::DoPlayerNumWincheck()
 				}
 				else if(GameServer()->m_apPlayers[i]->m_Score > Topscore)
 					TopscoreCount++;
-
 			}
 		}
 
