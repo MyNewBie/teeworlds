@@ -800,7 +800,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	/* Catching */
-	if(GameServer()->m_pController->IsCatching() && Weapon != WEAPON_WORLD)
+	if(GameServer()->m_pController->IsCatching() && Weapon > -1)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "catch catcher='%d:%s' caught='%d:%s' weapon=%d special=%d",
