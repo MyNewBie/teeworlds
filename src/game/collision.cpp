@@ -75,6 +75,14 @@ int CCollision::GetTile(int x, int y)
 		return 0;
 }
 
+int CCollision::GetTileIndex(int x, int y)
+{
+	int nx = clamp(x/32, 0, m_Width-1);
+	int ny = clamp(y/32, 0, m_Height-1);
+	
+	return m_pTiles[ny*m_Width+nx].m_Index > 255 ? 0 : m_pTiles[ny*m_Width+nx].m_Index;
+}
+
 bool CCollision::IsTileSolid(int x, int y)
 {
 	return GetTile(x, y)&COLFLAG_SOLID;
@@ -192,6 +200,32 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 	for(int i = 0; i < End; i++)
 	{
 		float a = i/Distance;
+		vec2 Pos = mix(Pos0, Pos1, a);
+		if(CheckPoint(Pos.x, Pos.y))
+		{
+			if(pOutCollision)
+				*pOutCollision = Pos;
+			if(pOutBeforeCollision)
+				*pOutBeforeCollision = Last;
+			return GetCollisionAt(Pos.x, Pos.y);
+		}
+		Last = Pos;
+	}
+	if(pOutCollision)
+		*pOutCollision = Pos1;
+	if(pOutBeforeCollision)
+		*pOutBeforeCollision = Pos1;
+	return 0;
+}
+
+int CCollision::FastIntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision, int Steps)
+{
+	float d = distance(Pos0, Pos1);
+	vec2 Last = Pos0;
+	
+	for(float f = 0; f < d; f+=Steps)
+	{
+		float a = f/d;
 		vec2 Pos = mix(Pos0, Pos1, a);
 		if(CheckPoint(Pos.x, Pos.y))
 		{
