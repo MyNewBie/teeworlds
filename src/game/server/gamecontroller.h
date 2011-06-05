@@ -160,6 +160,7 @@ public:
 
 	/* Catching */
 	virtual bool IsCatching() const;
+	virtual bool IsInstagib() const;
 	virtual TeamStatistics TeamStatistic(int Team = -1, int BaseColor = -1);
 		virtual int GetTeamNum() { return -1; }
 		virtual int GetPlayersNum(int Team) { return -1; }

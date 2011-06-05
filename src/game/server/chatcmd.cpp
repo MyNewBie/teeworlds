@@ -8,7 +8,7 @@ bool CGameContext::ChatCommands(int ClientID, CPlayer *pPlayer, const char * Mes
 	bool SendToChat = false;
 
 	char aTeamColors[MAX_CLIENTS][64] =
-		{"Default", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
+		{"Beige", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
 		"Black", "LightRed", "LightPurple", "LightBlue", "LightYellow", "LightOrange", "LightGreen"};
 
 	char Buf[512];

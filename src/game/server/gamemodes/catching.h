@@ -32,5 +32,6 @@ public:
 	void DoPlayerNumWincheck();
 
 	virtual bool IsCatching() const;
+	virtual bool IsInstagib() const;
 };
 #endif

@@ -7,7 +7,7 @@ CGameControllerCatching::CGameControllerCatching(class CGameContext *pGameServer
 {
 	m_pTeleporter = 0;
 
-	if(!str_comp(g_Config.m_SvGametype, "icatch"))
+	if(!str_comp_nocase(g_Config.m_SvGametype, "icatch"))
 		m_pGameType = "iCatch";
 	else
 		m_pGameType = "Catch";
@@ -57,6 +57,13 @@ void CGameControllerCatching::Tick()
 bool CGameControllerCatching::IsCatching() const
 {
 	return true;
+}
+
+bool CGameControllerCatching::IsInstagib() const
+{
+	if(!str_comp_nocase(g_Config.m_SvGametype, "icatch"))
+		return true;
+	return false;
 }
 
 void CGameControllerCatching::OnPlayerInfoChange(class CPlayer *pP)

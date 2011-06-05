@@ -116,7 +116,7 @@ void CPlayer::Tick()
 				else
 				{
 					char aTeamColors[MAX_CLIENTS][64] =
-						{"Default", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
+						{"Beige", "Orange", "Aqua", "Pink", "Yellow", "Green", "Red", "Blue", "Purple",
 						"Black", "LightRed", "LightPurple", "LightBlue", "LightYellow", "LightOrange", "LightGreen"};
 
 					int ColorID = -1;
@@ -154,6 +154,7 @@ void CPlayer::Tick()
 void CPlayer::PostTick()
 {
 	/* Catching */
+	// CGameContext::OnTick (this=0x6ced70) at src/game/server/gamecontext.cpp:403
 	if(!this) // In unknown causes the player is deleted after the Tick()?
 		return; // Dirty fix
 	/* --- */

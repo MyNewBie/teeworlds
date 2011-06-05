@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
+#include <engine/shared/config.h>
 #include "laser.h"
 
 CLaser::CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner)
@@ -34,7 +35,11 @@ bool CLaser::HitCharacter(vec2 From, vec2 To)
 	m_From = From;
 	m_Pos = At;
 	m_Energy = -1;
-	Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
+	/* Catching */
+	if(GameServer()->m_pController->IsInstagib())
+		Hit->Die(m_Owner, WEAPON_RIFLE);
+	else
+		Hit->TakeDamage(vec2(0.f, 0.f), GameServer()->Tuning()->m_LaserDamage, m_Owner, WEAPON_RIFLE);
 	return true;
 }
 
@@ -72,6 +77,9 @@ void CLaser::DoBounce()
 				m_Energy = -1;
 
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE, CmaskCatching(GameServer(), GameServer()->GetPlayerChar(m_Owner)->GetPlayer()->IsJoined()));
+			if(GameServer()->m_pController->IsInstagib())
+				if(m_Bounces == 1 && g_Config.m_SvLaserjumps)
+					GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_RIFLE, false, m_Joined);
 		}
 	}
 	else

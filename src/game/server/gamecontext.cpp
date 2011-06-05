@@ -1386,12 +1386,12 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//players = new CPlayer[MAX_CLIENTS];
 
 	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "catch") == 0)
+	if(str_comp_nocase(g_Config.m_SvGametype, "catch") == 0)
 	{
 		m_pController = new CGameControllerCatching(this);
 		CatchingController()->InitTeleporter();
 	}
-	else if(str_comp(g_Config.m_SvGametype, "icatch") == 0)
+	else if(str_comp_nocase(g_Config.m_SvGametype, "icatch") == 0)
 	{
 		m_pController = new CGameControllerCatching(this);
 		CatchingController()->InitTeleporter();

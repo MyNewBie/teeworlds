@@ -64,6 +64,13 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ActiveWeapon = WEAPON_GUN;
 	m_LastWeapon = WEAPON_HAMMER;
 	m_QueuedWeapon = -1;
+	/* Catching */
+	if(GameServer()->m_pController->IsInstagib())
+	{
+		m_ActiveWeapon = WEAPON_RIFLE;
+		m_LastWeapon = WEAPON_RIFLE;
+	}
+	/* --- */
 
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
@@ -797,6 +804,11 @@ bool CCharacter::IncreaseArmor(int Amount)
 
 void CCharacter::Die(int Killer, int Weapon)
 {
+	/* Catching: Instagib */
+	if(GameServer()->m_pController->IsInstagib())
+		if(m_pPlayer->GetCurrentTeam() == GameServer()->m_apPlayers[Killer]->GetCurrentTeam())
+			return;
+
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
 	/* Catching */
@@ -853,12 +865,14 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	m_Core.m_Vel += Force;
 	
 	/* Catching */
+	if(GameServer()->m_pController->IsInstagib())
+		return false;
 	if(GameServer()->m_pController->IsCatching())
 	{
 		if(m_pPlayer->GetCurrentTeam() == GameServer()->m_apPlayers[From]->GetCurrentTeam())
 			return false;
 	}
-	/* Catching End */
+	/* --- */
 	else if(GameServer()->m_pController->IsFriendlyFire(m_pPlayer->GetCID(), From) && !g_Config.m_SvTeamdamage)
 		return false;
 
@@ -1043,7 +1057,5 @@ void CCharacter::CaughtAnimation(int CatcherID, bool Refill)
 		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, CmaskCatching(GameServer(), m_pPlayer->IsJoined()));
 
 	if(Refill)
-	{
-		IncreaseHealth(10);
-	}
+		m_Health = 10;
 }

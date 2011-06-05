@@ -212,7 +212,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos)
 		SubType = WEAPON_NINJA;
 	}
 
-	if(Type != -1)
+	if(Type != -1 && !IsInstagib())
 	{
 		CPickup *pPickup = new CPickup(&GameServer()->m_World, Type, SubType);
 		pPickup->m_Pos = Pos;
@@ -420,6 +420,12 @@ void IGameController::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 
 	// give default weapons
+	/* Catching */
+	if(IsInstagib())
+	{
+		pChr->GiveWeapon(WEAPON_RIFLE, -1);
+		return;
+	}
 	pChr->GiveWeapon(WEAPON_HAMMER, -1);
 	pChr->GiveWeapon(WEAPON_GUN, 10);
 }
@@ -794,6 +800,11 @@ int IGameController::ClampTeam(int Team)
 /* Catching */
 
 bool IGameController::IsCatching() const
+{
+	return false;
+}
+
+bool IGameController::IsInstagib() const
 {
 	return false;
 }
