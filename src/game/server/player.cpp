@@ -153,6 +153,11 @@ void CPlayer::Tick()
 
 void CPlayer::PostTick()
 {
+	/* Catching */
+	if(!this) // In unknown causes the player is deleted after the Tick()?
+		return; // Dirty fix
+	/* --- */
+
 	// update latency value
 	if(m_PlayerFlags&PLAYERFLAG_SCOREBOARD)
 	{
