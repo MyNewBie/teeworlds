@@ -85,6 +85,8 @@ MACRO_CONFIG_INT(SvExtraPoints, sv_extra_points, 5, 0, 20, CFGFLAG_SERVER, "Incr
 MACRO_CONFIG_INT(SvAutoAssingColorTime, sv_auto_assign_color_time, 20, 0, 60, CFGFLAG_SERVER, "The time in seconds that remaining in wich the player can choose a team (0 = off)")
 MACRO_CONFIG_INT(SvHideouts, sv_hideouts, 1, 0, 1, CFGFLAG_SERVER, "Enable or disable hiding places")
 
+MACRO_CONFIG_INT(SvMaxWayCalc, sv_max_way_calc, 7500, 1, 50000, CFGFLAG_SERVER, "")
+
 // Teleporter
 MACRO_CONFIG_INT(SvStrip, sv_strip, 0, 0, 1, CFGFLAG_SERVER, "Enable or disable keeping weapon after teleporting")
 MACRO_CONFIG_INT(SvTeleport, sv_teleport, 1, 0, 1, CFGFLAG_SERVER, "Enable or disable teleportation")
