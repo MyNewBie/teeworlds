@@ -45,6 +45,11 @@ void CCollision::Init(class CLayers *pLayers)
 		case TILE_NOHOOK:
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
+/* CATCH MOD START */
+		case TILE_HIDE:
+			m_pTiles[i].m_Index = COLFLAG_HIDE;
+			break;
+/* CATCH MOD END */
 		default:
 			m_pTiles[i].m_Index = 0;
 		}

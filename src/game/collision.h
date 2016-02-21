@@ -21,6 +21,9 @@ public:
 		COLFLAG_SOLID=1,
 		COLFLAG_DEATH=2,
 		COLFLAG_NOHOOK=4,
+/* CATCH MOD START */
+		COLFLAG_HIDE=8,
+/* CATCH MOD END */
 	};
 
 	CCollision();

@@ -13,6 +13,9 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
+/* CATCH MOD START */
+#include "gamemodes/catch.h"
+/* CATCH MOD END */
 
 enum
 {
@@ -1489,8 +1492,12 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//players = new CPlayer[MAX_CLIENTS];
 
 	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
-		m_pController = new CGameControllerMOD(this);
+/* CATCH MOD START */
+	if(str_comp(g_Config.m_SvGametype, "catch") == 0 ||
+		str_comp(g_Config.m_SvGametype, "gcatch") == 0 ||
+		str_comp(g_Config.m_SvGametype, "icatch") == 0)
+		m_pController = new CGameControllerCatch(this);
+/* CATCH MOD END */
 	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
 		m_pController = new CGameControllerCTF(this);
 	else if(str_comp(g_Config.m_SvGametype, "tdm") == 0)
