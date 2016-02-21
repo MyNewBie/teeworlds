@@ -45,6 +45,11 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_ProximityRadius = ms_PhysSize;
 	m_Health = 0;
 	m_Armor = 0;
+
+/* CATCH MOD START */
+	m_Visible = true;
+	m_ShieldID = Server()->SnapNewID();
+/* CATCH MOD END */
 }
 
 void CCharacter::Reset()
@@ -528,6 +533,20 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
+/* CATCH MOD START */
+	// debug tile
+	char Buf[128];
+	str_format(Buf, sizeof(Buf), "Tile: %i", GameServer()->Collision()->GetTileIndex(m_Core.m_Pos));
+	GameServer()->SendBroadcast(Buf, m_pPlayer->GetCID());
+
+	if (GameServer()->m_pController->IsCatch()) {
+		if (m_Visible && GameServer()->Collision()->GetTileIndex(m_Core.m_Pos) == TILE_HIDE)
+			m_Visible = false;
+		else if (!m_Visible && GameServer()->Collision()->GetTileIndex(m_Core.m_Pos) != TILE_HIDE)
+			m_Visible = true;
+	}
+/* CATCH MOD END */
+
 	// handle death-tiles and leaving gamelayer
 	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
 		GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
@@ -793,6 +812,37 @@ void CCharacter::Snap(int SnappingClient)
 	CNetObj_Character *pCharacter = static_cast<CNetObj_Character *>(Server()->SnapNewItem(NETOBJTYPE_CHARACTER, m_pPlayer->GetCID(), sizeof(CNetObj_Character)));
 	if(!pCharacter)
 		return;
+
+/* CATCH MOD START */
+	if(GameServer()->m_pController->IsCatch())
+	{
+		bool SendShild = false;
+
+		// Handle not joined players
+		// if(!m_pPlayer->IsJoined() && GameServer()->m_apPlayers[SnappingClient]->IsJoined())
+		// 	return;
+		// else if(!m_pPlayer->IsJoined() && !GameServer()->m_apPlayers[SnappingClient]->IsJoined())
+		// 	SendShild = true;
+
+		// Handle hideouts
+		if(!m_Visible && !GameServer()->m_World.m_Paused)
+		{
+			// if(GameServer()->m_apPlayers[SnappingClient]->GetCurrentTeam() == m_pPlayer->GetCurrentTeam())
+				SendShild = true; // Show friends
+			// else if(m_pPlayer->IsJoined()) // Hide enemies
+			// 	return;
+		}
+
+		if(SendShild)
+		{
+			CNetObj_Pickup *pShield = static_cast<CNetObj_Pickup *>(Server()->SnapNewItem(NETOBJTYPE_PICKUP, m_ShieldID, sizeof(CNetObj_Pickup)));
+			pShield->m_X = (int)m_Core.m_Pos.x;
+			pShield->m_Y = (int)m_Core.m_Pos.y - 2 * ms_PhysSize;
+			pShield->m_Type = 1;
+			pShield->m_Subtype = 0;
+		}
+	}
+/* CATCH MOD END */
 
 	// write down the m_Core
 	if(!m_ReckoningTick || GameServer()->m_World.m_Paused)

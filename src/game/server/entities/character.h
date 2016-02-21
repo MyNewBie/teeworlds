@@ -114,6 +114,11 @@ private:
 	int m_Health;
 	int m_Armor;
 
+/* CATCH MOD START */
+	bool m_Visible;
+	int m_ShieldID;
+/* CATCH MOD END */
+
 	// ninja
 	struct
 	{

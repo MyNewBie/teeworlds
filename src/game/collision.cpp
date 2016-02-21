@@ -47,7 +47,7 @@ void CCollision::Init(class CLayers *pLayers)
 			break;
 /* CATCH MOD START */
 		case TILE_HIDE:
-			m_pTiles[i].m_Index = COLFLAG_HIDE;
+			m_pTiles[i].m_Index = Index;
 			break;
 /* CATCH MOD END */
 		default:
@@ -61,7 +61,11 @@ int CCollision::GetTile(int x, int y)
 	int Nx = clamp(x/32, 0, m_Width-1);
 	int Ny = clamp(y/32, 0, m_Height-1);
 
-	return m_pTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
+	if(m_pTiles[Ny*m_Width+Nx].m_Index == COLFLAG_SOLID ||
+		m_pTiles[Ny*m_Width+Nx].m_Index == (COLFLAG_SOLID|COLFLAG_NOHOOK) ||
+		m_pTiles[Ny*m_Width+Nx].m_Index == COLFLAG_DEATH)
+		return m_pTiles[Ny*m_Width+Nx].m_Index;
+	return 0;
 }
 
 bool CCollision::IsTileSolid(int x, int y)
@@ -124,12 +128,25 @@ int CCollision::FastIntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec
 	return 0;
 }
 
+// int CCollision::GetTileInfo(vec2 Pos)
+// {
+// 	int nx = clamp((int)Pos.x/32, 0, m_Width-1);
+// 	int ny = clamp((int)Pos.y/32, 0, m_Height-1);
+
+// 	return m_pTiles[ny*m_Width+nx].m_Index;
+// }
+
 int CCollision::GetTileIndex(int x, int y)
 {
 	int nx = clamp(x/32, 0, m_Width-1);
 	int ny = clamp(y/32, 0, m_Height-1);
 
 	return m_pTiles[ny*m_Width+nx].m_Index > 255 ? 0 : m_pTiles[ny*m_Width+nx].m_Index;
+}
+
+int CCollision::GetTileIndex(vec2 Pos)
+{
+	return GetTileIndex((int)Pos.x, (int)Pos.y);
 }
 /* CATCH MOD END */
 

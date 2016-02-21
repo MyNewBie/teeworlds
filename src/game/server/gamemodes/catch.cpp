@@ -19,7 +19,7 @@ CGameControllerCatch::CGameControllerCatch(class CGameContext *pGameServer)
 
 bool CGameControllerCatch::IsCatch() { return true; }
 
-bool CGameControllerCatch::IsInsta() { return m_pGameType == "iCATCH" || m_pGameType == "gCATCH"; }
+bool CGameControllerCatch::IsInsta() { return m_pGameType == "iCATCH"; }
 
 bool CGameControllerCatch::IsGInsta() { return m_pGameType == "gCATCH"; }
 

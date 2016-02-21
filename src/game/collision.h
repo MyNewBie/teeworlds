@@ -21,9 +21,6 @@ public:
 		COLFLAG_SOLID=1,
 		COLFLAG_DEATH=2,
 		COLFLAG_NOHOOK=4,
-/* CATCH MOD START */
-		COLFLAG_HIDE=8,
-/* CATCH MOD END */
 	};
 
 	CCollision();
@@ -42,6 +39,7 @@ public:
 	// for pathfind
 	int FastIntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision, int Steps = 32);
 	int GetTileIndex(int x, int y);
+	int GetTileIndex(vec2 Pos);
 /* CATCH MOD END */
 };
 
