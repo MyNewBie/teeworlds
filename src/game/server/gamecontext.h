@@ -174,6 +174,14 @@ public:
 	virtual const char *GameType();
 	virtual const char *Version();
 	virtual const char *NetVersion();
+
+/* CATCH MOD START */
+	/*
+		m_Layers is needed by pathfind
+		maybe there is another way to access GameLayer() width and height
+	*/
+	CLayers *Layers() { return &m_Layers; }
+/* CATCH MOD END */
 };
 
 inline int CmaskAll() { return -1; }

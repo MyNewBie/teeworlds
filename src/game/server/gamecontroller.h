@@ -4,6 +4,9 @@
 #define GAME_SERVER_GAMECONTROLLER_H
 
 #include <base/vmath.h>
+/* CATCH MOD START */
+#include "pathfind.h"
+/* CATCH MOD END */
 
 /*
 	Class: Game Controller
@@ -144,6 +147,14 @@ public:
 	int ClampTeam(int Team);
 
 	virtual void PostReset();
+
+/* CATCH MOD START */
+	virtual bool IsCatch() { return false; }
+	virtual bool IsInsta() { return false; }
+	virtual bool IsGInsta() { return false; }
+
+	CPathfind m_Pathfind;
+/* CATCH MOD END */
 };
 
 #endif
